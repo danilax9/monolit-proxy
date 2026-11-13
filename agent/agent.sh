@@ -50,7 +50,9 @@ case "$cmd" in
     echo "$out" | tail -n 4; [ $r = 0 ] || fin 1
     systemctl restart xray; sleep 1; "$XRAY_BIN" version | head -1; [ "$(xray_wait)" = active ] && fin 0 || fin 1 ;;
   geo-update)
-    out=$(bash -c "$(curl -fsSL --max-time 30 "$INSTALLER")" @ install-geodata 2>&1); r=$?
+    s=$(curl -fsSL --max-time 30 "$INSTALLER") || fin 1
+    out=$(bash -c "$s" @ update-geodata 2>&1); r=$?
+    [ $r = 0 ] || { out=$(bash -c "$s" @ install-geodata 2>&1); r=$?; }
     echo "$out" | tail -n 3; [ $r = 0 ] || fin 1
     systemctl restart xray; sleep 1; [ "$(xray_wait)" = active ] && fin 0 || fin 1 ;;
   cert-renew)

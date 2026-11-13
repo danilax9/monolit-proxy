@@ -3854,7 +3854,7 @@ var qrcode = function() {
   // ---------- пропуск ----------
   document.title = 'Подписка ' + S.name
   $('s-name').textContent = S.name
-  $('s-used').textContent = S.limit ? `${gb(S.used)} из ${gb(S.limit)} ГБ` : `${gb(S.used)} ГБ, без лимита`
+  $('s-used').textContent = S.limit ? `${gb(S.used)}/${gb(S.limit)} ГБ` : `${gb(S.used)} ГБ, без лимита`
   $('s-prog').hidden = !S.limit
   if (S.limit) $('s-prog').firstElementChild.style.setProperty('--p', Math.min(1, S.used / S.limit).toFixed(3))
   const days = S.expire ? Math.ceil((S.expire - now) / 86400) : 0

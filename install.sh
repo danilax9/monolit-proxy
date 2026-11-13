@@ -148,7 +148,12 @@ FREE=$(df -Pm / | awk 'NR==2{print $4}'); [ "$FREE" -ge 1500 ] || die "Мало 
 MEM=$(awk '/MemTotal/{print int($2/1024)}' /proc/meminfo); [ "$MEM" -ge 450 ] || warn "Памяти ${MEM} МБ, может не хватить"
 [ "$(timedatectl show -p NTPSynchronized --value 2>/dev/null || echo yes)" = yes ] || warn "Время не синхронизировано (timedatectl): TLS может не работать"
 holders() { ss -Hlnp "$1" "sport = :$2" 2>/dev/null | grep -oE 'users:\(\("[^"]+"' | cut -d'"' -f2 | sort -u | tr '\n' ' '; }
-IPS=$(ip -4 -o addr show scope global | grep -vE ': (docker[0-9]*|br-[0-9a-f]+|veth[^ ]*)( |@)' | awk '{print $4}' | cut -d/ -f1 | tr '\n' ' ')
+# адреса сервера: без мостов (docker, Amnezia), veth и туннелей (wg, tun) — это внутренние сети
+IPS=$(ip -4 -o addr show scope global | while read -r _ dev _ addr _; do dev=${dev%%@*}
+  [ -e "/sys/class/net/$dev/bridge" ] || [ -e "/sys/class/net/$dev/brport" ] && continue
+  case "$dev" in docker*|br-*|veth*) continue ;; esac
+  ip -o link show "$dev" | grep -q 'POINTOPOINT' && continue
+  printf '%s ' "${addr%/*}"; done)
 IP1=$(ip -4 route get 1.1.1.1 2>/dev/null | grep -oE 'src [0-9.]+' | cut -d' ' -f2 || true)
 ok "Адреса: ${IPS:-нет}; ${MEM} МБ памяти, ${FREE} МБ свободно"
 
