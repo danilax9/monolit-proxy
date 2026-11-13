@@ -65,7 +65,9 @@ ok()   { printf '   %s✓%s %s\n' "$G" "$N" "$*"; }
 warn() { printf '   %s!%s %s\n' "$Y" "$N" "$*"; }
 info() { printf '   %s\n' "$*"; }
 die()  { printf '\n%s%s%s\n' "$R" "$*" "$N" >&2; [ -s "$LOG" ] && printf '%sПодробности: %s%s\n' "$D" "$LOG" "$N" >&2; exit 1; }
-run()  { echo "+ $*" >>"$LOG"; "$@" >>"$LOG" 2>&1; }
+# журнал только для root, пароли в нём скрыты
+touch "$LOG" 2>/dev/null && chmod 600 "$LOG" 2>/dev/null || true
+run()  { echo "+ $*" | sed -E 's/(PASSWORD=|PASS=|password[=: ]+)[^ ]+/\1***/g' >>"$LOG"; "$@" >>"$LOG" 2>&1; }
 # Вопросы читаем из терминала: так работает и «curl … | bash»
 TTY=0; { [ ${#ARGS[@]} -eq 0 ] || [ "$ACTION" != install ]; } && ( : </dev/tty ) 2>/dev/null && TTY=1
 ask() { local q="$1" def="${2:-}" a; printf '%s%s%s' "$B" "$q" "$N" >/dev/tty; [ -n "$def" ] && printf ' %s[%s]%s' "$D" "$def" "$N" >/dev/tty
@@ -78,7 +80,7 @@ xray_up() { local i; for i in $(seq 1 60); do [ "$(systemctl is-active xray 2>/d
 
 [ "$(id -u)" = 0 ] || die "Запустите от root"
 mkdir -p "$BK" "$DATA" "$(dirname "$LOG")"; echo "=== $(date -Is) install.sh ${ARGS[*]:-}" >>"$LOG"
-[ -f "$ENVF" ] && . "$ENVF"
+HAD_ENV=0; [ -f "$ENVF" ] && { HAD_ENV=1; . "$ENVF"; }   # HAD_ENV=0 — установка с нуля
 
 # ================= состояние =================
 if [ "$ACTION" = status ]; then
@@ -101,7 +103,10 @@ restore_before() {
   [ -n "$nb$xb" ] || die "Нет записи о бэкапах в $ENVF — вернуть nginx и Xray автоматически не получится"
   has_nginx && tar czf "$BK/nginx-$STAMP-before-$ACTION.tgz" -C / etc/nginx && info "Текущий nginx сохранён: $BK/nginx-$STAMP-before-$ACTION.tgz"
   [ -f "$XRAY_CONFIG" ] && cp "$XRAY_CONFIG" "$BK/xray-config-$STAMP-before-$ACTION.json"
-  if [ -n "$xb" ] && [ -f "$xb" ]; then cp "$xb" "$XRAY_CONFIG"; systemctl restart xray 2>/dev/null || true; ok "Конфиг Xray как до установки"; fi
+  if [ "$ACTION" = uninstall ] && [ "${MP_OWN_XRAY:-}" = 1 ]; then
+    # Xray ставил monolit: до установки его не было — убираем официальным установщиком (конфиг сохранён выше)
+    bash -c "$(curl -fsSL https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ remove --purge >>"$LOG" 2>&1 && ok "Xray убран (его ставил monolit)" || { systemctl disable --now xray >>"$LOG" 2>&1; warn "Xray не удалился, остановлен"; }
+  elif [ -n "$xb" ] && [ -f "$xb" ]; then cp "$xb" "$XRAY_CONFIG"; systemctl restart xray 2>/dev/null || true; ok "Конфиг Xray как до установки"; fi
   if [ -n "$nb" ] && [ -f "$nb" ] && has_nginx; then
     rm -f /etc/nginx/monolit.conf /etc/nginx/conf.d/monolit-vpn.conf
     tar xzf "$nb" -C /
@@ -114,7 +119,7 @@ if [ "$ACTION" = uninstall ]; then
   [ -f "$ENVF" ] || die "monolit не установлен"
   echo "Будет: остановлен контейнер админки${MP_MTG_PORT:+ и прокси Telegram}, nginx и Xray возвращены к состоянию до установки ($(basename "${MP_BACKUP_NGINX:-нет}")),"
   echo "убраны BBR-настройки monolit. Изменения nginx, сделанные после установки, пропадут (текущий nginx сохраню в $BK)."
-  echo "База пользователей останется в $DATA, Xray и Docker — на месте."
+  echo "База пользователей останется в $DATA, Docker — на месте; Xray $([ "${MP_OWN_XRAY:-}" = 1 ] && echo "уберу: его ставил monolit" || echo "останется со старым конфигом")."
   [ "$YES" = 1 ] || { [ "$TTY" = 1 ] && yesno "Удалить monolit?" нет; } || die "Отменено. Без терминала добавьте --yes"
   docker rm -f monolit monolit-mtg >>"$LOG" 2>&1 || true
   systemctl disable --now monolit-agent.socket >>"$LOG" 2>&1 || true
@@ -346,6 +351,7 @@ if [ ! -x "$XRAY_BIN" ]; then
   step "Ставлю Xray (официальный установщик XTLS)"
   bash -c "$(curl -fsSL https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install >>"$LOG" 2>&1 || die "Xray не установился"
   XRAY_BIN=$(command -v xray || echo /usr/local/bin/xray); ok "$("$XRAY_BIN" version | head -1 | cut -d' ' -f1-2)"
+  MP_OWN_XRAY=1   # Xray поставил monolit: --uninstall его и уберёт
 fi
 BINDIR=$(dirname "$XRAY_BIN"); SHARE=/usr/local/share/xray; [ -d "$SHARE" ] || SHARE="$BINDIR"
 mkdir -p "$CFGDIR"; [ -s "$XRAY_CONFIG" ] || echo '{}' > "$XRAY_CONFIG"
@@ -353,9 +359,15 @@ mkdir -p "$CFGDIR"; [ -s "$XRAY_CONFIG" ] || echo '{}' > "$XRAY_CONFIG"
 # Бэкапы до первого изменения (самые ранние запоминаем для --uninstall)
 cp "$XRAY_CONFIG" "$BK/xray-config-$STAMP-before-monolit.json"
 has_nginx && tar czf "$BK/nginx-$STAMP-before-monolit.tgz" -C / etc/nginx
-# самый ранний бэкап — состояние до monolit (установки старых версий не записывали его в env)
-MP_BACKUP_XRAY="${MP_BACKUP_XRAY:-$(ls "$BK"/xray-config-*-before-monolit.json 2>/dev/null | sort | head -1)}"
-MP_BACKUP_NGINX="${MP_BACKUP_NGINX:-$(ls "$BK"/nginx-*-before-monolit.tgz 2>/dev/null | sort | head -1)}"
+# Состояние до monolit. Установка с нуля — бэкап этого запуска (в /root/backups могут лежать чужие старые копии).
+# Обновление версии, которая не записывала бэкап в env, — самый ранний before-monolit
+if [ "$HAD_ENV" = 0 ]; then
+  MP_BACKUP_XRAY="${MP_BACKUP_XRAY:-$BK/xray-config-$STAMP-before-monolit.json}"
+  MP_BACKUP_NGINX="${MP_BACKUP_NGINX:-$(has_nginx && echo "$BK/nginx-$STAMP-before-monolit.tgz")}"
+else
+  MP_BACKUP_XRAY="${MP_BACKUP_XRAY:-$(ls "$BK"/xray-config-*-before-monolit.json 2>/dev/null | sort | head -1)}"
+  MP_BACKUP_NGINX="${MP_BACKUP_NGINX:-$(ls "$BK"/nginx-*-before-monolit.tgz 2>/dev/null | sort | head -1)}"
+fi
 NEWFILES=""; for f in /etc/nginx/monolit.conf /etc/nginx/conf.d/monolit-vpn.conf; do [ -e "$f" ] || NEWFILES="$NEWFILES $f"; done
 rollback() {
   cp "${RB_XRAY:-$BK/xray-config-$STAMP-before-monolit.json}" "$XRAY_CONFIG"; systemctl restart xray 2>/dev/null || true
@@ -389,7 +401,7 @@ if [ "$NEED_APPLY" = 1 ]; then
   # --- WARP: регистрируем один раз, ключи храним ---
   WARPF=""; if [ "$WARP" = 1 ]; then
     WARPF=$DATA/warp.json
-    if [ ! -s "$WARPF" ]; then step "Регистрирую выход WARP"; node_in -v "$DATA:$DATA" monolit-proxy node /app/server/init.mjs warp --out "$WARPF" >>"$LOG" 2>&1 || die "WARP не зарегистрировался (подробности в $LOG)"; fi
+    if [ ! -s "$WARPF" ]; then step "Регистрирую выход WARP"; node_in -v "$DATA:$DATA" monolit-proxy node /app/server/init.mjs warp --out "$WARPF" >>"$LOG" 2>&1 || die "WARP не зарегистрировался (подробности в $LOG)"; ok "WARP зарегистрирован"; fi
     chmod 600 "$WARPF"
   fi
 
@@ -423,7 +435,7 @@ fi
 
 # ================= 7. система =================
 if [ "$BBR" = 1 ]; then
-  if [ -f /etc/sysctl.d/999-autoXRAY.conf ]; then ok "BBR уже включён autoXRAY"
+  if [ -f /etc/sysctl.d/999-autoXRAY.conf ]; then ok "BBR уже включён (файл autoXRAY в /etc/sysctl.d)"
   elif [ ! -f /etc/sysctl.d/99-monolit.conf ]; then
     step "Включаю BBR и буферы TCP"
     # Только повышаем: если на сервере уже больше или выбран свой алгоритм — не трогаем
@@ -475,6 +487,7 @@ MP_MTG_SECRET=$MTG_SEC
 MP_APPLY_SIG="${MP_APPLY_SIG:-}"
 MP_BACKUP_XRAY=$MP_BACKUP_XRAY
 MP_BACKUP_NGINX=$MP_BACKUP_NGINX
+MP_OWN_XRAY=${MP_OWN_XRAY:-}
 EOF
 chmod 600 "$ENVF"; [ -f "$DATA/warp.json" ] && chmod 600 "$DATA/warp.json"
 

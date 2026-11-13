@@ -338,6 +338,10 @@ export function createManager({ db, xray, queue, activeUsers, log, onRestart }) 
     if (MODE === 'existing') return;
     const sig = process.env.MP_APPLY_SIG || '';
     if (getSetting(db, 'managed') !== '1' || getSetting(db, 'apply_sig') !== sig) {
+      // Установка другая (способ, домен, сертификат, порты, путь XHTTP): старые версии конфига к ней не подходят,
+      // откат к ним сломал бы Xray или XHTTP — историю начинаем заново
+      const prev = getSetting(db, 'apply_sig', '');
+      if (prev && prev !== sig) { db.prepare('DELETE FROM config_history').run(); log('установка изменилась, история конфигов очищена') }
       importFromConfig(); setSetting(db, 'apply_sig', sig);
       const cfg = xray.read(), want = build(cfg, snapshot());
       if (JSON.stringify(want.routing) !== JSON.stringify(cfg.routing) || want.inbounds.length !== cfg.inbounds.length) {
