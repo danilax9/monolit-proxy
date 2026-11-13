@@ -1,0 +1,150 @@
+/* Админка monolit proxy: только то, чего нет в системе. Каркас (.app-shell, .app-main, .app-head) — layers.css */
+*, *::before, *::after { box-sizing: border-box }
+html { color-scheme: dark; -webkit-tap-highlight-color: transparent }
+[data-theme="light"] { color-scheme: light }
+body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--font-sans);
+  font-size: var(--fs-md); line-height: var(--lh-md); letter-spacing: var(--ls-md) }
+h1, h2, h3, h4, p { margin: 0 }
+[hidden] { display: none !important }
+
+/* Вход: карточка по центру, одно поле */
+.mp-login { min-height: 100vh; min-height: 100dvh; display: grid; place-items: center; padding: var(--sp-6) var(--sp-4) }
+.mp-login-card { width: min(400px, 100%); display: grid; gap: var(--sp-6); padding: var(--sp-8); border-radius: var(--r-xl); background: var(--surface); box-shadow: inset 0 0 0 1px var(--border-subtle) }
+.mp-login-card .mp-logo { justify-self: center }
+.mp-login-card .field .hint { color: var(--danger) }
+
+.app-title { flex-wrap: wrap; row-gap: var(--sp-2) }
+.mp-alert { margin-bottom: var(--sp-6) }
+.mp-alert div { display: grid; gap: 2px }
+/* Низ меню по образцу системы: аватар, логин и сервер в две строки, справа выход */
+.mp-acc { display: grid; min-width: 0; line-height: var(--lh-xs) }
+.mp-acc b { color: var(--text); font-size: var(--fs-sm); line-height: var(--lh-sm); font-weight: var(--w-medium); overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+.mp-acc span { color: var(--text-muted); font-size: var(--fs-xs); overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+
+/* Ряд цифр: четыре вещи похожей высоты — один ряд */
+.mp-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--sp-3); margin: var(--sp-8) 0 }
+.mp-stats .stat { padding: var(--sp-4) }
+.mp-stat-btn { font: inherit; color: inherit; text-align: left; cursor: pointer; border: 0; outline: 2px solid transparent; outline-offset: 2px; transition: outline-color var(--dur-focus) var(--ease-out) }
+.mp-stat-btn:focus-visible { outline-color: var(--focus) }
+.mp-stats .stat-num { white-space: nowrap }
+.mp-bad .stat-num { color: var(--danger) }
+@media (max-width: 900px) { .mp-stats { grid-template-columns: repeat(2, minmax(0, 1fr)) } }
+@media (max-width: 640px) {
+  .mp-stats { margin: var(--sp-4) 0; gap: var(--sp-2) }
+  .mp-stats .stat { padding: var(--sp-3) var(--sp-4); gap: 0 }
+  .mp-stats .stat-foot { display: none }
+  .mp-stats .stat-num { font-size: var(--fs-xl); line-height: var(--lh-xl) }
+  .mp-stats .stat-head { font-size: var(--fs-sm); white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+}
+
+/* Вкладки с числами и поиск */
+.mp-n { margin-left: var(--sp-1); color: var(--text-muted); font-weight: var(--w-regular) }
+/* поиск и «Добавить» одним рядом: поиск тянется, кнопка справа */
+.mp-add-btn { flex: none }
+.mp-tools { display: flex; align-items: center; gap: var(--sp-2); margin: var(--sp-4) 0 }
+.mp-tools .search { flex: 1; min-width: 0 }
+
+/* Таблица: строку нажимают целиком, на телефоне — карточки */
+.mp-table tbody tr { cursor: pointer; outline: 2px solid transparent; outline-offset: -2px; transition: outline-color var(--dur-focus) var(--ease-out) }
+.mp-table tbody tr:focus-visible { outline-color: var(--focus) }
+@media (min-width: 641px) { .mp-table tbody :is(th, td) { height: auto; padding-top: var(--sp-3); padding-bottom: var(--sp-3) } }
+.mp-who { display: block; color: var(--text); font-weight: var(--w-medium) }
+.mp-what { display: block; margin-top: 2px; color: var(--text-secondary); font-size: var(--fs-sm); line-height: var(--lh-sm); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 320px }
+.mp-m { display: none }
+.mp-muted { color: var(--text-muted) }
+.mp-use { display: grid; gap: 6px; min-width: 140px }
+.mp-use span { white-space: nowrap }
+.mp-use .progress { width: 100% }
+.mp-list { transition: opacity var(--dur-swap-in) var(--ease-out) }
+.mp-list.out { opacity: 0; transition-duration: var(--dur-swap-out) }
+.mp-foot { padding: var(--sp-4) 0 }
+@media (max-width: 640px) {
+  .mp-table { --cols: 1; --stack-top: 0px }
+  .mp-table thead { display: none }   /* на телефоне видна одна колонка — трафик, подпись над ней не нужна */
+  .mp-table tbody td { display: none }   /* всё нужное собрано в первой ячейке */
+  /* каждый пользователь — карточка: границы видны без разделителей */
+  .mp-table tbody { display: grid; gap: var(--sp-2) }
+  .mp-table tbody tr { box-shadow: none }
+  .mp-table.table tbody tr th { color: var(--text); padding: var(--sp-4); border-radius: var(--r-md); background: var(--surface); box-shadow: inset 0 0 0 1px var(--border-subtle) }
+  .mp-table tbody tr th::before { display: none }
+  @media (hover: hover) and (pointer: fine) { .mp-table tbody tr:hover th { background: var(--surface-hover) } }
+  .mp-table tbody tr { border-radius: var(--r-md) }
+  .mp-what { display: none }
+  /* имя слева, трафик справа; ниже заметка и срок; полоса во всю ширину */
+  .mp-table tbody th { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: var(--sp-4); row-gap: var(--sp-1); align-items: baseline }
+  .mp-m { display: contents; font-size: var(--fs-sm); line-height: var(--lh-sm); font-weight: var(--w-regular) }
+  .mp-who { grid-row: 1; grid-column: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+  .mp-m-use { grid-row: 1; grid-column: 2; white-space: nowrap; font-variant-numeric: tabular-nums; font-size: var(--fs-sm); font-weight: var(--w-medium) }
+  .mp-m-note { grid-row: 2; grid-column: 1; min-width: 0; color: var(--text-secondary); font-size: var(--fs-sm); white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+  .mp-m-exp { grid-row: 2; grid-column: 2; justify-self: end; color: var(--text-muted); font-size: var(--fs-sm); white-space: nowrap }
+  .mp-m-exp.is-expired, .mp-m-exp.is-limit { color: var(--warning) }
+  .mp-m .progress { grid-row: 3; grid-column: 1 / -1; width: 100%; margin-top: var(--sp-3) }
+  .mp-table tbody tr:has(.is-off) :is(.mp-who, .mp-m > *) { opacity: .55 }
+}
+
+/* Окна и шторки */
+.mp-form { display: grid; gap: var(--sp-4) }
+.mp-section { display: grid; gap: var(--sp-4); align-content: start }
+.mp-section + .mp-section { margin-top: var(--sp-8) }
+.sheet-side.mp-detail { width: min(560px, 100vw) }   /* 420 системы мало: поле со ссылкой и форма в одной колонке */
+.mp-detail .sheet-head > div:first-child { flex: 1; min-width: 0 }
+.mp-did { color: var(--text-muted); font-size: var(--fs-sm); line-height: var(--lh-sm) }
+.mp-note { color: var(--text-muted); font-size: var(--fs-sm); line-height: var(--lh-sm) }
+.mp-usage { display: grid; gap: var(--sp-2) }
+.mp-usage-num { font-size: var(--fs-lg); line-height: var(--lh-lg); font-weight: var(--w-medium) }
+.mp-usage-num small { color: var(--text-muted); font-size: var(--fs-sm); font-weight: var(--w-regular) }
+.mp-quick { margin-top: calc(var(--sp-2) * -1) }
+.mp-qr { justify-self: center; padding: var(--sp-3); border-radius: var(--r-lg); background: #fff; line-height: 0 }
+.mp-qr svg { width: 200px; height: 200px; display: block }
+.mp-danger .alist-ic, .mp-danger b { color: var(--danger) }
+.mp-kv { display: grid; gap: var(--sp-3); margin: 0 }
+.mp-kv div { display: flex; justify-content: space-between; gap: var(--sp-4); font-size: var(--fs-sm); line-height: var(--lh-sm) }
+.mp-kv dt { color: var(--text-muted); white-space: nowrap }
+.mp-kv dd { margin: 0; font-weight: var(--w-medium); text-align: right; overflow-wrap: anywhere }
+.mp-checks { display: grid; gap: var(--sp-2) }
+.mp-theme { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-4) }
+@media (max-width: 640px) { .mp-tools .kbd { display: none } }   /* клавиша «/» на телефоне не нужна */
+/* .alist-row в системе — ссылка; у нас кнопки: снять оформление браузера */
+button.alist-row { width: 100%; border: 0; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer }
+.mp-actions .alist-tx { display: grid; gap: 2px }
+.mp-actions .alist-tx b { font-weight: var(--w-medium) }
+.mp-actions .alist-tx span { color: var(--text-muted); font-size: var(--fs-sm); line-height: var(--lh-sm) }
+.mp-quick { flex-wrap: wrap; gap: var(--sp-1) }   /* узкий экран: «Очистить» уходит на вторую строку, а не за край */
+.mp-quick .btn { padding: 0 var(--sp-3) }
+
+/* Разделы сервера: маршруты, WARP, протоколы, история */
+.sheet-side.mp-wide { width: min(560px, 100vw) }   /* в строке правила — название, список адресов и свитч */
+.mp-inline { display: flex; gap: var(--sp-2) }
+.mp-inline .input { flex: 1; min-width: 0 }
+.mp-reach dd { color: var(--text-muted); font-weight: var(--w-regular) }
+.mp-reach dd .badge { font-variant-numeric: tabular-nums }
+.mp-reach-go { justify-self: start }
+.mp-inline .input-wrap { flex: 1; min-width: 0 }
+/* Результат проверки — один блок без зазора сетки снаружи: отступ сверху внутри, чтобы уходил вместе с высотой */
+.mp-rt-out { display: grid; gap: var(--sp-4); padding-top: var(--sp-4); overflow: hidden }
+.mp-rt .mp-rt-open { border: 0; background: none; padding: 0; font: inherit; color: inherit; text-align: left; cursor: pointer; outline: none }
+.mp-rt .mp-rt-open::after { content: ""; position: absolute; inset: 0; border-radius: inherit; outline: 2px solid transparent; outline-offset: -2px; transition: outline-color var(--dur-focus) var(--ease-out) }
+.mp-rt .mp-rt-open:focus-visible::after { outline-color: var(--focus) }
+.mp-rt .mp-rt-open span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+.mp-rt .switch { position: relative; z-index: 1 }
+.alist-row.mp-rt { grid-template-columns: 32px 1fr auto auto }
+.mp-rt .mp-rt-del { margin-right: calc(-1 * var(--sp-1)); position: relative; z-index: 1; color: var(--text-muted) }
+.mp-rt-head { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3); min-height: 32px }
+.mp-rt :is(.alist-ic, .alist-tx) { transition: opacity var(--dur-hover-in) var(--ease-out) }
+.mp-rt:is(.is-off, .is-idle) :is(.alist-ic, .alist-tx) { opacity: .5 }
+.mp-presets { flex-wrap: wrap; gap: var(--sp-2) }
+.mp-socks-f { display: grid; grid-template-columns: 96px minmax(0, 1fr) minmax(0, 1fr); gap: var(--sp-3) }
+@media (max-width: 520px) { .mp-socks-f { grid-template-columns: minmax(0, 1fr) } }
+.mp-log pre { max-height: 60vh; overflow: auto; margin: 0; white-space: pre-wrap; overflow-wrap: anywhere }
+.mp-hist-acts { flex-wrap: wrap; gap: var(--sp-1); margin-top: var(--sp-2) }
+.btn.mp-danger { color: var(--danger) }
+.mp-rt-more { flex-wrap: wrap; gap: var(--sp-1) }
+.mp-srv-line { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2) var(--sp-3) }
+
+/* Логотип в меню: без подложки при наведении (она растягивалась вместе с меню), сам знак становится светлее */
+.side-ws.mp-logo { background: none }
+.side-ws.mp-logo svg, .side-ws.mp-logo .mp-wm { transition: color var(--hd) var(--ease-hover) }
+@media (hover: hover) and (pointer: fine) {
+  .side-ws.mp-logo:hover { background: none }
+  .side-ws.mp-logo:hover svg { color: color-mix(in oklch, var(--accent), #fff 30%) }
+}
