@@ -159,7 +159,7 @@ ok "Адреса: ${IPS:-нет}; ${MEM} МБ памяти, ${FREE} МБ сво�
 
 # ================= 2. Docker и образ =================
 step "Готовлю образ админки"
-if ! command -v docker >/dev/null; then info "Ставлю Docker"; curl -fsSL https://get.docker.com | sh >>"$LOG" 2>&1 || die "Docker не установился"; fi
+if ! command -v docker >/dev/null; then info "Ставлю Docker"; curl -fsSL https://get.docker.com | sh >>"$LOG" 2>&1 || die "Docker не установился"; ok "Docker $(docker --version | grep -oE "[0-9]+.[0-9]+.[0-9]+" | head -1)"; fi
 run docker build -t monolit-proxy "$SRC" || die "Образ не собрался"
 node_in() { docker run --rm "$@"; }
 ok "Образ собран"

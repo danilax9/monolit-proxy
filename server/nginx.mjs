@@ -41,7 +41,9 @@ function serverBlocks(text) {
   return out;
 }
 
-const LISTEN = /^([ \t]*)listen[ \t]+([^;]+);/gm;
+// директива с начала строки или после «;» / «{» (бывают конфиги в одну строку)
+const LISTEN = /(^|[;{])([ \t]*)listen[ \t]+([^;]+);/gm;
+const directive = (body, name) => body.match(new RegExp(`(?:^|[;{])\\s*${name}[ \\t]+([^;]+);`, 'm'))?.[1].trim();
 // Адрес слушает 443 по IPv4 на всех адресах (443, *:443, 0.0.0.0:443) или на конкретном IPv4
 const is443v4 = (addr) => /^(\*:|0\.0\.0\.0:|\d+\.\d+\.\d+\.\d+:)?443$/.test(addr);
 const is443v6any = (addr) => addr === '[::]:443';
@@ -53,13 +55,13 @@ export function scan(dir = '/etc/nginx') {
     if (file.endsWith('/monolit-vpn.conf')) continue;   // свой сайт домена VPN — не сайт пользователя
     const text = readFileSync(file, 'utf8');
     for (const b of serverBlocks(text)) {
-      const listens = [...b.body.matchAll(LISTEN)].map((m) => m[2].trim().split(/\s+/));
+      const listens = [...b.body.matchAll(LISTEN)].map((m) => m[3].trim().split(/\s+/));
       // 443 по IPv4 или уже наши сокеты (повторная установка «рядом с сайтами»)
       const l443 = listens.filter((p) => is443v4(p[0]) || p[0] === `unix:${SOCK_H1}`);
       if (!l443.length) continue;
-      const names = (b.body.match(/^\s*server_name[ \t]+([^;]+);/m)?.[1] || '').trim().split(/\s+/).filter((n) => n && n !== '_');
-      const cert = b.body.match(/^\s*ssl_certificate[ \t]+([^;]+);/m)?.[1].trim().replace(/^["']|["']$/g, '');
-      const key = b.body.match(/^\s*ssl_certificate_key[ \t]+([^;]+);/m)?.[1].trim().replace(/^["']|["']$/g, '');
+      const names = (directive(b.body, 'server_name') || '').split(/\s+/).filter((n) => n && n !== '_');
+      const cert = directive(b.body, 'ssl_certificate')?.replace(/^["']|["']$/g, '');
+      const key = directive(b.body, 'ssl_certificate_key')?.replace(/^["']|["']$/g, '');
       sites.push({ file, names, cert, key, quic: l443.some((p) => p.includes('quic')), addrs: l443.map((p) => p[0]) });
     }
   }
@@ -72,12 +74,12 @@ function rewrite(dir, how, match = is443v4) {
   for (const file of siteFiles(dir)) {
     const text = readFileSync(file, 'utf8'); let out = '', pos = 0, touched = false;
     for (const b of serverBlocks(text)) {
-      const body = b.body.replace(LISTEN, (line, ind, val) => {
+      const body = b.body.replace(LISTEN, (line, pre, ind, val) => {
         const p = val.trim().split(/\s+/);
         if (!match(p[0])) return line;
         const rep = how(p); if (!rep) return line;
         touched = true;
-        return rep.map((r) => `${ind}${r};`).join('\n');
+        return pre + rep.map((r) => `${ind}${r};`).join('\n');
       });
       const head = text.slice(b.start, text.indexOf('{', b.start) + 1);
       out += text.slice(pos, b.start) + head + body + '}';
