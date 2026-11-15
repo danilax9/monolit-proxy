@@ -11,7 +11,7 @@ MODE=${1:-} DOMAIN=${2:-} IP2=${3:--} KEEP=${4:-0} SKIP=${5:-0} DROP=${6:--}
 . /etc/monolit.env
 SRC=${MP_SRC:-/opt/monolit-proxy} ST=/var/lib/monolit/reconf.json LOG=/var/log/monolit-reconf.log
 FROM="${MP_MODE:-}|${MP_DOMAIN:-}|${MP_IP2:-}"
-js() { printf '%s' "$1" | sed 's/\/\\/g; s/"/\\"/g' | tr -d '\000-\037'; }
+js() { printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g' | tr -d '\000-\037'; }
 state() { printf '{"state":"%s","at":%s,"text":"%s","from":"%s","to":"%s"}\n' "$1" "$(date +%s)" "$(js "$2")" "$FROM" "$MODE|$DOMAIN|${IP2#-}" > "$ST.tmp" && mv "$ST.tmp" "$ST"; }
 exec >>"$LOG" 2>&1
 echo "=== $(date -Is) смена: $FROM → $MODE|$DOMAIN|$IP2 запасной=$KEEP без-DNS=$SKIP убрать=$DROP"

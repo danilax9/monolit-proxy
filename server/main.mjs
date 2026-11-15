@@ -221,7 +221,7 @@ const cleanDomain = v => { const d = String(v || '').trim().toLowerCase().replac
 const resolve = resolve4;
 function addrState() {
   let job = null; try { job = JSON.parse(readFileSync(join(DATA, 'reconf.json'), 'utf8')) } catch {}
-  return { mode: env('MP_MODE', ''), domain: getSetting(db, 'domain'), ip2: env('MP_IP2', ''), alt: env('MP_ALT', '').replace(/^"|"$/g, '').split(';').map(x => x.split('|')[0]).filter(x => cleanDomain(x)), admin: ADMIN, job, watch: watch.state() };
+  return { mode: env('MP_MODE', ''), domain: getSetting(db, 'domain'), ip2: env('MP_IP2', ''), alt: env('MP_ALT', '').replace(/^"|"$/g, '').split(/[,;]/).map(x => x.split(/[:|]/)[0]).filter(x => cleanDomain(x)), admin: ADMIN, job, watch: watch.state() };
 }
 
 function stateForAdmin() {

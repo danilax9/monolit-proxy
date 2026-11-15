@@ -84,6 +84,8 @@ xray_up() { local i; for i in $(seq 1 60); do [ "$(systemctl is-active xray 2>/d
 
 [ "$(id -u)" = 0 ] || die "Запустите от root"
 mkdir -p "$BK" "$DATA" "$(dirname "$LOG")"; echo "=== $(date -Is) install.sh ${ARGS[*]:-}" >>"$LOG"
+# запасные домены в 1.2.0–1.2.1 писались через «|» и «;»: оболочка читала это как команды. Формат без них: домен:сертификат:ключ,…
+[ -f "$ENVF" ] && grep -q '^MP_ALT=.*[|;]' "$ENVF" && sed -i '/^MP_ALT=/{s/|/:/g;s/;/,/g}' "$ENVF"
 HAD_ENV=0; [ -f "$ENVF" ] && { HAD_ENV=1; . "$ENVF"; }   # HAD_ENV=0 — установка с нуля
 
 # ================= состояние =================
@@ -245,11 +247,11 @@ fi
 # Домен сменили (из админки): сертификат прежнего домена новому не подходит — выпустим свой, прежний домен можно оставить запасным
 ALT="${MP_ALT:-}"
 if [ -n "$DOMAIN" ] && [ -n "${MP_DOMAIN:-}" ] && [ "$DOMAIN" != "$MP_DOMAIN" ]; then
-  [ "$KEEPOLD" = 1 ] && ALT="$ALT;$MP_DOMAIN|${MP_CERT:-}|${MP_KEY:-}"
+  [ "$KEEPOLD" = 1 ] && ALT="$ALT,$MP_DOMAIN:${MP_CERT:-}:${MP_KEY:-}"
   [ -n "$CERT" ] || { MP_CERT="" MP_KEY=""; }
 fi
 # запасные: без нового домена, без убранного, без повторов
-ALT=$(tr ';' '\n' <<<"$ALT" | awk -F'|' -v d="${DOMAIN:-${MP_DOMAIN:-}}" -v x="$DROPALT" 'NF && $1 != d && $1 != x && !s[$1]++' | paste -sd ';' - || true)
+ALT=$(tr ',' '\n' <<<"$ALT" | awk -F':' -v d="${DOMAIN:-${MP_DOMAIN:-}}" -v x="$DROPALT" 'NF && $1 != d && $1 != x && !s[$1]++' | paste -sd ',' - || true)
 DOMAIN="${DOMAIN:-${MP_DOMAIN:-}}" CERT="${CERT:-${MP_CERT:-}}" KEY="${KEY:-${MP_KEY:-}}"
 SOCKS="${SOCKS:-${MP_SOCKS:-}}"; SOCKS="${SOCKS%%:*}"; MTPROTO="${MTPROTO:-${MP_MTG_PORT:-}}"
 [ "$WARP" = 1 ] || { [ -n "${MP_WARP:-}" ] && WARP=1; }

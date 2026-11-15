@@ -3,7 +3,7 @@
 //   node init.mjs apply --mode front|ip2|bare --domain d --port 7380 --admin-path p --xhttp-port n --xhttp-path s
 //                       [--ip2 x --ip1 y] [--cert c --key k] [--socks порт:логин:пароль] [--warp файл.json]
 //                       [--from-mode прежний] — способ сменили: сначала вернуть сайты к обычному 443
-//                       [--alt "домен|сертификат|ключ;…"] — запасные домены: старые ссылки подписок продолжают работать
+//                       [--alt "домен:сертификат:ключ,…"] — запасные домены: старые ссылки подписок продолжают работать
 //       Схема как в autoXRAY: Xray на 443 (Vision, Hysteria2), всё не-VPN он отдаёт nginx на внутренние сокеты
 //       с proxy_protocol. Там сайты (front), сайт домена VPN с админкой, подписками и XHTTP.
 //   node init.mjs include --domain d --port 7380 --admin-path p   — Xray уже настроен (autoXRAY): только админка в сайт домена
@@ -66,7 +66,7 @@ const from = arg('from-mode');
 if (from && from !== mode && existsSync(NGINX)) { if (from === 'front') fromSockets(NGINX); if (from === 'ip2') fromIp(NGINX, arg('ip1')) }
 
 // Запасные домены: прежний адрес продолжает открывать подписки и подключать приложения
-const alt = arg('alt').split(';').map((x) => x.split('|')).filter(([d]) => d && d !== domain && /^[a-z0-9.-]+\.[a-z]{2,}$/i.test(d));
+const alt = arg('alt').split(/[,;]/).map((x) => x.split(/[:|]/)).filter(([d]) => d && d !== domain && /^[a-z0-9.-]+\.[a-z]{2,}$/i.test(d));
 const names = [domain, ...alt.map(([d]) => d)];
 
 // Сертификаты для TLS Xray: домен VPN первым (его отдаём клиентам без SNI), потом сайты — Xray выбирает по SNI
