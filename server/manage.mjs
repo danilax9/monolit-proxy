@@ -306,7 +306,17 @@ export function createManager({ db, xray, queue, activeUsers, log, onRestart }) 
         }
       }
       const r = await apply('Протоколы', () => { put('proto', p); put('socks', so) });
-      if (r.ok && so.on) await agent(`fw-open ${so.port} tcp`);
+      // Порт SOCKS в файрволе: открываем сами (если при установке не было --no-firewall) и сами же закрываем.
+      // Закрываем только то, что открыли мы: правило, которое было до нас, не трогаем
+      if (r.ok && process.env.MP_FIREWALL !== '0') {
+        const opened = get('socks_fw', null);
+        if (opened && (!so.on || opened !== so.port)) { await agent(`fw-close ${opened} tcp`); put('socks_fw', null) }
+        if (so.on && get('socks_fw', null) !== so.port) {
+          const o = await agent(`fw-open ${so.port} tcp`);
+          // ufw пишет «Rule added», если правила не было, и «Skipping…», если было; firewalld молчит
+          if (o.code === 0 && (/Rule added/.test(o.out) || !o.out.trim())) put('socks_fw', so.port);
+        }
+      }
       return r;
     },
     async mtg(on) { const r = await agent('mtg ' + (on ? 'on' : 'off')); return r.code === 0 ? { ok: true } : { ok: false, error: r.out || 'Не получилось' } },

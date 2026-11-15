@@ -59,7 +59,9 @@ export function scan(dir = '/etc/nginx') {
       // 443 по IPv4 или уже наши сокеты (повторная установка «рядом с сайтами»)
       const l443 = listens.filter((p) => is443v4(p[0]) || p[0] === `unix:${SOCK_H1}`);
       if (!l443.length) continue;
-      const names = (directive(b.body, 'server_name') || '').split(/\s+/).filter((n) => n && n !== '_');
+      const names = (directive(b.body, 'server_name') || '').split(/\s+/)
+        // только имена сайтов: без «_», пустых «""» и адресов вроде 179.254.109.198 или [2a12::2]
+        .filter((n) => /^[A-Za-z0-9*][A-Za-z0-9.*-]*$/.test(n) && /[A-Za-z]/.test(n));
       const cert = directive(b.body, 'ssl_certificate')?.replace(/^["']|["']$/g, '');
       const key = directive(b.body, 'ssl_certificate_key')?.replace(/^["']|["']$/g, '');
       sites.push({ file, names, cert, key, quic: l443.some((p) => p.includes('quic')), addrs: l443.map((p) => p[0]) });

@@ -75,6 +75,11 @@ case "$cmd" in
     if command -v ufw >/dev/null && ufw status 2>/dev/null | grep -q '^Status: active'; then ufw allow "$a1/$a2" 2>&1 | tail -1
     elif command -v firewall-cmd >/dev/null && firewall-cmd --state >/dev/null 2>&1; then firewall-cmd -q --permanent --add-port="$a1/$a2" && firewall-cmd -q --reload; fi
     fin 0 ;;
+  fw-close)   # закрыть порт, открытый fw-open (только правило allow порт/протокол)
+    num "$a1" && [[ "$a2" =~ ^(tcp|udp)$ ]] || fin 2
+    if command -v ufw >/dev/null && ufw status 2>/dev/null | grep -q '^Status: active'; then ufw delete allow "$a1/$a2" 2>&1 | tail -1
+    elif command -v firewall-cmd >/dev/null && firewall-cmd --state >/dev/null 2>&1; then firewall-cmd -q --permanent --remove-port="$a1/$a2" && firewall-cmd -q --reload; fi
+    fin 0 ;;
   port-free)   # свободен ли порт (для SOCKS)
     num "$a1" || fin 2
     ss -Hltn "sport = :$a1" 2>/dev/null | grep -q . && { ss -Hltnp "sport = :$a1" | head -1; fin 1; } || fin 0 ;;

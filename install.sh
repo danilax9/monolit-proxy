@@ -106,7 +106,12 @@ restore_before() {
   if [ "$ACTION" = uninstall ] && [ "${MP_OWN_XRAY:-}" = 1 ]; then
     # Xray ставил monolit: до установки его не было — убираем официальным установщиком (конфиг сохранён выше)
     bash -c "$(curl -fsSL https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ remove --purge >>"$LOG" 2>&1 && ok "Xray убран (его ставил monolit)" || { systemctl disable --now xray >>"$LOG" 2>&1; warn "Xray не удалился, остановлен"; }
-  elif [ -n "$xb" ] && [ -f "$xb" ]; then cp "$xb" "$XRAY_CONFIG"; systemctl restart xray 2>/dev/null || true; ok "Конфиг Xray как до установки"; fi
+  elif [ -n "$xb" ] && [ -f "$xb" ]; then
+    # сначала убрать свою настройку юнита: прежний Xray мог работать от своего пользователя, со своими правами на файлы
+    cp "$xb" "$XRAY_CONFIG"; rm -f /etc/systemd/system/xray.service.d/monolit.conf; systemctl daemon-reload
+    systemctl reset-failed xray 2>/dev/null || true; systemctl restart xray 2>/dev/null || true; sleep 2
+    systemctl is-active --quiet xray && ok "Конфиг Xray как до установки, Xray работает" || warn "Конфиг Xray вернул, но Xray не запустился: journalctl -u xray"
+  fi
   if [ -n "$nb" ] && [ -f "$nb" ] && has_nginx; then
     rm -f /etc/nginx/monolit.conf /etc/nginx/conf.d/monolit-vpn.conf
     tar xzf "$nb" -C /
@@ -197,11 +202,13 @@ replace_autoxray() {
   fi
   # uninstall вернёт к состоянию autoXRAY
   MP_BACKUP_XRAY="${MP_BACKUP_XRAY:-$RB_XRAY}"; MP_BACKUP_NGINX="${MP_BACKUP_NGINX:-${RB_NGINX:-}}"
-  if [ -z "$CERT" ] && [ -s /var/lib/xray/cert/fullchain.pem ] && [ -s /var/lib/xray/cert/privkey.pem ]; then
-    CERT=/var/lib/xray/cert/fullchain.pem KEY=/var/lib/xray/cert/privkey.pem; ok "Сертификат autoXRAY оставляю, его продлевает acme.sh"
-  fi
   READY=0; MP_MODE=""; MP_APPLY_SIG=""
   [ -z "$DOMAIN" ] && DOMAIN=$(grep -oE '"serverName"\s*:\s*"[^"]+"' "$RB_XRAY" | head -1 | sed -E 's/.*"([^"]+)"$/\1/' || true)
+  # сертификат прежнего Xray берём, только если он выпущен на этот домен (на сервере их может быть несколько)
+  if [ -z "$CERT" ] && [ -n "$DOMAIN" ] && [ -s /var/lib/xray/cert/fullchain.pem ] && [ -s /var/lib/xray/cert/privkey.pem ] \
+     && openssl x509 -in /var/lib/xray/cert/fullchain.pem -noout -checkhost "$DOMAIN" 2>/dev/null | grep -q 'does match'; then
+    CERT=/var/lib/xray/cert/fullchain.pem KEY=/var/lib/xray/cert/privkey.pem; ok "Сертификат прежнего Xray подходит к $DOMAIN, оставляю"
+  fi
   has_nginx && SITES=$(node_in -v /etc/nginx:/etc/nginx:ro -e MP_NGINX_FILES="$(nginx_files | tr '\n' ':')" monolit-proxy node /app/server/init.mjs scan)
   SITE_NAMES=$(grep -oE '"names":\["[^"]+"' <<<"$SITES" | cut -d'"' -f4 | tr '\n' ' ' || true)
 }
@@ -375,7 +382,11 @@ else
 fi
 NEWFILES=""; for f in /etc/nginx/monolit.conf /etc/nginx/conf.d/monolit-vpn.conf; do [ -e "$f" ] || NEWFILES="$NEWFILES $f"; done
 rollback() {
-  cp "${RB_XRAY:-$BK/xray-config-$STAMP-before-monolit.json}" "$XRAY_CONFIG"; systemctl restart xray 2>/dev/null || true
+  cp "${RB_XRAY:-$BK/xray-config-$STAMP-before-monolit.json}" "$XRAY_CONFIG"
+  # своя настройка юнита, поставленная в этом запуске, — тоже назад: прежний Xray мог работать от своего пользователя
+  [ "${DROPIN_NEW:-0}" = 1 ] && rm -f /etc/systemd/system/xray.service.d/monolit.conf
+  systemctl daemon-reload; systemctl reset-failed xray 2>/dev/null || true; systemctl restart xray 2>/dev/null || true
+  sleep 2; systemctl is-active --quiet xray || warn "Прежний Xray не запустился после отката: journalctl -u xray"
   if has_nginx; then rm -f $NEWFILES; tar xzf "${RB_NGINX:-$BK/nginx-$STAMP-before-monolit.tgz}" -C /; nginx -t >>"$LOG" 2>&1 && systemctl restart nginx; fi
   die "$1. Вернул Xray и nginx как было"
 }
@@ -420,8 +431,11 @@ if [ "$NEED_APPLY" = 1 ]; then
   nginx -t >>"$LOG" 2>&1 || rollback "nginx не принял правку"
   ok "Конфиги собраны и проверены"
 
-  # Xray читает сертификаты сайтов и Let's Encrypt (они только для root)
-  mkdir -p /etc/systemd/system/xray.service.d; printf '[Service]\nUser=root\n' > /etc/systemd/system/xray.service.d/monolit.conf
+  # Xray читает сертификаты сайтов и Let's Encrypt (они только для root). Юнит XTLS урезает права root:
+  # без CAP_DAC_READ_SEARCH он не прочтёт ключ, принадлежащий другому пользователю (например, xray)
+  DU=/etc/systemd/system/xray.service.d/monolit.conf; [ -f "$DU" ] || DROPIN_NEW=1
+  CAPS="CAP_NET_ADMIN CAP_NET_BIND_SERVICE CAP_NET_RAW CAP_DAC_READ_SEARCH"
+  mkdir -p "${DU%/*}"; printf '[Service]\nUser=root\nCapabilityBoundingSet=%s\nAmbientCapabilities=%s\n' "$CAPS" "$CAPS" > "$DU"
   systemctl daemon-reload
   # Сначала nginx отпускает 443, потом Xray его занимает. ip2: с 0.0.0.0:443 на IP1:443 nginx уходит только перезапуском
   if [ "$MODE" = ip2 ]; then systemctl restart nginx; else systemctl reload nginx; fi
@@ -493,6 +507,7 @@ MP_APPLY_SIG="${MP_APPLY_SIG:-}"
 MP_BACKUP_XRAY=$MP_BACKUP_XRAY
 MP_BACKUP_NGINX=$MP_BACKUP_NGINX
 MP_OWN_XRAY=${MP_OWN_XRAY:-}
+MP_FIREWALL=$FW
 EOF
 chmod 600 "$ENVF"; [ -f "$DATA/warp.json" ] && chmod 600 "$DATA/warp.json"
 
