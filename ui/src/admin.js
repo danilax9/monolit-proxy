@@ -11,9 +11,9 @@
 
   // ---------- форматирование ----------
   const bytes = (b) => {
-    if (b < 1024 ** 2) return NF.format(Math.round(b / 1024)) + ' КБ'
-    if (b < GB) return NF.format(Math.round(b / 1024 ** 2)) + ' МБ'
-    return NF1.format(b / GB) + ' ГБ'
+    if (b < 1024 ** 2) return NF.format(Math.round(b / 1024)) + ' КБ'
+    if (b < GB) return NF.format(Math.round(b / 1024 ** 2)) + ' МБ'
+    return NF1.format(b / GB) + ' ГБ'
   }
   const gbOf = (b) => b ? NF1.format(b / GB).replace(/\s/g, '') : ''
   const date = (t) => { const d = new Date(t * 1000); return (d.getFullYear() === new Date().getFullYear() ? DF : DFY).format(d) }
@@ -130,7 +130,7 @@
 
   // ---------- графики трафика ----------
   // Система рисует график один раз из data-атрибутов: при новых данных ставим новый узел, если цифры поменялись
-  function drawChart(box, days, title) {
+  function drawChart(box, days, title, h = 160) {
     const vals = days.map((d) => d.up + d.down), max = Math.max(0, ...vals)
     const key = days.map((d) => d.day + ':' + (d.up + d.down)).join(',')
     if (box._key === key) return
@@ -138,10 +138,11 @@
     if (!max) { box.innerHTML = '<p class="mp-note mp-chart-empty">За 30 дней трафика не было</p>'; return }
     const mb = max < GB, k = mb ? 1024 ** 2 : GB
     const el = document.createElement('div')
-    el.className = 'chart'; el.dataset.type = 'bar'; el.dataset.h = '160'; el.dataset.unit = mb ? ' МБ' : ' ГБ'; el.setAttribute('aria-label', title)
+    el.className = 'chart'; el.dataset.type = 'bar'; el.dataset.h = String(h); el.dataset.unit = mb ? ' МБ' : ' ГБ'; el.setAttribute('aria-label', title)
     el.dataset.values = vals.map((v) => mb ? Math.round(v / k) : Math.round(v / k * 10) / 10).join(',')
     el.dataset.labels = days.map((d) => dayLabel(d.day)).join(',')
-    box.replaceChildren(el); window.initData?.(box)
+    const cap = document.createElement('p'); cap.className = 'mp-note mp-chart-unit'; cap.textContent = mb ? 'МБ в день' : 'ГБ в день'
+    box.replaceChildren(cap, el); window.initData?.(box)
   }
   async function loadTotal() {
     try {
@@ -150,7 +151,7 @@
       $('mp-tr-card').hidden = !S.users.length
       $('mp-tr-sum').textContent = bytes(sum)
       $('mp-tr-tz').textContent = r.tz && r.tz !== Intl.DateTimeFormat().resolvedOptions().timeZone ? 'Дни по времени сервера, ' + r.tz : ''
-      drawChart($('mp-tr-chart'), r.days, 'Трафик по дням')
+      drawChart($('mp-tr-chart'), r.days, 'Трафик по дням', 120)
     } catch (e) {}
   }
 
@@ -412,7 +413,8 @@
     sForm.fp.value = s.fp; sForm.fp.dispatchEvent(new Event('change'))
     $('mp-kinds').innerHTML = KINDS.map(([k, n, h]) => `<label class="choice"><input type="checkbox" class="check" value="${k}" ${on.includes(k) && ib[k] ? 'checked' : ''} ${ib[k] ? '' : 'disabled'}><span>${n}<small>${ib[k] ? h : 'на этом сервере нет такого входа Xray'}</small></span></label>`).join('')
   }
-  document.querySelectorAll('[data-open="mp-set"]').forEach((b) => b.addEventListener('click', (e) => { e.preventDefault(); fillSet(); fillUpd() }))
+  document.querySelectorAll('[data-open="mp-set"]').forEach((b) => b.addEventListener('click', (e) => { e.preventDefault(); fillSet() }))
+  document.querySelectorAll('[data-open="mp-mnt"]').forEach((b) => b.addEventListener('click', (e) => { e.preventDefault(); fillUpd() }))
 
   // ---------- обновление monolit из релизов GitHub ----------
   let updPoll = 0
@@ -517,6 +519,8 @@
     $('mp-login').hidden = true; $('mp-app').hidden = false
     paint(); loadTotal()
   }
+  // Шторки и окна открываются сверху, а не там, где их прокрутили в прошлый раз
+  document.querySelectorAll('dialog').forEach((d) => new MutationObserver(() => { if (d.open) d.querySelectorAll('.sheet-body, .dialog-main').forEach((b) => { b.scrollTop = 0 }) }).observe(d, { attributes: true, attributeFilter: ['open'] }))
   if (DEMO) S = demoState()
   load().catch(fail)
   setInterval(() => { if (!document.hidden && !$('mp-app').hidden && !DEMO) api('GET', 'api/state').then((s) => { S = s; paint(); loadTotal(); if (openId) api('GET', 'api/traffic?days=30&user=' + openId).then((r) => openId && drawChart($('mp-d-chart'), r.days, 'Трафик по дням')).catch(() => {}) }).catch(() => {}) }, 60000)

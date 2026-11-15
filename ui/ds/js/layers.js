@@ -141,8 +141,9 @@
     // узкий контейнер — свёрнуто, пока человек сам не развернул
     // сразу, до наблюдателя: иначе на телефоне меню сначала рисуется раскрытым и сворачивается анимацией
     if (s.parentElement) {
-      narrow = s.parentElement.clientWidth < 560; set(narrow);
-      new ResizeObserver(([e]) => { const n = e.contentRect.width < 560; if (n !== narrow) { narrow = n; user = false } if (!user) set(narrow); else set(s.classList.contains('collapsed')) }).observe(s.parentElement);
+      const lim = +s.dataset.narrow || 560;   // data-narrow — свой порог, если содержимому нужно больше места
+      narrow = s.parentElement.clientWidth < lim; set(narrow);
+      new ResizeObserver(([e]) => { const n = e.contentRect.width < lim; if (n !== narrow) { narrow = n; user = false } if (!user) set(narrow); else set(s.classList.contains('collapsed')) }).observe(s.parentElement);
     }
     // поверх содержимого: закрывается нажатием мимо, выбором пункта и Esc
     const shut = () => { if (s.classList.contains('over')) set(true) };

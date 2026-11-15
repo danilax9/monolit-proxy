@@ -23,7 +23,7 @@
       warp: { on: true, registered: true, plus: true, account: 'free' }, proto: { vision: true, hy2: true, xhttp: true, hy2_known: true, xhttp_known: true },
       socks: { on: false, port: 1080, user: 'u7k2pq', pass: 'Zr8vX2mQp4Lk' }, mtg: { port: 8443, link: 'tg://proxy?server=vpn.example.ru&port=8443&secret=ee1fc7b3' },
       history: [{ id: 3, at: Date.now() / 1000 - 300, note: 'Маршрут добавлен' }, { id: 2, at: Date.now() / 1000 - 7200, note: 'WARP включён' }, { id: 1, at: Date.now() / 1000 - 90000, note: 'Протоколы' }] },
-    ST: { agent: true, xray: 'active', nginx: 'active', version: '26.11.9', since: Date.now() / 1000 - 3 * 86400, mem: 41 * 1048576, cert_end: Date.now() / 1000 + 61 * 86400, mtg: 'running', load: '0.14 0.11 0.08' },
+    ST: { agent: true, xray: 'active', nginx: 'active', version: '26.11.9', since: Date.now() / 1000 - 3 * 86400, mem: 41 * 1048576, cert_end: Date.now() / 1000 + 61 * 86400, mtg: 'running', load: '0.14 0.11 0.08', uptime: 12 * 86400 },
     P: [{ id: 'ai', name: 'Нейросети через WARP', to: 'warp', values: ['openai.com'] }, { id: 'ads', name: 'Реклама в блок', to: 'block', values: [] }, { id: 'torrent', name: 'Торренты в блок', to: 'block', values: ['bittorrent'] }],
   }
   async function demoApi(method, path, body) {
@@ -100,6 +100,13 @@
     $('mp-srv-badge').classList.toggle('badge-success', up); $('mp-srv-badge').classList.toggle('badge-danger', !up)
     $('mp-srv-st').textContent = up ? 'Xray работает' : 'Xray не работает'
     $('mp-srv-info').textContent = [ST.version, up && ST.since ? dur(now - ST.since) + ' без перезапуска' : ''].filter(Boolean).join(', ')
+    const mem = Number(ST.mem), load = String(ST.load || '').split(' ')[0]
+    $('mp-srv-kv').innerHTML = [
+      ST.cert_end ? ['Сертификат до', new Date(ST.cert_end * 1000).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' }).replace(' г.', '')] : null,
+      mem ? ['Память Xray', Math.round(mem / 1048576) + ' МБ'] : null,
+      load ? ['Нагрузка', load.replace('.', ',')] : null,
+      ST.uptime ? ['Сервер работает', dur(Number(ST.uptime))] : null,
+    ].filter(Boolean).map(([k, v]) => `<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join('')
     $('mp-srv-nginx').hidden = ST.nginx === 'active'
     $('mp-srv-cert').hidden = left === null || left >= 14
     if (left !== null && left < 14) $('mp-srv-cert-t').textContent = left <= 0 ? 'Сертификат закончился' : `Сертификат закончится через ${left} ${plural(left, 'день', 'дня', 'дней')}`
@@ -356,6 +363,7 @@
     const s = M.socks
     if (document.activeElement?.form !== sForm) { sForm.on.checked = s.on; sForm.port.value = s.port; sForm.user.value = s.user; sForm.pass.value = s.pass }
     $('mp-socks-cf').hidden = !s.on
+    if (document.activeElement?.form !== sForm) $('mp-socks-f').hidden = !s.on
     if (s.on) window.mpAdmin.setCopy($('mp-socks-url'), $('mp-socks-copy'), socksUrl())
     $('mp-mtg').hidden = !M.managed || !M.mtg
     if (M.mtg) { $('mp-mtg-on').checked = ST?.mtg === 'running'; window.mpAdmin.setCopy($('mp-mtg-url'), $('mp-mtg-copy'), M.mtg.link) }
@@ -365,6 +373,8 @@
     try { take(await run('PATCH', 'api/proto', { [k]: on })); paintAll(); toast({ type: 'success', title: `${k === 'hy2' ? 'Hysteria2' : 'XHTTP'} ${on ? 'включён' : 'выключен'}` }) }
     catch (err) { e.target.checked = !on; fail(err) } finally { e.target.disabled = false }
   })
+  // поля нужны только включённому SOCKS5
+  sForm.on.addEventListener('change', () => { $('mp-socks-f').hidden = !sForm.on.checked; if (!sForm.on.checked) $('mp-socks-cf').hidden = true })
   sForm.addEventListener('submit', (e) => {
     e.preventDefault()
     const port = Number(sForm.port.value)
@@ -386,7 +396,7 @@
   function paintHist() {
     const h = M.history || []
     hl.innerHTML = h.map((x, i) => `<li data-id="${x.id}"><span class="tl-mark${i === 0 ? ' ok' : ''}">${icon('history')}</span><div class="tl-body"><p><b>${esc(x.note)}</b></p><time>${DT.format(new Date(x.at * 1000))}</time>
-      <div class="btn-row mp-hist-acts"><button class="btn btn-ghost btn-sm" type="button" data-show>${icon('eye')}Конфиг до изменения</button><button class="btn btn-secondary btn-sm" type="button" data-back>${icon('undo-2')}Вернуть как было до него</button></div></div></li>`).join('')
+      <div class="btn-row mp-hist-acts"><button class="btn btn-ghost btn-sm" type="button" data-show>${icon('eye')}Конфиг</button><button class="btn btn-secondary btn-sm" type="button" data-back>${icon('undo-2')}Вернуть как было</button></div></div></li>`).join('')
     icons(hl)
     hl.hidden = !h.length; $('mp-hist-empty').hidden = !!h.length
   }

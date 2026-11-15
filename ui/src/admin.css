@@ -47,7 +47,7 @@ h1, h2, h3, h4, p { margin: 0 }
 /* Таблица: строку нажимают целиком, на телефоне — карточки */
 .mp-table tbody tr { cursor: pointer; outline: 2px solid transparent; outline-offset: -2px; transition: outline-color var(--dur-focus) var(--ease-out) }
 .mp-table tbody tr:focus-visible { outline-color: var(--focus) }
-@media (min-width: 641px) { .mp-table tbody :is(th, td) { height: auto; padding-top: var(--sp-3); padding-bottom: var(--sp-3) } }
+@container mplist (min-width: 841px) { .mp-table tbody :is(th, td) { height: auto; padding-top: var(--sp-3); padding-bottom: var(--sp-3) } }
 .mp-who { display: block; color: var(--text); font-weight: var(--w-medium) }
 .mp-what { display: block; margin-top: 2px; color: var(--text-secondary); font-size: var(--fs-sm); line-height: var(--lh-sm); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 320px }
 .mp-m { display: none }
@@ -55,10 +55,16 @@ h1, h2, h3, h4, p { margin: 0 }
 .mp-use { display: grid; gap: 6px; min-width: 140px }
 .mp-use span { white-space: nowrap }
 .mp-use .progress { width: 100% }
-.mp-list { transition: opacity var(--dur-swap-in) var(--ease-out) }
+.mp-list { container: mplist / inline-size; transition: opacity var(--dur-swap-in) var(--ease-out) }
 .mp-list.out { opacity: 0; transition-duration: var(--dur-swap-out) }
 .mp-foot { padding: var(--sp-4) 0 }
-@media (max-width: 640px) {
+/* Карточки — когда пяти колонкам не хватает ширины списка (меню раскрыто, планшет, телефон), а не по ширине экрана.
+   Раскладка стопки системы (.table-stack) включается только на телефоне — здесь её основа повторена для контейнера */
+@container mplist (max-width: 840px) {
+  .table-wrap:has(> .mp-table) { padding: 0; border-radius: 0; background: none; box-shadow: none; overflow: visible }
+  .mp-table { display: block }
+  .mp-table tr { display: grid; grid-template-columns: minmax(0, 1fr) }
+  .mp-table :is(th, td) { height: auto; padding: 0; border-radius: 0; white-space: normal }
   .mp-table { --cols: 1; --stack-top: 0px }
   .mp-table thead { display: none }   /* на телефоне видна одна колонка — трафик, подпись над ней не нужна */
   .mp-table tbody td { display: none }   /* всё нужное собрано в первой ячейке */
@@ -81,6 +87,8 @@ h1, h2, h3, h4, p { margin: 0 }
   .mp-m .progress { grid-row: 3; grid-column: 1 / -1; width: 100%; margin-top: var(--sp-3) }
   .mp-table tbody tr:has(.is-off) :is(.mp-who, .mp-m > *) { opacity: .55 }
 }
+/* планшет: карточки в две колонки, чтобы не растягивать строку на всю ширину */
+@container mplist (min-width: 560px) and (max-width: 840px) { .mp-table tbody { grid-template-columns: repeat(2, minmax(0, 1fr)) } }
 
 /* Окна и шторки */
 .mp-form { display: grid; gap: var(--sp-4) }
@@ -163,3 +171,19 @@ button.alist-row { width: 100%; border: 0; background: none; font: inherit; colo
 .mp-up-new { display: grid; gap: var(--sp-1) }
 .mp-up-notes { white-space: pre-wrap; max-height: 160px; overflow: auto }
 @media (max-width: 640px) { .mp-chart-card { display: none } }   /* на телефоне главное — список, график есть в карточке человека */
+
+/* Шторки разделов шире системных 420: две кнопки действий помещаются в ряд, поля SOCKS5 не обрезаются */
+.sheet-side { width: min(480px, 100vw) }
+/* Общий график — компактный: итог в строке заголовка, высота 120, чтобы список начинался на первом экране */
+.mp-chart-card { gap: var(--sp-2) }
+.mp-tr-h { display: flex; align-items: baseline; gap: var(--sp-3); flex-wrap: wrap }
+.mp-tr-sum { font-size: var(--fs-lg); line-height: var(--lh-lg); font-weight: var(--w-semibold); font-variant-numeric: tabular-nums }
+.mp-chart-card .mp-chart { min-height: 120px }
+.mp-chart-unit { font-size: var(--fs-xs); line-height: var(--lh-xs) }
+/* Телефон: поиск на всю ширину, «Добавить» — квадратная кнопка с плюсом */
+@media (max-width: 640px) {
+  .mp-add-tx { display: none }
+  .mp-add-btn { aspect-ratio: 1; padding: 0; justify-content: center }
+}
+/* «Удалить все» — в конце, подальше от правил */
+.mp-rt-foot .mp-danger { margin-left: auto }

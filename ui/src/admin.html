@@ -50,7 +50,7 @@
 </main>
 
 <div class="app-shell" id="mp-app" hidden>
-<aside class="side" aria-label="Меню monolit proxy">
+<aside class="side" data-narrow="1180" aria-label="Меню monolit proxy">
   <div class="side-head">
     <span class="side-ws mp-logo"><svg><use href="#mp-mark"/></svg><span class="side-tx mp-wm">monolit proxy</span></span>
     <button class="icon-btn icon-btn-sm side-toggle" type="button" data-side-toggle aria-label="Свернуть меню"><i data-lucide="panel-left"></i></button>
@@ -63,6 +63,7 @@
     <a class="side-item" href="#" data-open="mp-proto"><i data-lucide="network"></i><span class="side-tx">Протоколы</span></a>
     <a class="side-item" href="#" data-open="mp-hist"><i data-lucide="history"></i><span class="side-tx">История</span></a>
     <a class="side-item" href="#" data-open="mp-tpl"><i data-lucide="file-code"></i><span class="side-tx">Шаблон autoXRAY</span></a>
+    <a class="side-item" href="#" data-open="mp-mnt"><i data-lucide="wrench"></i><span class="side-tx">Обслуживание</span></a>
     <a class="side-item" href="#" data-open="mp-set"><i data-lucide="settings"></i><span class="side-tx">Настройки</span></a>
   </nav>
   <div class="side-foot"><span class="avatar" data-hue="1" id="mp-acc-av" aria-hidden="true">A</span><span class="side-tx mp-acc"><b id="mp-acc-login">admin</b><span id="mp-server-foot">Сервер</span></span>
@@ -85,7 +86,7 @@
   </div>
 
   <section class="card mp-chart-card" id="mp-tr-card" hidden aria-label="Трафик по дням">
-    <div class="chart-head"><div><h4>Трафик за 30 дней</h4><div class="stat-num" id="mp-tr-sum">0</div></div><span class="mp-note" id="mp-tr-tz"></span></div>
+    <div class="chart-head"><div class="mp-tr-h"><h4>Трафик за 30 дней</h4><b class="mp-tr-sum" id="mp-tr-sum">0</b></div><span class="mp-note" id="mp-tr-tz"></span></div>
     <div class="mp-chart" id="mp-tr-chart"></div>
   </section>
 
@@ -93,7 +94,7 @@
     <span class="input-wrap search"><i data-lucide="search"></i>
       <input class="input" type="search" id="mp-search" placeholder="Поиск" data-hotkey="/" aria-label="Поиск" autocomplete="off">
       <span class="trail"><span class="kbd">/</span><button type="button" class="icon-btn icon-btn-sm clear" aria-label="Очистить"><i data-lucide="x"></i></button></span></span>
-    <button class="btn btn-primary mp-add-btn" type="button" data-open="mp-add"><i data-lucide="plus"></i>Добавить</button>
+    <button class="btn btn-primary mp-add-btn" type="button" data-open="mp-add" aria-label="Добавить"><i data-lucide="plus"></i><span class="mp-add-tx">Добавить</span></button>
   </div>
   <div class="mp-list" id="mp-list">
     <div class="table-wrap"><table class="table table-stack mp-table">
@@ -231,7 +232,19 @@
       <label class="field"><span class="label">Новый пароль <span class="opt">не меньше 8 символов</span></span><input class="input" type="password" name="password" autocomplete="new-password"></label>
     </div>
     <div class="mp-section">
-      <span class="t-label">Обновление monolit</span>
+      <span class="t-label">Оформление</span>
+      <div class="mp-theme"><span>Тема</span><div class="tseg" role="group" aria-label="Тема"><button type="button" class="tseg-b" role="radio" data-theme-v="light" aria-label="Светлая"><i data-lucide="sun"></i></button><button type="button" class="tseg-b" role="radio" data-theme-v="dark" aria-label="Тёмная"><i data-lucide="moon"></i></button><button type="button" class="tseg-b" role="radio" data-theme-v="system" aria-label="Как в системе"><i data-lucide="monitor"></i></button></div></div>
+    </div>
+  </form>
+  <div class="sheet-foot"><button class="btn btn-primary" type="submit" form="mp-set-form"><span>Сохранить</span></button></div>
+</dialog>
+
+<!-- Обслуживание: обновление и бэкап срабатывают сразу, без «Сохранить» -->
+<dialog class="sheet sheet-side" id="mp-mnt" aria-labelledby="mp-mnt-t">
+  <div class="sheet-head"><h2 id="mp-mnt-t">Обслуживание</h2><button class="icon-btn icon-btn-sm" type="button" data-close aria-label="Закрыть"><i data-lucide="x"></i></button></div>
+  <div class="sheet-body">
+    <div class="mp-section">
+      <span class="t-label">Обновление</span>
       <dl class="mp-kv" id="mp-up-kv"></dl>
       <div class="alert alert-danger" id="mp-up-fail" hidden><i data-lucide="circle-alert"></i><div><b>Обновление не встало</b><span id="mp-up-fail-t"></span></div></div>
       <div class="mp-up-new" id="mp-up-new" hidden><b id="mp-up-new-t"></b><p class="mp-note mp-up-notes" id="mp-up-notes"></p></div>
@@ -246,12 +259,7 @@
       <label class="dz" data-max="64" data-accept=".json,application/json" tabindex="0" id="mp-bk-dz"><input type="file">
         <span class="dz-ic"><i data-lucide="upload"></i></span><span><b>Восстановить: перетащите файл</b> или <u>выберите</u></span><span>monolit-….json, заменит всё на этом сервере</span></label>
     </div>
-    <div class="mp-section">
-      <span class="t-label">Оформление</span>
-      <div class="mp-theme"><span>Тема</span><div class="tseg" role="group" aria-label="Тема"><button type="button" class="tseg-b" role="radio" data-theme-v="light" aria-label="Светлая"><i data-lucide="sun"></i></button><button type="button" class="tseg-b" role="radio" data-theme-v="dark" aria-label="Тёмная"><i data-lucide="moon"></i></button><button type="button" class="tseg-b" role="radio" data-theme-v="system" aria-label="Как в системе"><i data-lucide="monitor"></i></button></div></div>
-    </div>
-  </form>
-  <div class="sheet-foot"><button class="btn btn-primary" type="submit" form="mp-set-form"><span>Сохранить</span></button></div>
+  </div>
 </dialog>
 
 <!-- Сервер -->
@@ -261,6 +269,7 @@
     <div class="alert alert-danger mp-alert" id="mp-srv-noagent" hidden><i data-lucide="circle-alert"></i><div><b>Помощник на сервере не отвечает</b><span id="mp-srv-noagent-t"></span></div></div>
     <div class="mp-section" id="mp-srv-state">
       <div class="mp-srv-line"><span class="badge badge-success" id="mp-srv-badge"><span class="dot"></span><span id="mp-srv-st">Xray работает</span></span><span class="mp-note" id="mp-srv-info"></span></div>
+      <dl class="mp-kv" id="mp-srv-kv"></dl>
       <div class="alert alert-danger" id="mp-srv-nginx" hidden><i data-lucide="circle-alert"></i><div><b>nginx не работает</b><span>Админка и страницы подписок могут не открываться. Попробуйте «Перечитать настройки nginx» или посмотрите журнал</span></div></div>
       <div class="alert alert-warning" id="mp-srv-cert" hidden><i data-lucide="triangle-alert"></i><div><b id="mp-srv-cert-t">Сертификат скоро закончится</b><span>Нажмите «Продлить сертификат». Если не продлится, приложения перестанут подключаться</span></div></div>
     </div>
@@ -303,10 +312,10 @@
       </div>
     </div>
     <div class="mp-section mp-managed">
-      <div class="mp-rt-head"><span class="t-label">Правила</span><button class="btn btn-ghost btn-sm mp-danger" type="button" id="mp-rt-clear"><span>Очистить все</span></button></div>
+      <span class="t-label">Правила</span>
       <div class="alist mp-rts" id="mp-rt-list"></div>
       <div class="state state-dashed" id="mp-rt-empty" hidden><span class="state-ic"><i data-lucide="route"></i></span><h4>Правил нет</h4><p>Весь трафик идёт напрямую с адреса сервера</p></div>
-      <div class="btn-row"><button class="btn btn-primary" type="button" id="mp-rt-add"><i data-lucide="plus"></i>Добавить правило</button></div>
+      <div class="btn-row mp-rt-foot"><button class="btn btn-primary" type="button" id="mp-rt-add"><i data-lucide="plus"></i>Добавить правило</button><button class="btn btn-ghost mp-danger" type="button" id="mp-rt-clear"><i data-lucide="trash-2"></i><span>Удалить все</span></button></div>
     </div>
     <div class="mp-section mp-managed">
       <span class="t-label">Готовые наборы</span>
@@ -364,7 +373,7 @@
     <form class="mp-section mp-managed mp-form" id="mp-socks" novalidate>
       <span class="t-label">SOCKS5</span>
       <label class="choice"><input type="checkbox" role="switch" class="switch" name="on"><span>SOCKS5 с паролем<small>Для программ, которые не умеют VLESS</small></span></label>
-      <div class="mp-socks-f">
+      <div class="mp-socks-f" id="mp-socks-f">
         <label class="field"><span class="label">Порт</span><input class="input" name="port" inputmode="numeric" autocomplete="off"></label>
         <label class="field"><span class="label">Логин</span><input class="input" name="user" autocomplete="off" spellcheck="false"></label>
         <label class="field"><span class="label">Пароль</span><input class="input" name="pass" autocomplete="off" spellcheck="false"></label>
