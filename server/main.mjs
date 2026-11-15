@@ -183,6 +183,7 @@ function authed(req) {
 }
 
 const fails = new Map();   // защита входа от перебора
+const LOGIN_TRIES = 5, LOGIN_PAUSE = 600;
 function publicUser(u) {
   const st = userState(u);
   const ips = online[u.id] || {};
@@ -242,11 +243,16 @@ function stateForAdmin() {
 
 async function adminApi(req, res, path) {
   if (path === '/api/login' && req.method === 'POST') {
-    const ip = ipOf(req), f = fails.get(ip) || { n: 0, t: 0 };
-    if (f.n >= 5 && now() - f.t < 600) return json(res, 429, { error: 'Слишком много попыток, подождите 10 минут' });
+    // 5 неудачных попыток — пауза 10 минут от последней. Счёт сбрасывается сам через 10 минут без ошибок
+    const ip = ipOf(req); let f = fails.get(ip) || { n: 0, t: 0 };
+    if (now() - f.t >= LOGIN_PAUSE) f = { n: 0, t: 0 };
+    if (f.n >= LOGIN_TRIES) return json(res, 429, { error: 'Слишком много попыток', wait: LOGIN_PAUSE - (now() - f.t) });
     const { login, password } = await readBody(req);
     const okLogin = String(login || '').trim().toLowerCase() === getSetting(db, 'admin_login').toLowerCase();
-    if (!checkPassword(String(password || ''), getSetting(db, 'admin_hash')) || !okLogin) { fails.set(ip, { n: f.n + 1, t: now() }); return json(res, 401, { error: 'Неверный логин или пароль' }); }
+    if (!checkPassword(String(password || ''), getSetting(db, 'admin_hash')) || !okLogin) {
+      fails.set(ip, { n: f.n + 1, t: now() });
+      return json(res, 401, { error: 'Неверный логин или пароль', left: LOGIN_TRIES - f.n - 1, wait: LOGIN_PAUSE });
+    }
     fails.delete(ip);
     const t = token(24); db.prepare('INSERT INTO sessions (token, expires) VALUES (?, ?)').run(t, now() + 30 * 86400);
     return send(res, 200, '{}', { 'content-type': 'application/json', 'set-cookie': `mp_s=${t}; Path=${ADMIN}; HttpOnly; Secure; SameSite=Strict; Max-Age=${30 * 86400}` });
@@ -309,7 +315,8 @@ async function adminApi(req, res, path) {
       if (!/^[\p{L}\p{N}_.@-]{3,32}$/u.test(l)) return json(res, 400, { error: 'Логин: от 3 до 32 букв, цифр и знаков . _ - @' });
       if (l !== getSetting(db, 'admin_login')) { setSetting(db, 'admin_login', l); db.exec('DELETE FROM sessions'); }
     }
-    if (b.password) { if (String(b.password).length < 8) return json(res, 400, { error: 'Пароль короче 8 символов' }); setSetting(db, 'admin_hash', hashPassword(String(b.password))); db.exec('DELETE FROM sessions'); }
+    if (b.password) { if (String(b.password).length < 8) return json(res, 400, { error: 'Пароль короче 8 символов' });
+      if (String(b.password).trim() !== String(b.password)) return json(res, 400, { error: 'Пароль без пробелов в начале и в конце' }); setSetting(db, 'admin_hash', hashPassword(String(b.password))); db.exec('DELETE FROM sessions'); }
     await queueSync({ full: true }); return json(res, 200, stateForAdmin());
   }
   // ---------- сервер, маршруты, WARP, протоколы, история ----------

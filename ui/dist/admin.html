@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex, nofollow">
 <title>monolit proxy</title>
 <link rel="icon" href="_/mark.svg" type="image/svg+xml">
-<link rel="stylesheet" href="_/admin.css?v=2963cda6b6">
+<link rel="stylesheet" href="_/admin.css?v=c8464bd891">
 <script>/* Тема: предпочтение light | dark | system.
    Подключать в <head> БЕЗ defer — тема ставится до первой отрисовки, без мигания чужой темы.
    Переключатели: любые кнопки с data-theme-v="light|dark|system" (aria-checked ставится сам).
@@ -129,7 +129,7 @@ const DS_KEY = (k) => (document.documentElement.dataset.store ? document.documen
 })();
 </script>
 <script>document.documentElement.classList.add('js')</script>
-<script src="_/admin.js?v=17e80bb024" defer></script>
+<script src="_/admin.js?v=786e6bfcfe" defer></script>
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="mp-mark" viewBox="0 0 24 24"><rect x="7" y="2" width="10" height="20" rx="2.5" fill="currentColor"/></symbol></svg>
@@ -140,7 +140,7 @@ const DS_KEY = (k) => (document.documentElement.dataset.store ? document.documen
     <span class="mp-logo"><svg><use href="#mp-mark"/></svg><span class="mp-wm">monolit proxy</span></span>
     <label class="field"><span class="label">Логин</span>
       <input class="input" name="login" autocomplete="username" autocapitalize="none" spellcheck="false" required></label>
-    <label class="field"><span class="label">Пароль</span>
+    <label class="field"><span class="label">Пароль <span class="opt mp-caps" id="mp-caps" aria-hidden="true">включён Caps Lock</span></span>
       <input class="input" type="password" name="password" autocomplete="current-password" required></label>
     <button class="btn btn-primary btn-block" type="submit"><span>Войти</span></button>
   </form>

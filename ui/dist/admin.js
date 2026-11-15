@@ -4315,11 +4315,17 @@ var qrcode = function() {
     }
   }
 
+  let demoFails = 0, demoFailAt = 0
   async function demoApi(method, path, body) {
     await new Promise((r) => setTimeout(r, 250))
     const id = Number((/\/users\/(\d+)/.exec(path) || [])[1]), u = S.users.find((x) => x.id === id)
     const fix = (x) => { x.state = stateOf(x); return x }
-    if (path === 'api/login') { if (body.password !== 'demo1234' || body.login !== 'admin') throw new Error('Неверный логин или пароль'); return {} }
+    if (path === 'api/login') {
+      demoFails = Date.now() - demoFailAt > 600e3 ? 0 : demoFails
+      if (demoFails >= 5) throw Object.assign(new Error('Слишком много попыток'), { status: 429, data: { wait: 600 - Math.floor((Date.now() - demoFailAt) / 1000) } })
+      if (body.password !== 'demo1234' || body.login !== 'admin') { demoFails++; demoFailAt = Date.now(); throw Object.assign(new Error('Неверный логин или пароль'), { status: 401, data: { left: 5 - demoFails, wait: 600 } }) }
+      demoFails = 0; return {}
+    }
     if (path === 'api/state') return S
     if (path === 'api/users' && method === 'POST') {
       const nu = { id: Math.max(0, ...S.users.map((x) => x.id)) + 1, name: body.name, note: body.note, token: 'demo' + Date.now().toString(36), used: 0, up: 0, down: 0, limit: body.limit, expire: body.expire, enabled: true, last_active: 0, created: now(), period: body.period, reset_at: body.period ? now() + 30 * 86400 : 0, devices: body.devices, block_until: 0, online: [] }
@@ -4354,7 +4360,7 @@ var qrcode = function() {
     const r = await fetch(path, { method, headers: body ? { 'content-type': raw ? 'application/octet-stream' : 'application/json' } : {}, body: body ? (raw ? body : JSON.stringify(body)) : undefined, credentials: 'same-origin' })
     let j = {}; try { j = await r.json() } catch (e) {}
     if (r.status === 401 && path !== 'api/login') { showLogin(); throw new Error('Нужно войти') }
-    if (!r.ok) throw new Error(j.error || 'Сервер ответил ' + r.status)
+    if (!r.ok) throw Object.assign(new Error(j.error || 'Сервер ответил ' + r.status), { status: r.status, data: j })
     return j
   }
   const fail = (e) => window.toast?.({ type: 'error', title: 'Не получилось', text: e.message })
@@ -4362,15 +4368,46 @@ var qrcode = function() {
 
   // ---------- вход ----------
   function showLogin() { $('mp-app').hidden = true; $('mp-login').hidden = false }
-  $('mp-login-form').addEventListener('submit', (e) => {
+  // Попыток входа 5 за 10 минут. Что заведомо не подойдёт, на сервер не шлём: попытка не тратится
+  const lForm = $('mp-login-form'), lBtn = lForm.querySelector('button[type=submit]'), caps = $('mp-caps')
+  const tried = new Set()          // пары логин+пароль, которые сервер уже отклонил
+  let lockUntil = 0, lockTimer = 0
+  const mmss = (s) => Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0')
+  function lock(sec) {
+    lockUntil = Date.now() + sec * 1000; clearInterval(lockTimer)
+    const tick = () => {
+      const left = Math.ceil((lockUntil - Date.now()) / 1000)
+      if (left <= 0) { clearInterval(lockTimer); lockTimer = 0; lBtn.disabled = false; window.fieldError?.(lForm.password, ''); return }
+      lBtn.disabled = true; window.fieldError?.(lForm.password, 'Слишком много попыток. Можно снова через ' + mmss(left))
+    }
+    tick(); lockTimer = setInterval(tick, 1000)
+  }
+  const capsOn = (e) => { if (e.getModifierState) caps.classList.toggle('on', e.getModifierState('CapsLock')) }
+  lForm.password.addEventListener('keydown', capsOn); lForm.password.addEventListener('keyup', capsOn)
+  lForm.password.addEventListener('blur', () => caps.classList.remove('on'))
+  lForm.addEventListener('submit', (e) => {
     e.preventDefault()
-    const inp = e.target.password, lg = e.target.login, btn = e.target.querySelector('button[type=submit]')
-    if (!lg.value.trim()) { window.fieldError?.(lg, 'Введите логин'); lg.focus(); return }
+    if (lockUntil > Date.now()) return
+    const inp = lForm.password, lg = lForm.login, login = lg.value.trim(), pw = inp.value
+    const bad = (el, msg) => { window.fieldError?.(el, msg); el.focus() }
+    if (!login) return bad(lg, 'Введите логин')
+    if (!/^[\p{L}\p{N}_.@-]{3,32}$/u.test(login)) return bad(lg, 'Логин: от 3 до 32 букв, цифр и знаков . _ - @')
     window.fieldError?.(lg, '')
-    busy(btn, async () => {
-      try { await api('POST', 'api/login', { login: lg.value.trim(), password: inp.value }); inp.value = ''; window.fieldError?.(inp, ''); await load() }
-      catch (err) { window.fieldError ? window.fieldError(inp, err.message) : alert(err.message) }
-    })
+    if (!pw) return bad(inp, 'Введите пароль')
+    if (pw.length < 8) return bad(inp, 'Пароль не короче 8 символов, проверьте, весь ли он вставился')
+    if (pw.trim() !== pw) return bad(inp, 'В начале или в конце пароля пробел. Скорее всего, он попал при копировании')
+    const key = login.toLowerCase() + '\n' + pw
+    if (tried.has(key)) return bad(inp, 'С этим паролем уже не вышло. Проверьте раскладку и Caps Lock')
+    busy(lBtn, async () => {
+      try { await api('POST', 'api/login', { login, password: pw }); inp.value = ''; tried.clear(); window.fieldError?.(inp, ''); caps.classList.remove('on'); await load() }
+      catch (err) {
+        if (err.status === 429) return lock(err.data?.wait || 600)
+        if (err.status === 401) tried.add(key)
+        const left = err.data?.left
+        window.fieldError?.(inp, err.message + (left > 0 ? '. Осталось попыток: ' + left : ''))
+        if (left === 0) lock(err.data?.wait || 600)
+      }
+    }).finally(() => { if (lockUntil > Date.now()) lBtn.disabled = true })
   })
   $('mp-logout').addEventListener('click', async () => { try { await api('POST', 'api/logout') } catch (e) {} showLogin() })
 
@@ -4732,6 +4769,7 @@ var qrcode = function() {
     e.preventDefault()
     const pw = sForm.password.value
     if (pw && pw.length < 8) { window.fieldError?.(sForm.password, 'Нужно не меньше 8 символов'); return }
+    if (pw && pw.trim() !== pw) { window.fieldError?.(sForm.password, 'Без пробелов в начале и в конце: при входе их легко потерять'); return }
     window.fieldError?.(sForm.password, '')
     const login = sForm.login.value.trim(), relogin = pw || login !== S.settings.login
     if (!/^[\p{L}\p{N}_.@-]{3,32}$/u.test(login)) { window.fieldError?.(sForm.login, 'От 3 до 32 букв, цифр и знаков . _ - @'); return }
