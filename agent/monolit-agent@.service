@@ -9,3 +9,5 @@ StandardOutput=socket
 StandardError=journal
 TimeoutStartSec=0
 RuntimeMaxSec=600
+# systemd по умолчанию глушит SIGPIPE: «… | head» тогда пишет «write error», а с pipefail шаг падает
+IgnoreSIGPIPE=no

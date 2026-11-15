@@ -506,6 +506,10 @@ fi
 step "Запускаю админку"
 NEWPASS=""; [ -f "$DATA/monolit.db" ] || NEWPASS=$(rnd 16 A-Za-z0-9)
 MTG_SEC="${MP_MTG_SECRET:-}"
+# часовой пояс без «… | grep -m1»: grep выходит раньше, и запись в него падает с «Broken pipe»
+TZONE=$(timedatectl show -p Timezone --value 2>/dev/null || true)
+[ -n "$TZONE" ] || TZONE=$(head -1 /etc/timezone 2>/dev/null || true)
+[ -n "$TZONE" ] || TZONE=UTC
 cat > "$ENVF" <<EOF
 MP_DOMAIN=$DOMAIN
 MP_ADMIN_PATH=$MP_ADMIN_PATH
@@ -532,7 +536,7 @@ MP_FIREWALL=$FW
 MP_VERSION=$(cat "$SRC/VERSION" 2>/dev/null || echo 0.0.0)
 MP_SRC=$SRC
 MP_REPO=${MP_REPO:-danilax9/monolit-proxy}
-MP_TZ=$( { timedatectl show -p Timezone --value 2>/dev/null; cat /etc/timezone 2>/dev/null; echo UTC; } | grep -m1 . )
+MP_TZ=$TZONE
 EOF
 chmod 600 "$ENVF"; [ -f "$DATA/warp.json" ] && chmod 600 "$DATA/warp.json"
 

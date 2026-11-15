@@ -79,7 +79,7 @@ case "$cmd" in
     [[ "$a1" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || fin 2
     [ -x /usr/local/lib/monolit/update.sh ] || { echo "Нет update.sh"; fin 1; }
     systemctl list-units --type=service --state=active --no-legend 'monolit-reconf-*' 2>/dev/null | grep -q . && { echo "Сейчас меняется адрес сервера, обновите после"; fin 1; }
-    systemd-run --unit "monolit-update-$(date +%s)" --collect /usr/local/lib/monolit/update.sh "$a1" 2>&1 | tail -1
+    systemd-run --unit "monolit-update-$(date +%s)" --collect -p IgnoreSIGPIPE=no /usr/local/lib/monolit/update.sh "$a1" 2>&1 | tail -1
     fin "${PIPESTATUS[0]}" ;;
   fw-close)   # закрыть порт, открытый fw-open (только правило allow порт/протокол)
     num "$a1" && [[ "$a2" =~ ^(tcp|udp)$ ]] || fin 2
@@ -126,7 +126,7 @@ case "$cmd" in
     [ -x /usr/local/lib/monolit/reconf.sh ] || { echo "Нет reconf.sh"; fin 1; }
     # одновременно с обновлением нельзя: оба запускают install.sh
     systemctl list-units --type=service --state=active --no-legend 'monolit-update-*' 'monolit-reconf-*' 2>/dev/null | grep -q . && { echo "Уже идёт обновление или смена адреса"; fin 1; }
-    systemd-run --unit "monolit-reconf-$(date +%s)" --collect /usr/local/lib/monolit/reconf.sh "$mode" "$domain" "$ip2" "$keep" "$skip" "$drop" 2>&1 | tail -1
+    systemd-run --unit "monolit-reconf-$(date +%s)" --collect -p IgnoreSIGPIPE=no /usr/local/lib/monolit/reconf.sh "$mode" "$domain" "$ip2" "$keep" "$skip" "$drop" 2>&1 | tail -1
     fin "${PIPESTATUS[0]}" ;;
   *) echo "нет такой команды"; fin 2 ;;
 esac
