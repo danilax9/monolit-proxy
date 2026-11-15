@@ -202,3 +202,9 @@ button.alist-row { width: 100%; border: 0; background: none; font: inherit; colo
 /* Таблица: над заголовками и под последней строкой столько же, сколько слева до текста (поле 14 + ячейка 20).
    Бока не трогаем: там поле системы ровное для подсветки строки */
 @container mplist (min-width: 841px) { .table-wrap:has(> .mp-table) { padding-top: calc(var(--sp-3) + var(--sp-2)); padding-bottom: calc(var(--sp-3) + var(--sp-1)) } }
+/* Свёрнутое меню: пункт 40 × 40, чтобы подсветка была кругом, а не овалом 44 × 40 (полоса 60 мягкого стиля → 56) */
+.side { --side-min: 56px }
+/* иконка и аватар — по центру круга (было 14 слева и 10 справа); в раскрытом меню центры остаются на той же вертикали */
+.side-item { padding: 0 12px }
+.side-foot { padding-left: 6px }
+.side-ws.mp-logo { padding-left: 9px }
