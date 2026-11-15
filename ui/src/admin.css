@@ -218,3 +218,23 @@ button.alist-row { width: 100%; border: 0; background: none; font: inherit; colo
 /* Вход: Caps Lock — подсказка в подписи поля, появляется прозрачностью, место под неё не прыгает */
 .label .opt.mp-caps { color: var(--warning-text); opacity: 0; transition: opacity var(--dur-enter) var(--ease-out) }
 .label .opt.mp-caps.on { opacity: 1 }
+
+/* Телефон: окна с формами (.dialog-md, .dialog-lg) — на весь экран. Шапка и кнопки на месте, прокручивается середина.
+   В системе у .dialog overflow: visible (списки выбора не обрезаются), из-за этого длинная форма обрезалась без прокрутки.
+   На телефоне select родной, обрезать нечего. Направление и высота — с базы, display: flex — только у открытого:
+   при закрытии display держится переходом (как .dialog-scroll в системе) */
+@media (max-width: 640px) {
+  .dialog:is(.dialog-md, .dialog-lg) { width: 100vw; max-width: 100vw; height: 100dvh; max-height: 100dvh; margin: 0; border-radius: 0;
+    box-shadow: none; flex-direction: column; overflow: hidden }
+  .dialog:is(.dialog-md, .dialog-lg)[open] { display: flex }
+  /* форма-обёртка внутри окна: столбец, как само окно (ниже, вне @media) */
+  .dialog:is(.dialog-md, .dialog-lg) .dialog-head { flex: none; padding-top: calc(var(--sp-6) + env(safe-area-inset-top)); padding-bottom: var(--sp-4) }
+  .dialog:is(.dialog-md, .dialog-lg) .dialog-main { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding-top: 0; padding-bottom: var(--sp-4) }
+  .dialog:is(.dialog-md, .dialog-lg) .dialog-foot { flex: none; padding-bottom: calc(var(--sp-6) + env(safe-area-inset-bottom)) }
+  .dialog:is(.dialog-md, .dialog-lg) .dialog-foot .btn { flex: 1 }
+  /* короткие окна (подтверждение, QR) остаются по центру, но если не влезли — прокручиваются */
+  .dialog:not(.dialog-md, .dialog-lg) { overflow-y: auto }
+}
+/* Окно с формой-обёрткой (.dialog-scroll > form): шапка, середина и кнопки — детьми формы, она растягивается столбцом.
+   Без этого прокрутка середины .dialog-scroll не работала бы: форма росла бы по содержимому */
+.dialog-scroll > form { display: flex; flex-direction: column; flex: 1; min-height: 0 }

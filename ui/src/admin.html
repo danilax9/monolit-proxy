@@ -112,7 +112,7 @@
 </div>
 
 <!-- Добавить -->
-<dialog class="dialog dialog-md" id="mp-add" aria-labelledby="mp-add-t"><form novalidate id="mp-add-form">
+<dialog class="dialog dialog-md dialog-scroll" id="mp-add" aria-labelledby="mp-add-t"><form novalidate id="mp-add-form">
   <div class="dialog-head"><div><h2 id="mp-add-t">Новый пользователь</h2><p>Одна ссылка, в ней Vision и Hysteria2</p></div>
     <button class="icon-btn icon-btn-sm" type="button" data-close aria-label="Закрыть"><i data-lucide="x"></i></button></div>
   <div class="dialog-main mp-form">
@@ -131,7 +131,7 @@
 </form></dialog>
 
 <!-- Ссылка после создания -->
-<dialog class="dialog dialog-md" id="mp-made" aria-labelledby="mp-made-t">
+<dialog class="dialog dialog-md dialog-scroll" id="mp-made" aria-labelledby="mp-made-t">
   <div class="dialog-head"><div><h2 id="mp-made-t">Ссылка готова</h2><p id="mp-made-p">Отправьте её, по ней откроется страница с инструкцией</p></div>
     <button class="icon-btn icon-btn-sm" type="button" data-close aria-label="Закрыть"><i data-lucide="x"></i></button></div>
   <div class="dialog-main mp-form">
@@ -323,7 +323,7 @@
   </div>
 </dialog>
 
-<dialog class="dialog dialog-md" id="mp-a-dlg" aria-labelledby="mp-ad-t"><form novalidate id="mp-a-form">
+<dialog class="dialog dialog-md dialog-scroll" id="mp-a-dlg" aria-labelledby="mp-ad-t"><form novalidate id="mp-a-form">
   <div class="dialog-head"><div><h2 id="mp-ad-t">Домен и IP</h2><p>Перед сменой сохраним копии настроек. Не поднимется, вернём как было</p></div><button class="icon-btn icon-btn-sm" type="button" data-close aria-label="Закрыть"><i data-lucide="x"></i></button></div>
   <div class="dialog-main mp-form">
     <label class="field"><span class="label">Домен</span><input class="input" name="domain" autocomplete="off" spellcheck="false" autocapitalize="none"><span class="hint" id="mp-a-dns">К нему подключаются приложения, на нём ссылки подписок</span></label>
@@ -335,7 +335,7 @@
   <div class="dialog-foot"><button type="button" class="btn btn-ghost" data-close>Отмена</button><button class="btn btn-primary" type="submit"><span>Применить</span></button></div>
 </form></dialog>
 
-<dialog class="dialog dialog-lg" id="mp-log" aria-labelledby="mp-log-t">
+<dialog class="dialog dialog-lg dialog-scroll" id="mp-log" aria-labelledby="mp-log-t">
   <div class="dialog-head"><div><h2 id="mp-log-t">Журнал Xray</h2><p id="mp-log-p">Последние 100 строк</p></div><button class="icon-btn icon-btn-sm" type="button" data-close aria-label="Закрыть"><i data-lucide="x"></i></button></div>
   <div class="dialog-main"><div class="code mp-log"><div class="code-head"><span class="code-file"><i data-lucide="scroll-text"></i><span id="mp-log-file">journalctl -u xray</span></span><button class="icon-btn icon-btn-sm" type="button" aria-label="Скопировать" id="mp-log-copy" data-copy=""></button></div><pre><code id="mp-log-text"></code></pre></div></div>
 </dialog>
@@ -373,7 +373,7 @@
   </div>
 </dialog>
 
-<dialog class="dialog dialog-md" id="mp-rt-dlg" aria-labelledby="mp-rtd-t"><form novalidate id="mp-rt-form">
+<dialog class="dialog dialog-md dialog-scroll" id="mp-rt-dlg" aria-labelledby="mp-rtd-t"><form novalidate id="mp-rt-form">
   <div class="dialog-head"><div><h2 id="mp-rtd-t">Новое правило</h2><p>Применится сразу после проверки Xray</p></div><button class="icon-btn icon-btn-sm" type="button" data-close aria-label="Закрыть"><i data-lucide="x"></i></button></div>
   <div class="dialog-main mp-form">
     <label class="field"><span class="label">Название <span class="opt">необязательно</span></span><input class="input" name="name" maxlength="40" autocomplete="off" placeholder="Например, Нейросети"></label>
