@@ -25,16 +25,19 @@ export function siteFiles(dir = '/etc/nginx') {
   return [...out];
 }
 
-// Блоки server верхнего уровня файла: [{start, end, body}] (по фигурным скобкам, без учёта строк в кавычках с «{»)
+// Блоки server верхнего уровня файла: [{start, end, body}] (по фигурным скобкам, без учёта строк в кавычках с «{»).
+// «server {» в комментарии (в nginx.conf Ubuntu так закомментирован раздел mail) и незакрытый блок — не блоки
 function serverBlocks(text) {
   const out = [], re = /(^|[\s;}])server\s*\{/g; let m;
   while ((m = re.exec(text))) {
     const start = m.index + m[1].length, open = text.indexOf('{', start); let depth = 0, i = open;
+    if (text.slice(text.lastIndexOf('\n', start - 1) + 1, start).includes('#')) { re.lastIndex = open + 1; continue }
     for (; i < text.length; i++) {
       const c = text[i];
       if (c === '#') { const nl = text.indexOf('\n', i); i = nl < 0 ? text.length : nl; continue }
       if (c === '{') depth++; else if (c === '}' && --depth === 0) break;
     }
+    if (i >= text.length) break;
     out.push({ start, end: i + 1, body: text.slice(open + 1, i) });
     re.lastIndex = i + 1;
   }
