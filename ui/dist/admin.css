@@ -3517,7 +3517,12 @@ h1, h2, h3, h4, p { margin: 0 }
   .mp-m-note { grid-row: 2; grid-column: 1; min-width: 0; color: var(--text-secondary); font-size: var(--fs-sm); white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
   .mp-m-exp { grid-row: 2; grid-column: 2; justify-self: end; color: var(--text-muted); font-size: var(--fs-sm); white-space: nowrap }
   .mp-m-exp.is-expired, .mp-m-exp.is-limit { color: var(--warning) }
-  .mp-m .progress { grid-row: 3; grid-column: 1 / -1; width: 100%; margin-top: var(--sp-3) }
+  /* расход трафика — заливка карточки: слой под текстом, ширина = доля лимита */
+  .mp-table.table tbody tr th { position: relative; overflow: hidden; isolation: isolate }
+  /* на 1px внутри: рамка карточки остаётся видна; левые углы — как у карточки, правые скругляются только у полной */
+  .mp-m::after { content: ""; position: absolute; inset: 1px; z-index: -1; width: calc(var(--p, 0) * (100% - 2px)); border-radius: calc(var(--r-md) - 1px) 0 0 calc(var(--r-md) - 1px); background: color-mix(in oklch, var(--accent-text) 14%, transparent); pointer-events: none }
+  .mp-m.is-full::after { border-radius: calc(var(--r-md) - 1px) }
+  .mp-m.is-warn::after { background: color-mix(in oklch, var(--warning) 16%, transparent) }
   .mp-table tbody tr:has(.is-off) :is(.mp-who, .mp-m > *) { opacity: .55 }
 }
 /* планшет: карточки в две колонки, чтобы не растягивать строку на всю ширину */

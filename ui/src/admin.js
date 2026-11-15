@@ -165,14 +165,14 @@
     const p = u.limit ? Math.min(1, u.used / u.limit) : 0
     return `<div class="mp-use"><span>${usage(u)}</span>${u.limit ? `<div class="progress" role="progressbar" aria-label="Трафик" aria-valuenow="${Math.round(p * 100)}"><i style="--p:${p.toFixed(3)}"></i></div>` : ''}</div>`
   }
-  // Телефон: имя и трафик в первой строке, заметка и срок во второй, полоса во всю ширину.
+  // Телефон и планшет: имя и трафик в первой строке, заметка и срок во второй, расход — заливкой карточки.
   // Статус без плашки: у активной срок серым, иначе вместо срока — состояние цветом
   const mobileState = (u) => u.state === 'active' ? `<span class="mp-m-exp">${left(u)}</span>` : `<span class="mp-m-exp is-${u.state}">${u.state === 'expired' ? left(u) : ST[u.state][0]}</span>`
   const mobileHtml = (u) => {
     const p = u.limit ? Math.min(1, u.used / u.limit) : 0
-    return `<span class="mp-m">${u.note ? `<span class="mp-m-note">${esc(u.note)}</span>` : '<span></span>'}${mobileState(u)}`
-      + `<span class="mp-m-use">${usage(u)}</span>`
-      + (u.limit ? `<span class="progress" aria-hidden="true"><i style="--p:${p.toFixed(3)}"></i></span>` : '') + '</span>'
+    // израсходованное — заливкой самой карточки слева направо; кончился трафик или много устройств — жёлтой
+    return `<span class="mp-m${u.state === 'limit' || u.state === 'devices' ? ' is-warn' : ''}${p >= 0.99 ? ' is-full' : ''}" style="--p:${p.toFixed(3)}">${u.note ? `<span class="mp-m-note">${esc(u.note)}</span>` : '<span></span>'}${mobileState(u)}`
+      + `<span class="mp-m-use">${usage(u)}</span></span>`
   }
   const rowHtml = (u) => `<th scope="row"><span class="mp-who">${esc(u.name)}</span>${u.note ? `<span class="mp-what">${esc(u.note)}</span>` : ''}${mobileHtml(u)}</th>`
     + `<td class="mp-st-col">${badge(u)}</td><td>${useHtml(u)}</td><td class="mp-exp-col"><span class="${u.state === 'expired' ? 'mp-muted' : ''}">${left(u)}</span></td><td class="mp-seen-col"><span class="${u.online?.length ? '' : 'mp-muted'}">${seen(u)}</span></td>`
@@ -267,8 +267,10 @@
     dForm.note.value = u.note || ''
     dForm.limit.value = gbOf(u.limit)
     dForm.period.value = u.period || ''; dForm.period.dispatchEvent(new Event('change'))
-    dForm.devices.value = u.devices || ''
-    window.fieldError?.(dForm.devices, '')
+    // значения не из списка (задано раньше числом) — добавляем пунктом, чтобы не потерялось
+    const dv = String(u.devices || '')
+    if (dv && ![...dForm.devices.options].some((o) => o.value === dv)) dForm.devices.add(new Option(dv, dv))
+    dForm.devices.value = dv; dForm.devices.dispatchEvent(new Event('change'))
     dForm.expire.value = toDateInput(u.expire)
     window.fieldError?.(dForm.limit, '')
   }
@@ -294,18 +296,12 @@
     if (!ok) inp.focus()
     return ok
   }
-  const devOk = (inp) => {
-    const v = inp.value.trim(), ok = !v || (/^\d{1,2}$/.test(v) && Number(v) <= 50)
-    window.fieldError?.(inp, ok ? '' : 'Число от 1 до 50, пусто — без ограничения')
-    if (!ok) inp.focus()
-    return ok
-  }
   const putUser = (u) => { const i = S.users.findIndex((x) => x.id === u.id); if (i >= 0) S.users[i] = u; else S.users.push(u); paint() }
 
   dForm.addEventListener('submit', (e) => {
     e.preventDefault()
     const u = cur(); if (!u) return
-    if (!limitOk(dForm.limit) || !devOk(dForm.devices)) return
+    if (!limitOk(dForm.limit)) return
     busy(document.querySelector('[form="mp-d-form"]'), async () => {
       try {
         const r = await api('PATCH', 'api/users/' + u.id, { name: dForm.name.value, note: dForm.note.value, limit: parseGb(dForm.limit.value), expire: fromDateInput(dForm.expire.value), enabled: dForm.enabled.checked, period: dForm.period.value, devices: Number(dForm.devices.value) || 0 })
@@ -364,12 +360,12 @@
     const name = aForm.name.value.trim()
     if (!name) { window.fieldError?.(aForm.name, 'Напишите, кому подписка'); aForm.name.focus(); return }
     window.fieldError?.(aForm.name, '')
-    if (!limitOk(aForm.limit) || !devOk(aForm.devices)) return
+    if (!limitOk(aForm.limit)) return
     busy(aForm.querySelector('button[type=submit]'), async () => {
       try {
         const r = await api('POST', 'api/users', { name, note: aForm.note.value.trim(), limit: parseGb(aForm.limit.value), period: aForm.period.value, devices: Number(aForm.devices.value) || 0, expire: Number(aForm.days.value) ? now() + Number(aForm.days.value) * 86400 : 0 })
         putUser(r.user)
-        $('mp-add').close(); aForm.reset(); aForm.days.dispatchEvent(new Event('change')); aForm.period.dispatchEvent(new Event('change'))
+        $('mp-add').close(); aForm.reset(); aForm.days.dispatchEvent(new Event('change')); aForm.period.dispatchEvent(new Event('change')); aForm.devices.dispatchEvent(new Event('change'))
         setCopy($('mp-made-url'), $('mp-made-copy'), r.user.url)
         $('mp-made-t').textContent = `Ссылка для «${r.user.name}» готова`
         $('mp-made-p').textContent = 'Отправьте её человеку: по ней откроется страница с инструкцией'

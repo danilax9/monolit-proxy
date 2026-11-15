@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex, nofollow">
 <title>monolit proxy</title>
 <link rel="icon" href="_/mark.svg" type="image/svg+xml">
-<link rel="stylesheet" href="_/admin.css?v=97b61a5018">
+<link rel="stylesheet" href="_/admin.css?v=6d3a1bd36d">
 <script>/* Тема: предпочтение light | dark | system.
    Подключать в <head> БЕЗ defer — тема ставится до первой отрисовки, без мигания чужой темы.
    Переключатели: любые кнопки с data-theme-v="light|dark|system" (aria-checked ставится сам).
@@ -129,7 +129,7 @@ const DS_KEY = (k) => (document.documentElement.dataset.store ? document.documen
 })();
 </script>
 <script>document.documentElement.classList.add('js')</script>
-<script src="_/admin.js?v=8f98621798" defer></script>
+<script src="_/admin.js?v=0f851172c1" defer></script>
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="mp-mark" viewBox="0 0 24 24"><rect x="7" y="2" width="10" height="20" rx="2.5" fill="currentColor"/></symbol></svg>
@@ -216,7 +216,7 @@ const DS_KEY = (k) => (document.documentElement.dataset.store ? document.documen
       <label class="field"><span class="label">Лимит трафика, ГБ</span><input class="input" name="limit" inputmode="decimal" placeholder="Без лимита" autocomplete="off"></label>
       <label class="field"><span class="label">Лимит считать</span><select class="select" name="period"><option value="" selected>За всё время</option><option value="month">Каждый месяц</option></select></label>
     </div>
-    <label class="field"><span class="label">Устройств одновременно</span><input class="input" name="devices" inputmode="numeric" placeholder="Без ограничения" autocomplete="off">
+    <label class="field"><span class="label">Устройств одновременно</span><select class="select" name="devices"><option value="" selected>Без ограничения</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="10">10</option></select>
       <span class="hint">Считаются разные IP. Если их больше, доступ закроется на 10 минут</span></label>
     <label class="field"><span class="label">Заметка <span class="opt">необязательно</span></span><input class="input" name="note" maxlength="200" autocomplete="off"></label>
   </div>
@@ -265,7 +265,7 @@ const DS_KEY = (k) => (document.documentElement.dataset.store ? document.documen
         <label class="field"><span class="label">Лимит трафика, ГБ</span><input class="input" name="limit" inputmode="decimal" placeholder="Без лимита" autocomplete="off"></label>
         <label class="field"><span class="label">Лимит считать</span><select class="select" name="period"><option value="">За всё время</option><option value="month">Каждый месяц</option></select></label>
       </div>
-      <label class="field"><span class="label">Устройств одновременно</span><input class="input" name="devices" inputmode="numeric" placeholder="Без ограничения" autocomplete="off"><span class="hint">Считаются разные IP. Если их больше, доступ закроется на 10 минут</span></label>
+      <label class="field"><span class="label">Устройств одновременно</span><select class="select" name="devices"><option value="" selected>Без ограничения</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="10">10</option></select><span class="hint">Считаются разные IP. Если их больше, доступ закроется на 10 минут</span></label>
       <label class="field"><span class="label">Заметка</span><input class="input" name="note" maxlength="200" autocomplete="off"></label>
     </form>
     <div class="mp-section">
