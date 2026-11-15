@@ -2,15 +2,17 @@
 //   node init.mjs scan                       — сайты nginx на 443: JSON [{file, names, cert, key}]
 //   node init.mjs apply --mode front|ip2|bare --domain d --port 7380 --admin-path p --xhttp-port n --xhttp-path s
 //                       [--ip2 x --ip1 y] [--cert c --key k] [--socks порт:логин:пароль] [--warp файл.json]
+//                       [--from-mode прежний] — способ сменили: сначала вернуть сайты к обычному 443
+//                       [--alt "домен|сертификат|ключ;…"] — запасные домены: старые ссылки подписок продолжают работать
 //       Схема как в autoXRAY: Xray на 443 (Vision, Hysteria2), всё не-VPN он отдаёт nginx на внутренние сокеты
 //       с proxy_protocol. Там сайты (front), сайт домена VPN с админкой, подписками и XHTTP.
 //   node init.mjs include --domain d --port 7380 --admin-path p   — Xray уже настроен (autoXRAY): только админка в сайт домена
 //   node init.mjs warp --out файл.json        — регистрация в Cloudflare WARP, готовый выход wireguard для Xray
 // Бэкапы и откат делает install.sh.
-import { writeFileSync, readFileSync, existsSync, mkdirSync } from 'node:fs';
+import { writeFileSync, readFileSync, existsSync, mkdirSync, rmSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { register } from './warp.mjs';
-import { scan, toSockets, toIp, realIp, includeIn, has80, SOCK_H1, SOCK_H2 } from './nginx.mjs';
+import { scan, toSockets, toIp, realIp, includeIn, has80, fromSockets, fromIp, excludeFrom, SOCK_H1, SOCK_H2 } from './nginx.mjs';
 
 const [cmd, ...rest] = process.argv.slice(2);
 const arg = (k, d = '') => { const i = rest.indexOf('--' + k); return i >= 0 && rest[i + 1] !== undefined && !rest[i + 1].startsWith('--') ? rest[i + 1] : d };
@@ -59,6 +61,14 @@ const mode = arg('mode'), domain = arg('domain'), port = Number(arg('port', '738
 const xhttpPort = Number(arg('xhttp-port', '0')), xhttpPath = arg('xhttp-path');
 if (!['front', 'ip2', 'bare'].includes(mode) || !domain || !admin) fail('Нужны --mode, --domain и --admin-path');
 
+// Способ сменили (из админки): что прежний способ сделал с сайтами — назад, дальше как при установке
+const from = arg('from-mode');
+if (from && from !== mode && existsSync(NGINX)) { if (from === 'front') fromSockets(NGINX); if (from === 'ip2') fromIp(NGINX, arg('ip1')) }
+
+// Запасные домены: прежний адрес продолжает открывать подписки и подключать приложения
+const alt = arg('alt').split(';').map((x) => x.split('|')).filter(([d]) => d && d !== domain && /^[a-z0-9.-]+\.[a-z]{2,}$/i.test(d));
+const names = [domain, ...alt.map(([d]) => d)];
+
 // Сертификаты для TLS Xray: домен VPN первым (его отдаём клиентам без SNI), потом сайты — Xray выбирает по SNI
 const sites = existsSync(NGINX) ? scan(NGINX) : [];
 const certs = [];
@@ -66,6 +76,7 @@ const add = (c, k) => { if (c && k && !certs.some((x) => x.certificateFile === c
 add(arg('cert'), arg('key'));
 const mine = sites.find((s) => s.names.includes(domain));
 if (mode === 'front') { if (mine) add(mine.cert, mine.key); for (const s of sites) add(s.cert, s.key) }
+for (const [, c, k] of alt) add(c, k);
 if (!certs.length) fail(`Нет сертификата для ${domain}: укажите --cert и --key`, 3);
 
 const listen = mode === 'ip2' ? arg('ip2') : '0.0.0.0';
@@ -112,18 +123,21 @@ let moved = [];
 if (mode === 'front') { moved = toSockets(NGINX); realIp(NGINX) }
 if (mode === 'ip2') moved = toIp(NGINX, arg('ip1'));
 
-// Локации monolit и сайт домена VPN
+// Локации monolit и сайт домена VPN. «Рядом с сайтами»: домен, который уже сайт nginx, получает локации в свой блок,
+// остальным доменам — свой сайт за Xray. Из прочих сайтов локации убираем (домен сменили)
 writeFileSync(INC, incText({ port, admin, xhttpPath: xhttpPort ? xhttpPath : '', xhttpPort }));
-let vpnSite = 'существующий';
-const inc = mode === 'front' && mine ? includeIn(NGINX, domain, INC) : null;
-if (!inc) {
+const inSites = mode === 'front' ? names.filter((n) => sites.some((s) => s.names.includes(n)) && includeIn(NGINX, n, INC)) : [];
+if (existsSync(NGINX)) excludeFrom(NGINX, inSites, INC);
+const own = names.filter((n) => !inSites.includes(n));
+let vpnSite = inSites.length ? 'существующий' : '';
+if (own.length) {
   vpnSite = VPN_SITE;
   const def = mode === 'front' ? '' : ' default_server';
   let t = `# monolit proxy: сайт домена VPN за Xray. Посторонним — страница входа; админка, подписки и XHTTP — по своим путям
 server {
     listen unix:${SOCK_H1} proxy_protocol${def};
     listen unix:${SOCK_H2} proxy_protocol http2${def};
-    server_name ${domain};
+    server_name ${own.join(' ')};
     set_real_ip_from unix:;
     real_ip_header proxy_protocol;
     server_tokens off;
@@ -132,17 +146,18 @@ server {
     location / { proxy_pass http://127.0.0.1:${port}; proxy_set_header Host $host; proxy_set_header X-Real-IP $remote_addr; client_max_body_size 64k; }
 }
 `;
-  if (!has80(NGINX, domain, VPN_SITE)) t += `server {
+  const n80 = own.filter((n) => !has80(NGINX, n, VPN_SITE));
+  if (n80.length) t += `server {
     listen 80;
-    server_name ${domain};
+    server_name ${n80.join(' ')};
     location ^~ /.well-known/acme-challenge/ { root ${ACME}; try_files $uri @acme_old; }
     location @acme_old { root /var/www/html; }   # сертификат autoXRAY продлевает acme.sh через эту папку
     location / { return 301 https://$host$request_uri; }
 }
 `;
   writeFileSync(VPN_SITE, t);
-}
+} else if (existsSync(VPN_SITE)) rmSync(VPN_SITE);   // все домены — сайты nginx, свой сайт не нужен (копия /etc/nginx у install.sh)
 
 mkdirSync(dirname(CONFIG), { recursive: true });
 writeFileSync(CONFIG, JSON.stringify(cfg, null, 2));
-console.log(JSON.stringify({ mode, listen, certs: certs.map((c) => c.certificateFile), moved, vpnSite, sites: sites.map((s) => s.names[0]) }));
+console.log(JSON.stringify({ mode, from, names, listen, certs: certs.map((c) => c.certificateFile), moved, vpnSite, sites: sites.map((s) => s.names[0]) }));

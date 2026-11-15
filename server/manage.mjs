@@ -353,6 +353,9 @@ export function createManager({ db, xray, queue, activeUsers, log, onRestart }) 
       const prev = getSetting(db, 'apply_sig', '');
       if (prev && prev !== sig) { db.prepare('DELETE FROM config_history').run(); log('установка изменилась, история конфигов очищена') }
       importFromConfig(); setSetting(db, 'apply_sig', sig);
+      // Адрес меняли из админки: install.sh собрал входы по флагам установки, а включённое и выключенное здесь — главнее
+      const kept = J(getSetting(db, 'pre_reconf', ''), null);
+      if (kept) { restore({ ...kept, stash: { ...kept.stash, ...snapshot().stash } }); setSetting(db, 'pre_reconf', ''); log('после смены адреса вернул маршруты, WARP и протоколы') }
       const cfg = xray.read(), want = build(cfg, snapshot());
       if (JSON.stringify(want.routing) !== JSON.stringify(cfg.routing) || want.inbounds.length !== cfg.inbounds.length) {
         const r = await apply('Маршруты после переустановки', null, { history: false });
@@ -361,7 +364,9 @@ export function createManager({ db, xray, queue, activeUsers, log, onRestart }) 
     }
   }
 
-  return { stateForAdmin, routes, warp, proto, history, server, start, apply };
+  // Перед сменой адреса: запомнить, что включено (start() вернёт это после переустановки)
+  const keep = () => setSetting(db, 'pre_reconf', JSON.stringify(snapshot()));
+  return { stateForAdmin, routes, warp, proto, history, server, start, apply, keep };
 }
 
 // Готовые наборы. Ничего не включено само: человек добавляет набор и видит, что в нём

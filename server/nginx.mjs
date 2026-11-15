@@ -52,7 +52,7 @@ const is443v6any = (addr) => addr === '[::]:443';
 export function scan(dir = '/etc/nginx') {
   const sites = [];
   for (const file of siteFiles(dir)) {
-    if (file.endsWith('/monolit-vpn.conf')) continue;   // свой сайт домена VPN — не сайт пользователя
+    if (/[\\/]monolit-vpn\.conf$/.test(file)) continue;   // свой сайт домена VPN — не сайт пользователя
     const text = readFileSync(file, 'utf8');
     for (const b of serverBlocks(text)) {
       const listens = [...b.body.matchAll(LISTEN)].map((m) => m[3].trim().split(/\s+/));
@@ -156,3 +156,53 @@ export function has80(dir, domain, skip = '') {
 
 // server_name и в многострочном, и в однострочном блоке («server { listen 80; server_name a.ru; … }»)
 const namesOf = (body) => (body.match(/(?:^|[;{\s])server_name[ \t]+([^;]+);/)?.[1] || '').trim().split(/\s+/);
+
+// ---------- смена способа из админки: вернуть сайты к обычному 443, потом перевести заново ----------
+const OUR_REAL_IP = '\n    set_real_ip_from unix:;\n    real_ip_header proxy_protocol;';
+const isVpnSite = (f) => /[\\/]monolit-vpn\.conf$/.test(f);
+const reEsc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+// Переписать блоки server сайтов: fn(body) → новое тело
+function eachBlock(dir, fn) {
+  const changed = [];
+  for (const file of siteFiles(dir)) {
+    if (isVpnSite(file)) continue;   // сайт домена VPN пишется заново
+    const text = readFileSync(file, 'utf8'); let out = '', pos = 0;
+    for (const b of serverBlocks(text)) {
+      const head = text.slice(b.start, text.indexOf('{', b.start) + 1);
+      out += text.slice(pos, b.start) + head + fn(b.body) + '}';
+      pos = b.end;
+    }
+    out += text.slice(pos);
+    if (out !== text) { writeFileSync(file, out); changed.push(file) }
+  }
+  return changed;
+}
+
+// front → обычный 443: сокеты Xray обратно в «listen 443 ssl», закомментированные QUIC и IPv6 — назад, разбор PROXY — убрать
+export function fromSockets(dir = '/etc/nginx') {
+  const h1 = new RegExp(String.raw`(^|[;{])([ \t]*)listen[ \t]+unix:${reEsc(SOCK_H1)}[ \t]+proxy_protocol([^;]*);`, 'gm');
+  const h2 = new RegExp(String.raw`\n?[ \t]*listen[ \t]+unix:${reEsc(SOCK_H2)}[^;]*;`, 'g');
+  return eachBlock(dir, (body) => {
+    if (!body.includes(SOCK_H1) && !body.includes('# monolit: ')) return body;
+    const http2 = h2.test(body); h2.lastIndex = 0;
+    return body
+      .replace(h1, (m, pre, ind, rest) => `${pre}${ind}listen 443 ssl${http2 ? ' http2' : ''}${rest.includes('default_server') ? ' default_server' : ''};`)
+      .replace(h2, '')
+      .replace(/# monolit: (?:QUIC на 443 отдан Hysteria2|IPv6 443 принимает Xray) \(было: listen ([^)]+)\);?/g, 'listen $1;')
+      .replace(OUR_REAL_IP, '');
+  });
+}
+
+// ip2 → обычный 443: «listen <ip1>:443» → «listen 443»
+export function fromIp(dir = '/etc/nginx', ip1) {
+  if (!/^\d+\.\d+\.\d+\.\d+$/.test(ip1 || '')) return [];
+  const re = new RegExp(String.raw`(^|[;{])([ \t]*)listen[ \t]+${reEsc(ip1)}:443\b`, 'gm');
+  return eachBlock(dir, (body) => body.replace(re, '$1$2listen 443'));
+}
+
+// Админка и подписки только в сайтах доменов VPN: из остальных блоков убрать «include monolit.conf»
+export function excludeFrom(dir, keep, inc = '/etc/nginx/monolit.conf') {
+  const line = new RegExp(String.raw`\n?[ \t]*include[ \t]+${reEsc(inc)};`, 'g');
+  return eachBlock(dir, (body) => body.includes(inc) && !namesOf(body).some((n) => keep.includes(n)) ? body.replace(line, '') : body);
+}

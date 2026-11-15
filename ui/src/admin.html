@@ -32,7 +32,8 @@
 <script src="../ds/js/scrollbar.js" defer></script>
 <script src="qr.js" defer></script>
 <script src="admin.js" defer></script>
-<script src="server.js" defer></script><!--/js-->
+<script src="server.js" defer></script>
+<script src="addr.js" defer></script><!--/js-->
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="mp-mark" viewBox="0 0 24 24"><rect x="7" y="2" width="10" height="20" rx="2.5" fill="currentColor"/></symbol></svg>
@@ -58,6 +59,7 @@
   <nav class="side-nav">
     <a class="side-item" href="#" aria-current="page"><i data-lucide="users"></i><span class="side-tx">Пользователи</span><span class="side-count" id="mp-count-all">0</span></a>
     <a class="side-item" href="#" data-open="mp-srv"><i data-lucide="server"></i><span class="side-tx">Сервер</span></a>
+    <a class="side-item" href="#" data-open="mp-addr"><i data-lucide="map-pin"></i><span class="side-tx">Адрес</span><span class="side-dot" id="mp-addr-dot" hidden></span></a>
     <a class="side-item" href="#" data-open="mp-routes"><i data-lucide="route"></i><span class="side-tx">Маршруты</span></a>
     <a class="side-item" href="#" data-open="mp-warp"><i data-lucide="cloud"></i><span class="side-tx">WARP</span></a>
     <a class="side-item" href="#" data-open="mp-proto"><i data-lucide="network"></i><span class="side-tx">Протоколы</span></a>
@@ -70,6 +72,8 @@
     <button class="icon-btn icon-btn-sm" type="button" id="mp-logout" aria-label="Выйти" data-tip="Выйти"><i data-lucide="log-out"></i></button></div>
 </aside>
 <main class="app-main"><div class="app-inner">
+  <div class="alert alert-danger mp-alert" id="mp-block-alert" hidden><i data-lucide="circle-alert"></i><div><b id="mp-block-t">IP сервера не открывается из России</b><span id="mp-block-p">Приложения в России не подключатся. Можно сменить IP или домен</span>
+    <div class="btn-row mp-alert-act"><button class="btn btn-secondary btn-sm" type="button" data-open="mp-addr"><span>Что делать</span></button></div></div></div>
   <div class="alert alert-danger mp-alert" id="mp-xray-alert" hidden><i data-lucide="circle-alert"></i><div><b>Xray не отвечает</b><span id="mp-xray-err">Изменения применятся, когда он снова заработает</span></div></div>
   <div class="app-head">
     <div>
@@ -218,13 +222,19 @@
     <div class="mp-section">
       <span class="t-label">Сервер</span>
       <label class="field"><span class="label">Название в приложениях</span><input class="input" name="server_name" maxlength="24" autocomplete="off"><span class="hint">Так подписка будет подписана в Happ и INCY</span></label>
-      <label class="field"><span class="label">Домен</span><input class="input" name="domain" autocomplete="off" spellcheck="false"><span class="hint">К нему подключаются приложения и на нём ссылки подписок</span></label>
       <div class="field"><span class="label">Протоколы в подписке</span>
         <div class="mp-checks" id="mp-kinds"></div></div>
       <label class="field"><span class="label">Отпечаток браузера</span>
         <select class="select" name="fp"><option value="firefox">Firefox, как в autoXRAY</option><option value="chrome">Chrome</option><option value="safari">Safari</option><option value="ios">iOS</option><option value="android">Android</option><option value="edge">Edge</option></select></label>
       <label class="field"><span class="label">Обновлять подписку в приложениях, часов</span><input class="input" name="update_hours" inputmode="numeric" autocomplete="off"></label>
       <label class="field"><span class="label">Ссылка на поддержку <span class="opt">необязательно</span></span><input class="input" name="support_url" placeholder="https://t.me/ваш_ник" autocomplete="off" spellcheck="false"><span class="hint">Кнопка «Поддержка» в Happ и INCY</span></label>
+    </div>
+    <div class="mp-section">
+      <span class="t-label">Уведомления в Telegram</span>
+      <p class="mp-note">Напишем, если IP сервера перестанет открываться из России, и когда сменится адрес</p>
+      <label class="field"><span class="label">Токен бота</span><input class="input" name="tg_token" autocomplete="off" spellcheck="false" placeholder="123456789:AA…"><span class="hint">Создайте бота у @BotFather и напишите ему /start</span></label>
+      <label class="field"><span class="label">ID чата <span class="opt">найдём сами</span></span><input class="input" name="tg_chat" inputmode="numeric" autocomplete="off" spellcheck="false"><span class="hint">Пусто: возьмём из вашего сообщения боту при проверке</span></label>
+      <div class="btn-row"><button class="btn btn-secondary" type="button" id="mp-tg-test"><i data-lucide="send"></i><span>Проверить</span></button></div>
     </div>
     <div class="mp-section">
       <span class="t-label">Вход</span>
@@ -285,6 +295,45 @@
     </div>
   </div>
 </dialog>
+
+<!-- Адрес: доступность из России, домен, IP, способ -->
+<dialog class="sheet sheet-side" id="mp-addr" aria-labelledby="mp-addr-t">
+  <div class="sheet-head"><h2 id="mp-addr-t">Адрес</h2><button class="icon-btn icon-btn-sm" type="button" data-close aria-label="Закрыть"><i data-lucide="x"></i></button></div>
+  <div class="sheet-body">
+    <div class="mp-section">
+      <span class="t-label">Доступность из России</span>
+      <div class="mp-srv-line"><span class="badge" id="mp-w-badge"><span class="dot"></span><span id="mp-w-st">Не проверялся</span></span><span class="mp-note" id="mp-w-when"></span></div>
+      <dl class="mp-kv" id="mp-w-kv"></dl>
+      <p class="mp-note" id="mp-w-err" hidden></p>
+      <label class="choice"><input type="checkbox" role="switch" class="switch" id="mp-w-on"><span>Проверять сам<small id="mp-w-on-h">Через check-host.net, ему уходит только IP сервера</small></span></label>
+      <label class="field" id="mp-w-every-f"><span class="label">Как часто</span>
+        <select class="select" id="mp-w-every"><option value="30">Раз в 30 минут</option><option value="60">Раз в час</option><option value="180">Раз в 3 часа</option><option value="360">Раз в 6 часов</option></select></label>
+      <p class="mp-note" id="mp-w-tg"></p>
+      <div class="btn-row"><button class="btn btn-secondary" type="button" id="mp-w-check"><i data-lucide="refresh-cw"></i><span>Проверить сейчас</span></button></div>
+    </div>
+    <div class="mp-section">
+      <span class="t-label">Домен и IP</span>
+      <div class="alert alert-danger" id="mp-a-fail" hidden><i data-lucide="circle-alert"></i><div><b>Сменить не получилось</b><span id="mp-a-fail-t"></span></div></div>
+      <div class="alert alert-info" id="mp-a-run" hidden><i data-lucide="refresh-cw"></i><div><b>Меняем адрес</b><span id="mp-a-run-t">VPN и сайты прервутся примерно на минуту</span></div></div>
+      <div class="alert alert-warning" id="mp-a-foreign" hidden><i data-lucide="triangle-alert"></i><div><b>Xray настроен через autoXRAY</b><span>Адрес меняется переустановкой: bash install.sh --reconfigure --replace-autoxray</span></div></div>
+      <dl class="mp-kv" id="mp-a-kv"></dl>
+      <div class="alist" id="mp-a-alt" hidden></div>
+      <div class="btn-row"><button class="btn btn-primary" type="button" id="mp-a-edit"><i data-lucide="pencil"></i><span>Изменить</span></button></div>
+    </div>
+  </div>
+</dialog>
+
+<dialog class="dialog dialog-md" id="mp-a-dlg" aria-labelledby="mp-ad-t"><form novalidate id="mp-a-form">
+  <div class="dialog-head"><div><h2 id="mp-ad-t">Домен и IP</h2><p>Перед сменой сохраним копии настроек. Не поднимется, вернём как было</p></div><button class="icon-btn icon-btn-sm" type="button" data-close aria-label="Закрыть"><i data-lucide="x"></i></button></div>
+  <div class="dialog-main mp-form">
+    <label class="field"><span class="label">Домен</span><input class="input" name="domain" autocomplete="off" spellcheck="false" autocapitalize="none"><span class="hint" id="mp-a-dns">К нему подключаются приложения, на нём ссылки подписок</span></label>
+    <label class="choice" id="mp-a-keep-f" hidden><input type="checkbox" class="check" name="keep_old" checked><span>Оставить старый домен запасным<small>Старые ссылки подписок продолжат работать, приложения перейдут на новый домен при обновлении подписки</small></span></label>
+    <label class="field"><span class="label">Способ</span><select class="select" name="mode" id="mp-a-mode"></select><span class="hint" id="mp-a-mode-h"></span></label>
+    <label class="field" id="mp-a-ip-f" hidden><span class="label">IP для VPN</span><select class="select" name="ip2" id="mp-a-ip"></select><span class="hint">Домен должен смотреть на этот адрес</span></label>
+    <label class="choice" id="mp-a-force-f" hidden><input type="checkbox" class="check" name="force"><span>Применить, хотя DNS не совпадает<small>Если сервер за NAT или запись ещё обновляется. Новый сертификат так не выпустится</small></span></label>
+  </div>
+  <div class="dialog-foot"><button type="button" class="btn btn-ghost" data-close>Отмена</button><button class="btn btn-primary" type="submit"><span>Применить</span></button></div>
+</form></dialog>
 
 <dialog class="dialog dialog-lg" id="mp-log" aria-labelledby="mp-log-t">
   <div class="dialog-head"><div><h2 id="mp-log-t">Журнал Xray</h2><p id="mp-log-p">Последние 100 строк</p></div><button class="icon-btn icon-btn-sm" type="button" data-close aria-label="Закрыть"><i data-lucide="x"></i></button></div>

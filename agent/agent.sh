@@ -78,6 +78,7 @@ case "$cmd" in
   self-update)   # обновить monolit до релиза: отдельной службой, потому что install.sh перезапустит и нас
     [[ "$a1" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || fin 2
     [ -x /usr/local/lib/monolit/update.sh ] || { echo "Нет update.sh"; fin 1; }
+    systemctl list-units --type=service --state=active --no-legend 'monolit-reconf-*' 2>/dev/null | grep -q . && { echo "Сейчас меняется адрес сервера, обновите после"; fin 1; }
     systemd-run --unit "monolit-update-$(date +%s)" --collect /usr/local/lib/monolit/update.sh "$a1" 2>&1 | tail -1
     fin "${PIPESTATUS[0]}" ;;
   fw-close)   # закрыть порт, открытый fw-open (только правило allow порт/протокол)
@@ -100,5 +101,32 @@ case "$cmd" in
     wait
     echo "server $(cat /tmp/mp-reach-d.$$)"; [ -f /tmp/mp-reach-w.$$ ] && echo "warp $(cat /tmp/mp-reach-w.$$)"
     rm -f /tmp/mp-reach-[dw].$$; fin 0 ;;
+  netinfo)   # адреса сервера, основной IP, сайты nginx на 443 — для смены домена, IP и способа
+    ips=$(ip -4 -o addr show scope global 2>/dev/null | while read -r _ dev _ addr _; do dev=${dev%%@*}
+      { [ -e "/sys/class/net/$dev/bridge" ] || [ -e "/sys/class/net/$dev/brport" ]; } && continue
+      case "$dev" in docker*|br-*|veth*) continue ;; esac
+      ip -o link show "$dev" | grep -q POINTOPOINT && continue
+      printf '"%s",' "${addr%/*}"; done)
+    ip1=$(ip -4 route get 1.1.1.1 2>/dev/null | grep -oE 'src [0-9.]+' | cut -d' ' -f2)
+    sites='[]'
+    if command -v nginx >/dev/null && [ -d /etc/nginx ]; then
+      files=$(nginx -T 2>/dev/null | sed -n 's/^# configuration file \(.*\):$/\1/p' | sort -u | tr '\n' ':')
+      sites=$(docker run --rm -v /etc/nginx:/etc/nginx:ro -e MP_NGINX_FILES="$files" monolit-proxy node /app/server/init.mjs scan 2>/dev/null || echo '[]')
+    fi
+    printf '{"ips":[%s],"ip1":"%s","sites":%s}\n' "${ips%,}" "$ip1" "$sites"
+    fin 0 ;;
+  reconf)   # reconf СПОСОБ ДОМЕН IP2|- KEEP SKIPDNS DROP|- — сменить домен, IP или способ (install.sh отдельной службой)
+    read -r _ mode domain ip2 keep skip drop _ <<<"$line"
+    [[ "$mode" =~ ^(bare|front|ip2)$ ]] || { echo "плохой способ"; fin 2; }
+    dom='^[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'
+    [[ "$domain" =~ $dom ]] || { echo "плохой домен"; fin 2; }
+    [[ "$ip2" =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}$ ]] || [ "$ip2" = - ] || { echo "плохой адрес"; fin 2; }
+    [[ "$keep$skip" =~ ^[01][01]$ ]] || fin 2
+    [[ "$drop" =~ $dom ]] || [ "$drop" = - ] || { echo "плохой домен"; fin 2; }
+    [ -x /usr/local/lib/monolit/reconf.sh ] || { echo "Нет reconf.sh"; fin 1; }
+    # одновременно с обновлением нельзя: оба запускают install.sh
+    systemctl list-units --type=service --state=active --no-legend 'monolit-update-*' 'monolit-reconf-*' 2>/dev/null | grep -q . && { echo "Уже идёт обновление или смена адреса"; fin 1; }
+    systemd-run --unit "monolit-reconf-$(date +%s)" --collect /usr/local/lib/monolit/reconf.sh "$mode" "$domain" "$ip2" "$keep" "$skip" "$drop" 2>&1 | tail -1
+    fin "${PIPESTATUS[0]}" ;;
   *) echo "нет такой команды"; fin 2 ;;
 esac

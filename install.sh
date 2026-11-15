@@ -7,7 +7,9 @@
 #       в nginx есть сайты на 443          — «рядом с сайтами»: Xray на 443, сайты на внутренних сокетах nginx
 #       сайтов нет                         — «как autoXRAY»: Xray на 443, за ним nginx со страницей входа
 #   --ip 203.0.113.7       второй IP: Xray на нём, сайты остаются на первом. Домен VPN смотрит на второй IP
-#   --mode bare|front|ip2  выбрать способ самому
+#   --mode bare|front|ip2  выбрать способ самому (на установленном сервере — сменить способ)
+#   --keep-old-domain      домен сменили: прежний остаётся запасным, старые ссылки подписок работают
+#   --drop-alt ДОМЕН       убрать запасной домен
 #   --cert F --key F       свой сертификат (иначе Let's Encrypt, запасной — ZeroSSL)
 #   --no-xhttp --no-bbr --no-firewall   не включать XHTTP / BBR и буферы TCP / правила файрвола
 #   --socks [порт]         SOCKS5 с паролем (по умолчанию 1080)
@@ -24,7 +26,7 @@ set -euo pipefail
 
 ARGS=("$@")
 DOMAIN="" MODE_ARG="" PORT=7380 IP2="" CERT="" KEY="" NGINX=1 YES=0 SKIPDNS=0 ACTION=install
-XHTTP=1 BBR=1 FW=1 SOCKS="" WARP=0 MTPROTO="" REPLACE=0
+XHTTP=1 BBR=1 FW=1 SOCKS="" WARP=0 MTPROTO="" REPLACE=0 KEEPOLD=0 DROPALT=""
 XRAY_BIN="${XRAY_BIN:-$(command -v xray || echo /usr/local/bin/xray)}"
 XRAY_CONFIG="${XRAY_CONFIG:-/usr/local/etc/xray/config.json}"
 SRC="$(cd "$(dirname "$0")" && pwd)"
@@ -47,6 +49,8 @@ while [ $# -gt 0 ]; do case "$1" in
   --mtproto) if num "${2:-}"; then MTPROTO="$2"; shift 2; else MTPROTO=8443; shift; fi ;;
   --warp) WARP=1; shift ;;
   --replace-autoxray) REPLACE=1; shift ;;
+  --keep-old-domain) KEEPOLD=1; shift ;;
+  --drop-alt) DROPALT="$2"; shift 2 ;;
   --yes|-y) YES=1; shift ;;
   --skip-dns) SKIPDNS=1; shift ;;
   --status) ACTION=status; shift ;;
@@ -128,7 +132,7 @@ if [ "$ACTION" = uninstall ]; then
   [ "$YES" = 1 ] || { [ "$TTY" = 1 ] && yesno "Удалить monolit?" нет; } || die "Отменено. Без терминала добавьте --yes"
   docker rm -f monolit monolit-mtg >>"$LOG" 2>&1 || true
   systemctl disable --now monolit-agent.socket >>"$LOG" 2>&1 || true
-  rm -f /etc/systemd/system/monolit-agent.socket /etc/systemd/system/monolit-agent@.service /usr/local/lib/monolit/agent.sh /usr/local/lib/monolit/update.sh
+  rm -f /etc/systemd/system/monolit-agent.socket /etc/systemd/system/monolit-agent@.service /usr/local/lib/monolit/agent.sh /usr/local/lib/monolit/update.sh /usr/local/lib/monolit/reconf.sh
   restore_before
   [ -f /etc/sysctl.d/99-monolit.conf ] && rm -f /etc/sysctl.d/99-monolit.conf && info "BBR-настройки убраны, старые значения ядра вернутся после перезагрузки"
   mv "$ENVF" "$BK/monolit.env-$STAMP"
@@ -238,12 +242,20 @@ fi
 [ "$REPLACE" = 1 ] && [ "$READY" = 1 ] && replace_autoxray
 
 # ================= 4. способ и домен =================
+# Домен сменили (из админки): сертификат прежнего домена новому не подходит — выпустим свой, прежний домен можно оставить запасным
+ALT="${MP_ALT:-}"
+if [ -n "$DOMAIN" ] && [ -n "${MP_DOMAIN:-}" ] && [ "$DOMAIN" != "$MP_DOMAIN" ]; then
+  [ "$KEEPOLD" = 1 ] && ALT="$ALT;$MP_DOMAIN|${MP_CERT:-}|${MP_KEY:-}"
+  [ -n "$CERT" ] || { MP_CERT="" MP_KEY=""; }
+fi
+# запасные: без нового домена, без убранного, без повторов
+ALT=$(tr ';' '\n' <<<"$ALT" | awk -F'|' -v d="${DOMAIN:-${MP_DOMAIN:-}}" -v x="$DROPALT" 'NF && $1 != d && $1 != x && !s[$1]++' | paste -sd ';' - || true)
 DOMAIN="${DOMAIN:-${MP_DOMAIN:-}}" CERT="${CERT:-${MP_CERT:-}}" KEY="${KEY:-${MP_KEY:-}}"
 SOCKS="${SOCKS:-${MP_SOCKS:-}}"; SOCKS="${SOCKS%%:*}"; MTPROTO="${MTPROTO:-${MP_MTG_PORT:-}}"
 [ "$WARP" = 1 ] || { [ -n "${MP_WARP:-}" ] && WARP=1; }
 [ -n "${MP_XHTTP:-}" ] && [ ${#ARGS[@]} -eq 0 ] && XHTTP=$MP_XHTTP
 if [ "$READY" = 1 ] && [ -z "${MP_MODE:-}" ]; then MODE=existing
-elif [ -n "${MP_MODE:-}" ] && [ "$READY" = 1 ]; then MODE=$MP_MODE
+elif [ -n "${MP_MODE:-}" ] && [ "$READY" = 1 ]; then MODE=$MP_MODE; [ -n "$MODE_ARG" ] && [ "$MP_MODE" != existing ] && MODE=$MODE_ARG
 elif [ -n "$MODE_ARG" ]; then MODE=$MODE_ARG
 elif [ -n "$IP2" ]; then MODE=ip2
 elif [ "$SITES" != "[]" ]; then MODE=front
@@ -294,7 +306,9 @@ if [ "$MODE" = ip2 ]; then
   grep -qFw "$IP2" <<<"$IPS" || die "Адреса $IP2 нет на этом сервере (ip addr)"
   [ "$IP2" != "$IP1" ] || die "$IP2 — основной адрес, для Xray нужен второй"
 fi
-[ "$MODE" = bare ] && [ "$SITES" != "[]" ] && [ "$READY" = 0 ] && die "В nginx есть сайты на 443 ($SITE_NAMES). Выберите --mode front или второй IP --ip"
+# способ, который был до этого запуска (сменили из админки — сайты сначала вернутся к обычному 443)
+FROM_MODE=""; [ "$READY" = 1 ] && [ -n "${MP_MODE:-}" ] && [ "$MP_MODE" != existing ] && [ "$MODE" != "$MP_MODE" ] && FROM_MODE=$MP_MODE
+[ "$MODE" = bare ] && [ "$SITES" != "[]" ] && { [ "$READY" = 0 ] || [ -n "$FROM_MODE" ]; } && die "В nginx есть сайты на 443 ($SITE_NAMES). Выберите --mode front или второй IP --ip"
 MODE_RU=$(case $MODE in existing) echo "Xray уже настроен, только админка" ;; bare) echo "как autoXRAY" ;; ip2) echo "второй IP $IP2" ;; front) echo "рядом с сайтами" ;; esac)
 ok "$MODE_RU, домен $DOMAIN"
 
@@ -329,7 +343,7 @@ if [ "$XHTTP" = 1 ] && [ "$MODE" != existing ]; then
 fi
 SOCKS_FULL=""; [ -n "$SOCKS" ] && SOCKS_FULL="${MP_SOCKS:-$SOCKS:u$(rnd 6):$(rnd 16 A-Za-z0-9)}" && SOCKS_FULL="$SOCKS:${SOCKS_FULL#*:}"
 MP_ADMIN_PATH="${MP_ADMIN_PATH:-$(rnd 12)}"
-SIG="$MODE|$DOMAIN|$IP2|$CERT|$PORT|$XPORT|$XPATH|$SOCKS_FULL|$WARP"
+SIG="$MODE|$DOMAIN|$IP2|$CERT|$PORT|$XPORT|$XPATH|$SOCKS_FULL|$WARP"; [ -n "$ALT" ] && SIG="$SIG|$ALT"
 NEED_APPLY=0; [ "$MODE" != existing ] && [ "${MP_APPLY_SIG:-}" != "$SIG" ] && NEED_APPLY=1
 # самопроверка: локации nginx на месте (их могли поправить руками) — иначе собрать заново
 if [ "$MODE" != existing ] && [ "$NEED_APPLY" = 0 ]; then
@@ -382,12 +396,14 @@ else
 fi
 NEWFILES=""; for f in /etc/nginx/monolit.conf /etc/nginx/conf.d/monolit-vpn.conf; do [ -e "$f" ] || NEWFILES="$NEWFILES $f"; done
 rollback() {
+  # Xray первым останавливаем: после смены способа он держит 443 на всех адресах и не дал бы nginx вернуться на свой адрес
+  systemctl stop xray 2>/dev/null || true
+  if has_nginx; then rm -f $NEWFILES; tar xzf "${RB_NGINX:-$BK/nginx-$STAMP-before-monolit.tgz}" -C /; nginx -t >>"$LOG" 2>&1 && systemctl restart nginx; fi
   cp "${RB_XRAY:-$BK/xray-config-$STAMP-before-monolit.json}" "$XRAY_CONFIG"
   # своя настройка юнита, поставленная в этом запуске, — тоже назад: прежний Xray мог работать от своего пользователя
   [ "${DROPIN_NEW:-0}" = 1 ] && rm -f /etc/systemd/system/xray.service.d/monolit.conf
   systemctl daemon-reload; systemctl reset-failed xray 2>/dev/null || true; systemctl restart xray 2>/dev/null || true
   sleep 2; systemctl is-active --quiet xray || warn "Прежний Xray не запустился после отката: journalctl -u xray"
-  if has_nginx; then rm -f $NEWFILES; tar xzf "${RB_NGINX:-$BK/nginx-$STAMP-before-monolit.tgz}" -C /; nginx -t >>"$LOG" 2>&1 && systemctl restart nginx; fi
   die "$1. Вернул Xray и nginx как было"
 }
 
@@ -425,7 +441,7 @@ if [ "$NEED_APPLY" = 1 ]; then
   BEFORE=$(site_codes)
   OUT=$(node_in -v "$CFGDIR:$CFGDIR" -v "$DATA:$DATA" $(has_nginx && echo "-v /etc/nginx:/etc/nginx") -e MP_XRAY_CONFIG="$XRAY_CONFIG" -e MP_NGINX_FILES="$NGX_FILES" monolit-proxy \
     node /app/server/init.mjs apply --mode "$MODE" --domain "$DOMAIN" --port "$PORT" --admin-path "$MP_ADMIN_PATH" --ip2 "$IP2" --ip1 "$IP1" \
-    --cert "$CERT" --key "$KEY" --xhttp-port "${XPORT:-0}" --xhttp-path "$XPATH" --socks "$SOCKS_FULL" --warp "$WARPF" 2>>"$LOG") || rollback "Не получилось собрать конфиг"
+    --cert "$CERT" --key "$KEY" --xhttp-port "${XPORT:-0}" --xhttp-path "$XPATH" --socks "$SOCKS_FULL" --warp "$WARPF" --from-mode "$FROM_MODE" --alt "$ALT" 2>>"$LOG") || rollback "Не получилось собрать конфиг"
   echo "$OUT" >>"$LOG"
   "$XRAY_BIN" run -test -c "$XRAY_CONFIG" >>"$LOG" 2>&1 || rollback "Xray не принял новый конфиг"
   nginx -t >>"$LOG" 2>&1 || rollback "nginx не принял правку"
@@ -438,7 +454,9 @@ if [ "$NEED_APPLY" = 1 ]; then
   mkdir -p "${DU%/*}"; printf '[Service]\nUser=root\nCapabilityBoundingSet=%s\nAmbientCapabilities=%s\n' "$CAPS" "$CAPS" > "$DU"
   systemctl daemon-reload
   # Сначала nginx отпускает 443, потом Xray его занимает. ip2: с 0.0.0.0:443 на IP1:443 nginx уходит только перезапуском
-  if [ "$MODE" = ip2 ]; then systemctl restart nginx; else systemctl reload nginx; fi
+  # Способ сменили: Xray держит 443 на всех адресах (или на втором IP) — останавливаем, пока nginx переезжает
+  [ -n "$FROM_MODE" ] && systemctl stop xray
+  if [ "$MODE" = ip2 ] || [ -n "$FROM_MODE" ]; then systemctl restart nginx; else systemctl reload nginx; fi
   sleep 1; systemctl is-active --quiet nginx || rollback "nginx не запустился с новыми адресами"
   systemctl enable xray >>"$LOG" 2>&1 || true; systemctl restart xray; sleep 2
   xray_up || rollback "Xray не запустился (journalctl -u xray)"
@@ -493,6 +511,7 @@ MP_LISTEN=127.0.0.1:$PORT
 MP_SERVER_NAME=${MP_SERVER_NAME:-$(hostname -s | cut -c1-24)}
 MP_MODE=$MODE
 MP_IP2=$IP2
+MP_ALT="$ALT"
 MP_CERT=$CERT
 MP_KEY=$KEY
 MP_XHTTP=$XHTTP
@@ -525,7 +544,7 @@ fi
 
 # Помощник админки на хосте: перезапуск и проверка Xray, обновления, журнал. Только команды из списка, сокет только для root
 install -d -m 755 /usr/local/lib/monolit
-install -m 755 "$SRC/agent/agent.sh" "$SRC/agent/update.sh" /usr/local/lib/monolit/
+install -m 755 "$SRC/agent/agent.sh" "$SRC/agent/update.sh" "$SRC/agent/reconf.sh" /usr/local/lib/monolit/
 install -m 644 "$SRC/agent/monolit-agent.socket" "$SRC/agent/monolit-agent@.service" /etc/systemd/system/
 systemctl daemon-reload
 systemctl enable monolit-agent.socket >>"$LOG" 2>&1; systemctl restart monolit-agent.socket >>"$LOG" 2>&1 \

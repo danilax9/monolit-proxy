@@ -1,7 +1,7 @@
 // icons.js
 // Иконки Lucide 0.460.0 (ISC), только нужные: замена <i data-lucide> на svg, как lucide.createIcons()
 (() => {
-  const P = {"wrench":"<path d=\"M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z\"/>","upload":"<path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\"/><polyline points=\"17 8 12 3 7 8\"/><line x1=\"12\" x2=\"12\" y1=\"3\" y2=\"15\"/>","lock-open":"<rect width=\"18\" height=\"11\" x=\"3\" y=\"11\" rx=\"2\" ry=\"2\"/><path d=\"M7 11V7a5 5 0 0 1 9.9-1\"/>","apple":"<path d=\"M12 20.94c1.5 0 2.75 1.06 4 1.06 3 0 6-8 6-12.22A4.91 4.91 0 0 0 17 5c-2.22 0-4 1.44-5 2-1-.56-2.78-2-5-2a4.9 4.9 0 0 0-5 4.78C2 14 5 22 8 22c1.25 0 2.5-1.06 4-1.06Z\"/><path d=\"M10 2c1 .5 2 2 2 5\"/>","check":"<path d=\"M20 6 9 17l-5-5\"/>","chevron-right":"<path d=\"m9 18 6-6-6-6\"/>","circle-alert":"<circle cx=\"12\" cy=\"12\" r=\"10\"/><line x1=\"12\" x2=\"12\" y1=\"8\" y2=\"12\"/><line x1=\"12\" x2=\"12.01\" y1=\"16\" y2=\"16\"/>","circle-check":"<circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"m9 12 2 2 4-4\"/>","clock":"<circle cx=\"12\" cy=\"12\" r=\"10\"/><polyline points=\"12 6 12 12 16 14\"/>","copy":"<rect width=\"14\" height=\"14\" x=\"8\" y=\"8\" rx=\"2\" ry=\"2\"/><path d=\"M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2\"/>","download":"<path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\"/><polyline points=\"7 10 12 15 17 10\"/><line x1=\"12\" x2=\"12\" y1=\"15\" y2=\"3\"/>","external-link":"<path d=\"M15 3h6v6\"/><path d=\"M10 14 21 3\"/><path d=\"M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6\"/>","file-code":"<path d=\"M10 12.5 8 15l2 2.5\"/><path d=\"m14 12.5 2 2.5-2 2.5\"/><path d=\"M14 2v4a2 2 0 0 0 2 2h4\"/><path d=\"M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z\"/>","infinity":"<path d=\"M12 12c-2-2.67-4-4-6-4a4 4 0 1 0 0 8c2 0 4-1.33 6-4Zm0 0c2 2.67 4 4 6 4a4 4 0 0 0 0-8c-2 0-4 1.33-6 4Z\"/>","key-round":"<path d=\"M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z\"/><circle cx=\"16.5\" cy=\"7.5\" r=\".5\" fill=\"currentColor\"/>","link":"<path d=\"M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71\"/><path d=\"M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71\"/>","log-out":"<path d=\"M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4\"/><polyline points=\"16 17 21 12 16 7\"/><line x1=\"21\" x2=\"9\" y1=\"12\" y2=\"12\"/>","monitor":"<rect width=\"20\" height=\"14\" x=\"2\" y=\"3\" rx=\"2\"/><line x1=\"8\" x2=\"16\" y1=\"21\" y2=\"21\"/><line x1=\"12\" x2=\"12\" y1=\"17\" y2=\"21\"/>","moon":"<path d=\"M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z\"/>","panel-left":"<rect width=\"18\" height=\"18\" x=\"3\" y=\"3\" rx=\"2\"/><path d=\"M9 3v18\"/>","plus":"<path d=\"M5 12h14\"/><path d=\"M12 5v14\"/>","qr-code":"<rect width=\"5\" height=\"5\" x=\"3\" y=\"3\" rx=\"1\"/><rect width=\"5\" height=\"5\" x=\"16\" y=\"3\" rx=\"1\"/><rect width=\"5\" height=\"5\" x=\"3\" y=\"16\" rx=\"1\"/><path d=\"M21 16h-3a2 2 0 0 0-2 2v3\"/><path d=\"M21 21v.01\"/><path d=\"M12 7v3a2 2 0 0 1-2 2H7\"/><path d=\"M3 12h.01\"/><path d=\"M12 3h.01\"/><path d=\"M12 16v.01\"/><path d=\"M16 12h1\"/><path d=\"M21 12v.01\"/><path d=\"M12 21v-1\"/>","refresh-cw":"<path d=\"M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8\"/><path d=\"M21 3v5h-5\"/><path d=\"M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16\"/><path d=\"M8 16H3v5\"/>","rotate-ccw":"<path d=\"M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8\"/><path d=\"M3 3v5h5\"/>","search":"<circle cx=\"11\" cy=\"11\" r=\"8\"/><path d=\"m21 21-4.3-4.3\"/>","settings":"<path d=\"M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z\"/><circle cx=\"12\" cy=\"12\" r=\"3\"/>","smartphone":"<rect width=\"14\" height=\"20\" x=\"5\" y=\"2\" rx=\"2\" ry=\"2\"/><path d=\"M12 18h.01\"/>","sun":"<circle cx=\"12\" cy=\"12\" r=\"4\"/><path d=\"M12 2v2\"/><path d=\"M12 20v2\"/><path d=\"m4.93 4.93 1.41 1.41\"/><path d=\"m17.66 17.66 1.41 1.41\"/><path d=\"M2 12h2\"/><path d=\"M20 12h2\"/><path d=\"m6.34 17.66-1.41 1.41\"/><path d=\"m19.07 4.93-1.41 1.41\"/>","trash-2":"<path d=\"M3 6h18\"/><path d=\"M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6\"/><path d=\"M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2\"/><line x1=\"10\" x2=\"10\" y1=\"11\" y2=\"17\"/><line x1=\"14\" x2=\"14\" y1=\"11\" y2=\"17\"/>","triangle-alert":"<path d=\"m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3\"/><path d=\"M12 9v4\"/><path d=\"M12 17h.01\"/>","undo-2":"<path d=\"M9 14 4 9l5-5\"/><path d=\"M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11\"/>","users":"<path d=\"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2\"/><circle cx=\"9\" cy=\"7\" r=\"4\"/><path d=\"M22 21v-2a4 4 0 0 0-3-3.87\"/><path d=\"M16 3.13a4 4 0 0 1 0 7.75\"/>","x":"<path d=\"M18 6 6 18\"/><path d=\"m6 6 12 12\"/>","arrow-down":"<path d=\"M12 5v14\"/><path d=\"m19 12-7 7-7-7\"/>","arrow-up":"<path d=\"m5 12 7-7 7 7\"/><path d=\"M12 19V5\"/>","cloud":"<path d=\"M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z\"/>","eye":"<path d=\"M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0\"/><circle cx=\"12\" cy=\"12\" r=\"3\"/>","globe":"<circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20\"/><path d=\"M2 12h20\"/>","history":"<path d=\"M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8\"/><path d=\"M3 3v5h5\"/><path d=\"M12 7v5l4 2\"/>","network":"<rect x=\"16\" y=\"16\" width=\"6\" height=\"6\" rx=\"1\"/><rect x=\"2\" y=\"16\" width=\"6\" height=\"6\" rx=\"1\"/><rect x=\"9\" y=\"2\" width=\"6\" height=\"6\" rx=\"1\"/><path d=\"M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3\"/><path d=\"M12 12V8\"/>","pencil":"<path d=\"M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z\"/><path d=\"m15 5 4 4\"/>","route":"<circle cx=\"6\" cy=\"19\" r=\"3\"/><path d=\"M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15\"/><circle cx=\"18\" cy=\"5\" r=\"3\"/>","scroll-text":"<path d=\"M15 12h-5\"/><path d=\"M15 8h-5\"/><path d=\"M19 17V5a2 2 0 0 0-2-2H4\"/><path d=\"M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3\"/>","send":"<path d=\"M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z\"/><path d=\"m21.854 2.147-10.94 10.939\"/>","server":"<rect width=\"20\" height=\"8\" x=\"2\" y=\"2\" rx=\"2\" ry=\"2\"/><rect width=\"20\" height=\"8\" x=\"2\" y=\"14\" rx=\"2\" ry=\"2\"/><line x1=\"6\" x2=\"6.01\" y1=\"6\" y2=\"6\"/><line x1=\"6\" x2=\"6.01\" y1=\"18\" y2=\"18\"/>","shield-check":"<path d=\"M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z\"/><path d=\"m9 12 2 2 4-4\"/>","shield":"<path d=\"M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z\"/>"};
+  const P = {"map-pin":"<path d=\"M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0\"/><circle cx=\"12\" cy=\"10\" r=\"3\"/>","wrench":"<path d=\"M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z\"/>","upload":"<path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\"/><polyline points=\"17 8 12 3 7 8\"/><line x1=\"12\" x2=\"12\" y1=\"3\" y2=\"15\"/>","lock-open":"<rect width=\"18\" height=\"11\" x=\"3\" y=\"11\" rx=\"2\" ry=\"2\"/><path d=\"M7 11V7a5 5 0 0 1 9.9-1\"/>","apple":"<path d=\"M12 20.94c1.5 0 2.75 1.06 4 1.06 3 0 6-8 6-12.22A4.91 4.91 0 0 0 17 5c-2.22 0-4 1.44-5 2-1-.56-2.78-2-5-2a4.9 4.9 0 0 0-5 4.78C2 14 5 22 8 22c1.25 0 2.5-1.06 4-1.06Z\"/><path d=\"M10 2c1 .5 2 2 2 5\"/>","check":"<path d=\"M20 6 9 17l-5-5\"/>","chevron-right":"<path d=\"m9 18 6-6-6-6\"/>","circle-alert":"<circle cx=\"12\" cy=\"12\" r=\"10\"/><line x1=\"12\" x2=\"12\" y1=\"8\" y2=\"12\"/><line x1=\"12\" x2=\"12.01\" y1=\"16\" y2=\"16\"/>","circle-check":"<circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"m9 12 2 2 4-4\"/>","clock":"<circle cx=\"12\" cy=\"12\" r=\"10\"/><polyline points=\"12 6 12 12 16 14\"/>","copy":"<rect width=\"14\" height=\"14\" x=\"8\" y=\"8\" rx=\"2\" ry=\"2\"/><path d=\"M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2\"/>","download":"<path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\"/><polyline points=\"7 10 12 15 17 10\"/><line x1=\"12\" x2=\"12\" y1=\"15\" y2=\"3\"/>","external-link":"<path d=\"M15 3h6v6\"/><path d=\"M10 14 21 3\"/><path d=\"M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6\"/>","file-code":"<path d=\"M10 12.5 8 15l2 2.5\"/><path d=\"m14 12.5 2 2.5-2 2.5\"/><path d=\"M14 2v4a2 2 0 0 0 2 2h4\"/><path d=\"M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z\"/>","infinity":"<path d=\"M12 12c-2-2.67-4-4-6-4a4 4 0 1 0 0 8c2 0 4-1.33 6-4Zm0 0c2 2.67 4 4 6 4a4 4 0 0 0 0-8c-2 0-4 1.33-6 4Z\"/>","key-round":"<path d=\"M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z\"/><circle cx=\"16.5\" cy=\"7.5\" r=\".5\" fill=\"currentColor\"/>","link":"<path d=\"M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71\"/><path d=\"M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71\"/>","log-out":"<path d=\"M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4\"/><polyline points=\"16 17 21 12 16 7\"/><line x1=\"21\" x2=\"9\" y1=\"12\" y2=\"12\"/>","monitor":"<rect width=\"20\" height=\"14\" x=\"2\" y=\"3\" rx=\"2\"/><line x1=\"8\" x2=\"16\" y1=\"21\" y2=\"21\"/><line x1=\"12\" x2=\"12\" y1=\"17\" y2=\"21\"/>","moon":"<path d=\"M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z\"/>","panel-left":"<rect width=\"18\" height=\"18\" x=\"3\" y=\"3\" rx=\"2\"/><path d=\"M9 3v18\"/>","plus":"<path d=\"M5 12h14\"/><path d=\"M12 5v14\"/>","qr-code":"<rect width=\"5\" height=\"5\" x=\"3\" y=\"3\" rx=\"1\"/><rect width=\"5\" height=\"5\" x=\"16\" y=\"3\" rx=\"1\"/><rect width=\"5\" height=\"5\" x=\"3\" y=\"16\" rx=\"1\"/><path d=\"M21 16h-3a2 2 0 0 0-2 2v3\"/><path d=\"M21 21v.01\"/><path d=\"M12 7v3a2 2 0 0 1-2 2H7\"/><path d=\"M3 12h.01\"/><path d=\"M12 3h.01\"/><path d=\"M12 16v.01\"/><path d=\"M16 12h1\"/><path d=\"M21 12v.01\"/><path d=\"M12 21v-1\"/>","refresh-cw":"<path d=\"M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8\"/><path d=\"M21 3v5h-5\"/><path d=\"M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16\"/><path d=\"M8 16H3v5\"/>","rotate-ccw":"<path d=\"M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8\"/><path d=\"M3 3v5h5\"/>","search":"<circle cx=\"11\" cy=\"11\" r=\"8\"/><path d=\"m21 21-4.3-4.3\"/>","settings":"<path d=\"M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z\"/><circle cx=\"12\" cy=\"12\" r=\"3\"/>","smartphone":"<rect width=\"14\" height=\"20\" x=\"5\" y=\"2\" rx=\"2\" ry=\"2\"/><path d=\"M12 18h.01\"/>","sun":"<circle cx=\"12\" cy=\"12\" r=\"4\"/><path d=\"M12 2v2\"/><path d=\"M12 20v2\"/><path d=\"m4.93 4.93 1.41 1.41\"/><path d=\"m17.66 17.66 1.41 1.41\"/><path d=\"M2 12h2\"/><path d=\"M20 12h2\"/><path d=\"m6.34 17.66-1.41 1.41\"/><path d=\"m19.07 4.93-1.41 1.41\"/>","trash-2":"<path d=\"M3 6h18\"/><path d=\"M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6\"/><path d=\"M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2\"/><line x1=\"10\" x2=\"10\" y1=\"11\" y2=\"17\"/><line x1=\"14\" x2=\"14\" y1=\"11\" y2=\"17\"/>","triangle-alert":"<path d=\"m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3\"/><path d=\"M12 9v4\"/><path d=\"M12 17h.01\"/>","undo-2":"<path d=\"M9 14 4 9l5-5\"/><path d=\"M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11\"/>","users":"<path d=\"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2\"/><circle cx=\"9\" cy=\"7\" r=\"4\"/><path d=\"M22 21v-2a4 4 0 0 0-3-3.87\"/><path d=\"M16 3.13a4 4 0 0 1 0 7.75\"/>","x":"<path d=\"M18 6 6 18\"/><path d=\"m6 6 12 12\"/>","arrow-down":"<path d=\"M12 5v14\"/><path d=\"m19 12-7 7-7-7\"/>","arrow-up":"<path d=\"m5 12 7-7 7 7\"/><path d=\"M12 19V5\"/>","cloud":"<path d=\"M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z\"/>","eye":"<path d=\"M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0\"/><circle cx=\"12\" cy=\"12\" r=\"3\"/>","globe":"<circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20\"/><path d=\"M2 12h20\"/>","history":"<path d=\"M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8\"/><path d=\"M3 3v5h5\"/><path d=\"M12 7v5l4 2\"/>","network":"<rect x=\"16\" y=\"16\" width=\"6\" height=\"6\" rx=\"1\"/><rect x=\"2\" y=\"16\" width=\"6\" height=\"6\" rx=\"1\"/><rect x=\"9\" y=\"2\" width=\"6\" height=\"6\" rx=\"1\"/><path d=\"M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3\"/><path d=\"M12 12V8\"/>","pencil":"<path d=\"M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z\"/><path d=\"m15 5 4 4\"/>","route":"<circle cx=\"6\" cy=\"19\" r=\"3\"/><path d=\"M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15\"/><circle cx=\"18\" cy=\"5\" r=\"3\"/>","scroll-text":"<path d=\"M15 12h-5\"/><path d=\"M15 8h-5\"/><path d=\"M19 17V5a2 2 0 0 0-2-2H4\"/><path d=\"M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3\"/>","send":"<path d=\"M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z\"/><path d=\"m21.854 2.147-10.94 10.939\"/>","server":"<rect width=\"20\" height=\"8\" x=\"2\" y=\"2\" rx=\"2\" ry=\"2\"/><rect width=\"20\" height=\"8\" x=\"2\" y=\"14\" rx=\"2\" ry=\"2\"/><line x1=\"6\" x2=\"6.01\" y1=\"6\" y2=\"6\"/><line x1=\"6\" x2=\"6.01\" y1=\"18\" y2=\"18\"/>","shield-check":"<path d=\"M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z\"/><path d=\"m9 12 2 2 4-4\"/>","shield":"<path d=\"M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z\"/>"};
   const make = (i) => { const n = i.getAttribute('data-lucide'), p = P[n]; if (!p) return;
     const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     for (const [k, v] of Object.entries({ xmlns: 'http://www.w3.org/2000/svg', width: 24, height: 24, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': 2, 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'aria-hidden': 'true' })) s.setAttribute(k, v);
@@ -4308,7 +4308,8 @@ var qrcode = function() {
     return {
       users,
       update: { current: '1.1.0', latest: { tag: 'v1.2.0', name: 'v1.2.0', notes: 'Несколько серверов в одной админке. График трафика по часам', published: t - 2 * d, url: '#' }, available: true, checked: t - 3 * 3600, error: '', status: null, repo: 'danilax9/monolit-proxy' },
-      settings: { server_name: 'aeza', domain: 'vpn.example.ru', fp: 'firefox', kinds: 'vision,hy2', autoupdate: true, support_url: '', update_hours: 12, login: 'admin' },
+      settings: { server_name: 'aeza', domain: 'vpn.example.ru', fp: 'firefox', kinds: 'vision,hy2', autoupdate: true, support_url: '', update_hours: 12, login: 'admin', tg_token: '', tg_chat: '' },
+      watch: { state: 'blocked', at: t - 600, since: t - 4000, ip: '203.0.113.7', on: true, every: 60 },
       xray: { ok: true, error: '', last_sync: t - 20, inbounds: { vision: { tag: 'vision', port: 443 }, hy2: { tag: 'hy2', port: 443 }, xhttp: null } },
       template: { version: '162', hash: '47ffac58afcb3992', source: 'github', since: t - 3 * d, checked: t - 2 * 3600, rollback: true, pending: null, rejected: null }
     }
@@ -4329,6 +4330,7 @@ var qrcode = function() {
     if (u && path.endsWith('/regen')) { u.token = 'demo' + Date.now().toString(36); u.url = 'https://' + S.settings.domain + '/s/' + u.token; return { user: u } }
     if (u && method === 'DELETE') { S.users = S.users.filter((x) => x !== u); return {} }
     if (path === 'api/settings') { Object.assign(S.settings, body); delete S.settings.password; return S }
+    if (path === 'api/notify/test') { if (!/^\d{5,}:[\w-]{20,}$/.test(body.token || '')) throw new Error('Токен бота выглядит так: 123456789:AA…'); return { ok: true, chat: body.chat || '123456789' } }
     if (path === 'api/template/check') { S.template.checked = now(); return { ok: true, changed: false, state: S } }
     if (path === 'api/template/rollback') { S.template.rollback = false; return S }
     if (path.startsWith('api/traffic')) {
@@ -4464,6 +4466,13 @@ var qrcode = function() {
     b.className = 'badge ' + (ok ? 'badge-success' : 'badge-danger')
     b.lastChild.textContent = ok ? 'Xray работает' : 'Xray не отвечает'
     $('mp-xray-alert').hidden = ok
+    // IP не открывается из России: плашка над списком и точка у «Адреса»
+    const w = S.watch || {}, cut = w.on && (w.state === 'blocked' || w.state === 'down')
+    $('mp-block-alert').hidden = !cut; $('mp-addr-dot').hidden = !cut
+    if (cut) {
+      $('mp-block-t').textContent = w.state === 'down' ? 'Сервер не отвечает ни из России, ни из-за границы' : `IP ${w.ip} не открывается из России`
+      $('mp-block-p').textContent = w.state === 'down' ? 'Посмотрите, работает ли он у хостера' : 'Приложения в России не подключатся. Можно сменить IP или домен'
+    }
     if (!ok && S.xray.error) $('mp-xray-err').textContent = S.xray.error + '. Изменения применятся, когда он снова заработает'
     $('mp-sub').textContent = `Сервер ${S.settings.server_name}, обновлено в ${TF.format(new Date())}`
     $('mp-server-foot').textContent = S.settings.domain || S.settings.server_name
@@ -4649,7 +4658,8 @@ var qrcode = function() {
   const KINDS = [['vision', 'Vision', 'VLESS через TCP с TLS'], ['hy2', 'Hysteria2', 'через UDP, быстрее на плохой связи'], ['xhttp', 'XHTTP', 'через HTTP, если TCP режут']]
   function fillSet() {
     const s = S.settings, on = s.kinds.split(','), ib = S.xray.inbounds || {}
-    sForm.server_name.value = s.server_name; sForm.domain.value = s.domain; sForm.update_hours.value = s.update_hours; sForm.support_url.value = s.support_url || ''; sForm.password.value = ''; sForm.login.value = s.login || ''
+    sForm.server_name.value = s.server_name; sForm.update_hours.value = s.update_hours; sForm.support_url.value = s.support_url || ''; sForm.password.value = ''; sForm.login.value = s.login || ''
+    sForm.tg_token.value = s.tg_token || ''; sForm.tg_chat.value = s.tg_chat || ''
     sForm.fp.value = s.fp; sForm.fp.dispatchEvent(new Event('change'))
     $('mp-kinds').innerHTML = KINDS.map(([k, n, h]) => `<label class="choice"><input type="checkbox" class="check" value="${k}" ${on.includes(k) && ib[k] ? 'checked' : ''} ${ib[k] ? '' : 'disabled'}><span>${n}<small>${ib[k] ? h : 'на этом сервере нет такого входа Xray'}</small></span></label>`).join('')
   }
@@ -4730,15 +4740,26 @@ var qrcode = function() {
     if (!kinds.length) { toast({ type: 'error', title: 'Оставьте хотя бы один протокол' }); return }
     busy(document.querySelector('[form="mp-set-form"]'), async () => {
       try {
-        S = await api('PATCH', 'api/settings', { server_name: sForm.server_name.value, domain: sForm.domain.value, fp: sForm.fp.value, update_hours: sForm.update_hours.value, support_url: sForm.support_url.value, kinds, login, ...(pw ? { password: pw } : {}) })
+        S = await api('PATCH', 'api/settings', { server_name: sForm.server_name.value, tg_token: sForm.tg_token.value, tg_chat: sForm.tg_chat.value, fp: sForm.fp.value, update_hours: sForm.update_hours.value, support_url: sForm.support_url.value, kinds, login, ...(pw ? { password: pw } : {}) })
         paint(); $('mp-set').close()
         if (relogin) { toast({ type: 'success', title: pw ? 'Пароль сменён' : 'Логин сменён', text: 'Войдите заново' }); showLogin() } else toast({ type: 'success', title: 'Настройки сохранены' })
       } catch (err) { fail(err) }
     })
   })
 
-  // Для разделов сервера (server.js)
-  window.mpAdmin = { demo: () => DEMO, api: (m, p, b) => api(m, p, b), confirm: confirmAct, setCopy, domain: () => S?.settings?.domain || location.hostname }
+  // Проверка Telegram: тестовое сообщение по введённым токену и чату. Чат пустой — сервер возьмёт его из сообщения боту
+  $('mp-tg-test').addEventListener('click', (e) => {
+    const token = sForm.tg_token.value.trim(), chat = sForm.tg_chat.value.trim()
+    if (!token) { window.fieldError?.(sForm.tg_token, 'Вставьте токен от @BotFather'); return }
+    window.fieldError?.(sForm.tg_token, '')
+    busy(e.currentTarget, async () => {
+      try { const r = await api('POST', 'api/notify/test', { token, chat }); if (r.chat && !chat) sForm.tg_chat.value = r.chat; toast({ type: 'success', title: 'Сообщение отправлено', text: 'Нажмите «Сохранить», чтобы уведомления приходили' }) } catch (err) { fail(err) }
+    })
+  })
+
+  // Для разделов сервера (server.js, addr.js)
+  window.mpAdmin = { demo: () => DEMO, api: (m, p, b) => api(m, p, b), confirm: confirmAct, setCopy, domain: () => S?.settings?.domain || location.hostname,
+    state: () => S, refresh: () => api('GET', 'api/state').then((s) => { S = s; paint() }).catch(() => {}) }
 
   // ---------- QR в SVG ----------
   function qrSvg(text) {
@@ -5189,4 +5210,238 @@ var qrcode = function() {
   // Открытие шторки — свежие данные
   for (const id of ['mp-srv', 'mp-routes', 'mp-warp', 'mp-proto', 'mp-hist'])
     document.querySelectorAll(`[data-open="${id}"]`).forEach((b) => b.addEventListener('click', (e) => { e.preventDefault(); if (M) paintAll(); ensure().catch(fail) }))
+})()
+
+;
+// addr.js
+// Админка monolit proxy: адрес сервера. Доступность из России (check-host.net), смена домена, IP и способа.
+// Смену делает install.sh на сервере (копии настроек и откат при сбое); админка в это время перезапускается,
+// поэтому ход смены читаем из api/addr/job и ждём, пока она снова ответит
+(() => {
+  const $ = (id) => document.getElementById(id)
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]))
+  const A = () => window.mpAdmin
+  const toast = (o) => window.toast?.(o)
+  const fail = (e) => toast({ type: 'error', title: 'Не получилось', text: e.message })
+  const busy = async (btn, fn) => { btn.disabled = true; btn.classList.add('is-loading'); try { return await fn() } finally { btn.disabled = false; btn.classList.remove('is-loading') } }
+  const now = () => Math.floor(Date.now() / 1000)
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+  const plural = (n, a, b, c) => { const m = n % 10, h = n % 100; return m === 1 && h !== 11 ? a : m >= 2 && m <= 4 && (h < 10 || h >= 20) ? b : c }
+  const TF = new Intl.DateTimeFormat('ru-RU', { hour: '2-digit', minute: '2-digit' }), DF = new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long' })
+  const ago = (t) => { const s = now() - t; if (s < 90) return 'только что'; if (s < 3600) { const m = Math.round(s / 60); return `${m} ${plural(m, 'минуту', 'минуты', 'минут')} назад` } return new Date(t * 1000).toDateString() === new Date().toDateString() ? 'сегодня в ' + TF.format(new Date(t * 1000)) : DF.format(new Date(t * 1000)) + ' в ' + TF.format(new Date(t * 1000)) }
+  const kv = (rows) => rows.filter(Boolean).map(([k, v, cls]) => `<div><dt>${k}</dt><dd${cls ? ` class="${cls}"` : ''}>${esc(v)}</dd></div>`).join('')
+
+  const MODES = { bare: ['Весь сервер под VPN', 'Xray на 443, за ним страница входа, админка и подписки'], front: ['Рядом с сайтами', 'Xray на 443, сайты nginx открываются через него'], ip2: ['Второй IP', 'Xray на отдельном адресе, сайты остаются на основном'] }
+  const W = { ok: ['Открывается', 'badge-success'], blocked: ['Не открывается', 'badge-danger'], down: ['Сервер не отвечает', 'badge-danger'], unknown: ['Не удалось проверить', 'badge-warning'], none: ['Ещё не проверяли', ''] }
+
+  let D = null   // { mode, domain, ip2, alt, admin, job, watch, net, dns }
+
+  // ---------- демо ----------
+  const demo = {
+    mode: 'front', domain: 'vpn.example.ru', ip2: '', alt: ['old.example.ru'], admin: '/adm', job: null, dns: ['203.0.113.7'],
+    net: { ips: ['203.0.113.7', '203.0.113.8'], ip1: '203.0.113.7', sites: [{ names: ['example.ru', 'www.example.ru'] }] },
+    watch: { state: 'blocked', at: now() - 600, since: now() - 4000, ip: '203.0.113.7', on: true, every: 60, error: '',
+      ru: [{ node: 'ru1', city: 'Moscow', ok: false, healthy: false, answered: true }, { node: 'ru2', city: 'Moscow', ok: false, healthy: true, answered: true }],
+      abroad: [{ node: 'de1', city: 'Nuremberg', ok: true, ms: 38 }, { node: 'de2', city: 'Langen', ok: true, ms: 27 }, { node: 'de4', city: 'Frankfurt', ok: true, ms: 31 }] },
+  }
+  async function demoApi(method, path, body) {
+    await sleep(500)
+    if (path === 'api/addr' && method === 'GET') return structuredClone(demo)
+    if (path === 'api/addr/dns') return { domain: body.domain, a: /^new|^vpn/.test(body.domain) ? ['203.0.113.7'] : /^two/.test(body.domain) ? ['203.0.113.8'] : [] }
+    if (path === 'api/addr' && method === 'POST') { demo.job = { state: 'running', at: now(), text: 'Меняю настройки сервера', body }; return { ok: true } }
+    if (path === 'api/addr/job') {
+      const j = demo.job
+      if (j?.state === 'running' && now() - j.at > 5) {
+        const b = j.body; demo.job = { state: 'done', at: now(), text: 'Готово' }
+        if (b.drop) demo.alt = demo.alt.filter((d) => d !== b.drop)
+        else { if (b.domain !== demo.domain && b.keep_old) demo.alt = [...new Set([...demo.alt, demo.domain])]; demo.alt = demo.alt.filter((d) => d !== b.domain); demo.domain = b.domain; demo.mode = b.mode; demo.ip2 = b.ip2 || '' }
+      }
+      return structuredClone(demo)
+    }
+    if (path === 'api/watch') { if ('on' in body) demo.watch.on = body.on; if ('every' in body) demo.watch.every = Number(body.every); return { watch: demo.watch } }
+    if (path === 'api/watch/check') { await sleep(1500); Object.assign(demo.watch, { state: 'ok', at: now(), since: now(), ru: demo.watch.ru.map((x) => ({ ...x, ok: x.healthy, ms: 41 })) }); return { watch: demo.watch } }
+    throw new Error('Нет такого действия')
+  }
+  const api = (m, p, b) => A().demo() ? demoApi(m, p, b) : A().api(m, p, b)
+
+  // ---------- доступность ----------
+  function paintWatch() {
+    const w = D.watch || { state: 'none' }, st = W[w.state] || W.none
+    const b = $('mp-w-badge'); b.className = 'badge ' + st[1]; $('mp-w-st').textContent = st[0]
+    $('mp-w-when').textContent = w.running ? 'проверяем' : w.at ? 'проверено ' + ago(w.at) : ''
+    const ru = (w.ru || []).filter((x) => x.healthy), bad = (w.ru || []).length - ru.length
+    $('mp-w-kv').innerHTML = w.at ? kv([
+      ['IP', w.ip || 'не нашли'],
+      w.ru ? ['Точки в России', `открывается с ${ru.filter((x) => x.ok).length} из ${ru.length}`] : null,
+      bad ? ['Не считаем', `${bad} ${plural(bad, 'точку', 'точки', 'точек')} check-host без связи`] : null,
+      w.abroad?.length ? ['За границей', `открывается с ${w.abroad.filter((x) => x.ok).length} из ${w.abroad.length}`] : null,
+      w.state !== 'ok' && w.state !== 'unknown' && w.since && w.since < w.at ? [w.state === 'down' ? 'Не отвечает с' : 'Не открывается с', ago(w.since)] : null,
+    ]) : ''
+    $('mp-w-err').hidden = !w.error; $('mp-w-err').textContent = w.error || ''
+    $('mp-w-on').checked = !!w.on
+    $('mp-w-every-f').hidden = !w.on
+    const ev = $('mp-w-every'); if (ev.value !== String(w.every || 60)) { ev.value = String(w.every || 60); ev.dispatchEvent(new Event('change')) }
+    const s = A().state()?.settings || {}
+    $('mp-w-tg').textContent = s.tg_token && s.tg_chat ? 'Если IP перестанет открываться, напишем в Telegram' : 'Чтобы узнать о блокировке сразу, подключите Telegram в настройках'
+  }
+
+  // ---------- домен и IP ----------
+  const ips = () => D.net?.ips || []
+  const sites = () => (D.net?.sites || []).flatMap((s) => s.names || [])
+  function paintAddr() {
+    const job = D.job, running = job?.state === 'running' && now() - job.at < 900
+    const foreign = !D.mode || D.mode === 'existing'
+    $('mp-a-foreign').hidden = !foreign
+    $('mp-a-run').hidden = !running
+    const failed = job?.state === 'failed' && now() - job.at < 86400
+    $('mp-a-fail').hidden = !failed || running
+    if (failed) $('mp-a-fail-t').textContent = job.text + '. Настройки остались прежними'
+    const on = ips(), dnsOk = !D.dns?.length ? null : D.dns.some((a) => (D.mode === 'ip2' ? [D.ip2] : on).includes(a))
+    $('mp-a-kv').innerHTML = kv([
+      ['Домен', D.domain],
+      ['Смотрит на', D.dns?.length ? D.dns.join(', ') + (dnsOk === false && on.length ? ', это не этот сервер' : '') : 'никуда', dnsOk === false ? 'mp-warn' : ''],
+      MODES[D.mode] ? ['Способ', MODES[D.mode][0]] : null,
+      D.mode === 'ip2' ? ['IP для VPN', D.ip2] : null,
+      on.length ? [on.length > 1 ? 'Адреса сервера' : 'Адрес сервера', on.join(', ')] : null,
+      D.mode === 'front' && sites().length ? ['Сайты рядом', sites().join(', ')] : null,
+    ])
+    const alt = D.alt || []
+    $('mp-a-alt').hidden = !alt.length
+    $('mp-a-alt').innerHTML = alt.map((d) => `<div class="alist-row mp-alt"><span class="alist-ic"><i data-lucide="link"></i></span><span class="alist-tx"><b>${esc(d)}</b><span>Запасной: старые ссылки подписок работают</span></span>
+      <button class="icon-btn icon-btn-sm" type="button" data-drop="${esc(d)}" aria-label="Убрать ${esc(d)}" data-tip="Убрать"${running ? ' disabled' : ''}><i data-lucide="trash-2"></i></button></div>`).join('')
+    window.lucide?.createIcons()
+    $('mp-a-edit').disabled = foreign || running || !D.net
+    $('mp-a-edit').closest('.btn-row').hidden = foreign
+  }
+  const paint = () => { paintWatch(); paintAddr() }
+
+  async function load() { D = await api('GET', 'api/addr'); paint(); if (D.job?.state === 'running' && now() - D.job.at < 900) follow() }
+  document.querySelectorAll('[data-open="mp-addr"]').forEach((b) => b.addEventListener('click', () => { if (!D) $('mp-a-kv').innerHTML = kv([['Домен', A().domain()]]); load().catch(fail) }))
+
+  // ---------- проверка ----------
+  $('mp-w-check').addEventListener('click', (e) => busy(e.currentTarget, async () => {
+    $('mp-w-when').textContent = 'проверяем, до минуты'
+    try { const r = await api('POST', 'api/watch/check'); D.watch = r.watch; paintWatch(); A().refresh?.() } catch (err) { fail(err); paintWatch() }
+  }))
+  $('mp-w-on').addEventListener('change', async (e) => {
+    try { const r = await api('POST', 'api/watch', { on: e.target.checked }); D.watch = { ...D.watch, ...r.watch }; paintWatch() } catch (err) { e.target.checked = !e.target.checked; fail(err) }
+  })
+  $('mp-w-every').addEventListener('change', async (e) => {
+    if (!D || String(D.watch?.every) === e.target.value) return
+    try { const r = await api('POST', 'api/watch', { every: Number(e.target.value) }); D.watch = { ...D.watch, ...r.watch } } catch (err) { fail(err) }
+  })
+
+  // ---------- окно смены ----------
+  const F = $('mp-a-form'), dlg = $('mp-a-dlg')
+  let dnsA = null, dnsFor = '', typing
+  function modeOptions() {
+    const list = []
+    if (!sites().length || D.mode === 'bare') list.push('bare')
+    if (sites().length || D.mode === 'front') list.push('front')
+    if (ips().length > 1 || D.mode === 'ip2') list.push('ip2')
+    return list
+  }
+  function setSelect(sel, opts, val) {
+    sel.innerHTML = opts.map(([v, t]) => `<option value="${esc(v)}">${esc(t)}</option>`).join('')
+    sel.value = val; sel.dispatchEvent(new Event('change'))
+  }
+  function syncForm() {
+    const mode = F.mode.value, dom = F.domain.value.trim().toLowerCase()
+    $('mp-a-mode-h').textContent = MODES[mode]?.[1] || ''
+    $('mp-a-ip-f').hidden = mode !== 'ip2'
+    $('mp-a-keep-f').hidden = !dom || dom === D.domain
+    // DNS: смотрит ли домен на адрес, где будет Xray
+    const want = mode === 'ip2' ? [F.ip2.value] : ips(), h = $('mp-a-dns')
+    let txt = 'К нему подключаются приложения, на нём ссылки подписок', warn = false
+    if (dnsA && dnsFor === dom) {
+      const hit = dnsA.some((a) => want.includes(a))
+      txt = !dnsA.length ? `${dom} пока никуда не смотрит. Добавьте A-запись на ${want.join(' или ')}` : hit ? `Смотрит на ${dnsA.join(', ')}, это ${mode === 'ip2' ? 'выбранный IP' : 'этот сервер'}` : `Смотрит на ${dnsA.join(', ')}, а нужно на ${want.join(' или ')}`
+      warn = !hit
+    } else if (dom && dom !== dnsFor) txt = 'Проверяем DNS'
+    h.textContent = txt; h.classList.toggle('mp-warn', warn)
+    $('mp-a-force-f').hidden = !warn
+  }
+  async function checkDns() {
+    const dom = F.domain.value.trim().toLowerCase()
+    if (!/^[a-z0-9.-]+\.[a-z]{2,}$/.test(dom)) { dnsA = null; dnsFor = ''; syncForm(); return }
+    try { const r = await api('POST', 'api/addr/dns', { domain: dom }); if (F.domain.value.trim().toLowerCase() === dom) { dnsA = r.a; dnsFor = dom } } catch (e) { dnsA = null; dnsFor = '' }
+    syncForm()
+  }
+  F.domain.addEventListener('input', () => { clearTimeout(typing); syncForm(); typing = setTimeout(checkDns, 400) })
+  F.mode.addEventListener('change', syncForm); F.ip2.addEventListener('change', syncForm)
+
+  $('mp-a-edit').addEventListener('click', () => {
+    F.reset(); F.domain.value = D.domain; F.keep_old.checked = true
+    setSelect(F.mode, modeOptions().map((m) => [m, MODES[m][0]]), D.mode)
+    const extra = ips().filter((a) => a !== D.net?.ip1)
+    setSelect(F.ip2, (extra.length ? extra : ips()).map((a) => [a, a]), D.ip2 || extra[0] || '')
+    dnsA = D.dns || []; dnsFor = D.domain; syncForm()
+    dlg.showModal()
+  })
+
+  F.addEventListener('submit', async (e) => {
+    e.preventDefault()
+    const domain = F.domain.value.trim().toLowerCase(), mode = F.mode.value, ip2 = mode === 'ip2' ? F.ip2.value : ''
+    if (!/^[a-z0-9-]+(\.[a-z0-9-]+)*\.[a-z]{2,}$/.test(domain)) { window.fieldError?.(F.domain, 'Домен выглядит так: vpn.example.ru'); return }
+    window.fieldError?.(F.domain, '')
+    const changed = []
+    if (domain !== D.domain) changed.push(`домен ${D.domain} → ${domain}`)
+    if (mode !== D.mode) changed.push(`способ «${MODES[D.mode]?.[0] || D.mode}» → «${MODES[mode][0]}»`)
+    if (mode === 'ip2' && ip2 !== D.ip2) changed.push(`IP для VPN ${D.ip2 || 'основной'} → ${ip2}`)
+    if (!changed.length) { toast({ title: 'Ничего не изменилось' }); return }
+    const warn = !$('mp-a-force-f').hidden
+    if (warn && !F.force.checked) { toast({ type: 'error', title: 'DNS не совпадает', text: 'Поправьте A-запись или отметьте «Применить, хотя DNS не совпадает»' }); return }
+    const keep = domain !== D.domain && F.keep_old.checked
+    const lost = domain !== D.domain && !keep ? ' Старые ссылки подписок перестанут работать: людям нужно будет выдать новые.' : ''
+    const fix = changed.join(', ')
+    if (!await A().confirm('Сменить адрес?', `Меняем: ${fix}. VPN и сайты прервутся примерно на минуту, админка перезапустится. Если что-то не поднимется, вернём как было.${lost}`, 'Сменить')) return
+    await send({ mode, domain, ip2, keep_old: keep, force: warn && F.force.checked }, F.querySelector('[type="submit"]'))
+    dlg.close()
+  })
+
+  $('mp-a-alt').addEventListener('click', async (e) => {
+    const b = e.target.closest('[data-drop]'); if (!b) return
+    const d = b.dataset.drop
+    if (!await A().confirm(`Убрать ${d}?`, `Ссылки подписок на ${d} перестанут открываться. Приложения, которые уже обновили подписку, подключаются к ${D.domain} и ничего не заметят. Админка перезапустится`, 'Убрать')) return
+    send({ mode: D.mode, domain: D.domain, ip2: D.ip2, drop: d }, b)
+  })
+
+  async function send(body, btn) {
+    await busy(btn, async () => {
+      try {
+        await api('POST', 'api/addr', body)
+        D.job = { state: 'running', at: now(), text: 'Меняю настройки сервера' }; D.target = body; paintAddr(); follow()
+      } catch (err) { fail(err) }
+    })
+  }
+
+  // ---------- ход смены ----------
+  let following = false
+  async function follow() {
+    if (following) return
+    following = true
+    const t0 = Date.now(), to = D.target, host = location.hostname, since = (D.job?.at || now()) - 5
+    let misses = 0
+    try {
+      while (Date.now() - t0 < 15 * 60e3) {
+        await sleep(3000)
+        let r = null
+        try { r = await api('GET', 'api/addr/job') } catch (e) { misses++ }
+        // Домен сменили без запасного: на этом адресе админки больше нет
+        if (!r && to && to.domain !== host && !to.keep_old && !to.drop && misses > 10) {
+          $('mp-a-run-t').innerHTML = `Админка переехала: <a href="https://${esc(to.domain)}${esc(D.admin)}/">${esc(to.domain)}</a>`; continue
+        }
+        if (!r) continue
+        const j = r.job
+        if (!j || j.at < since) continue   // итог прошлой смены: эта ещё не началась
+        if (j.state === 'running') { Object.assign(D, r); paintAddr(); continue }
+        Object.assign(D, r); paint()
+        if (j?.state === 'done') {
+          toast({ type: 'success', title: 'Адрес сменён', text: 'Домен ' + D.domain })
+          if (!A().demo()) setTimeout(() => location.reload(), 1500)
+        } else if (j?.state === 'failed') toast({ type: 'error', title: 'Сменить не получилось', text: j.text })
+        return
+      }
+    } finally { following = false }
+  }
 })()

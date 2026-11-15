@@ -7,6 +7,7 @@ import { openDb, now, token, newUuid, getSetting, setSetting, hashPassword, chec
 import { Xray } from './xray.mjs';
 import { AUTOXRAY_URL, parseAutoXray, hashOf, renderAll, links } from './template.mjs';
 import { createManager, PRESETS, agent } from './manage.mjs';
+import { createWatch, tgSend, tgFindChat, resolve4 } from './watch.mjs';
 
 const env = (k, d) => process.env[k] ?? d;
 const DATA = env('MP_DATA', '/data');
@@ -156,6 +157,7 @@ async function sync({ full = false } = {}) {
 let syncing = Promise.resolve();
 const queue = fn => { const p = syncing.then(fn); syncing = p.catch(() => {}); return p; };
 const queueSync = opts => queue(() => sync(opts));
+const watch = createWatch({ db, log, server: () => getSetting(db, 'server_name', 'monolit'), adminUrl: () => `https://${getSetting(db, 'domain')}${ADMIN}/` });
 const mgr = createManager({ db, xray, queue, log, activeUsers: () => users().filter(u => userState(u) === 'active'), onRestart: () => { queueSync({ full: true }); } });
 
 // ---------- HTTP ----------
@@ -214,12 +216,22 @@ function updateState() {
   return { current: VERSION, latest, available: !!latest && newer(latest.tag, VERSION), checked: Number(getSetting(db, 'upd_checked', '0')), error: getSetting(db, 'upd_error', ''), status, repo: REPO };
 }
 
+// ---------- адрес сервера ----------
+const cleanDomain = v => { const d = String(v || '').trim().toLowerCase().replace(/^[a-z]+:\/\//, '').replace(/[/:?#].*$/, '').replace(/\.$/, ''); return /^[a-z0-9-]+(\.[a-z0-9-]+)*\.[a-z]{2,}$/.test(d) && d.length <= 253 ? d : '' };
+const resolve = resolve4;
+function addrState() {
+  let job = null; try { job = JSON.parse(readFileSync(join(DATA, 'reconf.json'), 'utf8')) } catch {}
+  return { mode: env('MP_MODE', ''), domain: getSetting(db, 'domain'), ip2: env('MP_IP2', ''), alt: env('MP_ALT', '').split(';').map(x => x.split('|')[0]).filter(Boolean), admin: ADMIN, job, watch: watch.state() };
+}
+
 function stateForAdmin() {
   const tpl = activeTpl(), d = xray.detect();
   return {
     update: updateState(),
+    watch: watch.state(),
     users: users().map(u => ({ ...publicUser(u), url: subUrl(u) })),
-    settings: { server_name: getSetting(db, 'server_name'), domain: getSetting(db, 'domain'), fp: getSetting(db, 'fp'), kinds: getSetting(db, 'kinds'), autoupdate: getSetting(db, 'autoupdate') === '1', support_url: getSetting(db, 'support_url'), update_hours: Number(getSetting(db, 'update_hours', '12')), login: getSetting(db, 'admin_login') },
+    settings: { server_name: getSetting(db, 'server_name'), domain: getSetting(db, 'domain'), fp: getSetting(db, 'fp'), kinds: getSetting(db, 'kinds'), autoupdate: getSetting(db, 'autoupdate') === '1', support_url: getSetting(db, 'support_url'), update_hours: Number(getSetting(db, 'update_hours', '12')), login: getSetting(db, 'admin_login'),
+      tg_token: getSetting(db, 'tg_token', ''), tg_chat: getSetting(db, 'tg_chat', '') },
     xray: { ok: xrayOk, error: syncError, last_sync: lastSync, inbounds: { vision: d.vision, hy2: d.hy2, xhttp: d.xhttp } },
     template: tpl ? { version: tpl.parsed.version, hash: tpl.hash, source: tpl.source, since: tpl.fetched_at, checked: Number(getSetting(db, 'tpl_checked', '0')),
       rollback: !!db.prepare("SELECT 1 FROM templates WHERE status = 'previous'").get(),
@@ -290,6 +302,8 @@ async function adminApi(req, res, path) {
     if (b.autoupdate !== undefined) setSetting(db, 'autoupdate', b.autoupdate ? '1' : '0');
     if (b.support_url !== undefined) setSetting(db, 'support_url', String(b.support_url).trim().slice(0, 200));
     if (b.update_hours !== undefined) setSetting(db, 'update_hours', String(Math.min(48, Math.max(1, Math.round(Number(b.update_hours) || 12)))));
+    if (b.tg_token !== undefined) { const t = String(b.tg_token).trim(); if (t && !/^\d{5,}:[\w-]{20,}$/.test(t)) return json(res, 400, { error: 'Токен бота выглядит так: 123456789:AA…, его выдаёт @BotFather' }); setSetting(db, 'tg_token', t) }
+    if (b.tg_chat !== undefined) { const c = String(b.tg_chat).trim(); if (c && !/^-?\d{3,20}$|^@\w{4,}$/.test(c)) return json(res, 400, { error: 'ID чата: число, например 123456789' }); setSetting(db, 'tg_chat', c) }
     if (b.login !== undefined) {
       const l = String(b.login).trim();
       if (!/^[\p{L}\p{N}_.@-]{3,32}$/u.test(l)) return json(res, 400, { error: 'Логин: от 3 до 32 букв, цифр и знаков . _ - @' });
@@ -353,6 +367,49 @@ async function adminApi(req, res, path) {
     const r = await agent('self-update ' + st.latest.tag, 30000);
     if (r.code === 0) return json(res, 200, { ok: true });
     return json(res, r.code < 0 ? 503 : 400, { error: r.code === 2 ? 'Помощник на сервере старый и не умеет обновлять. Один раз обновите вручную: git pull и bash install.sh --yes' : (r.out || 'Обновление не запустилось') });
+  }
+  // ---------- адрес сервера: домен, IP, способ ----------
+  if (path === '/api/addr' && M === 'GET') {
+    const net = await agent('netinfo', 30000);
+    let info = null; try { info = net.code === 0 ? JSON.parse(net.out.split('\n').pop() || '{}') : null } catch {}
+    return json(res, 200, { ...addrState(), net: info, net_error: info ? '' : net.out || 'Помощник не ответил', dns: await resolve(getSetting(db, 'domain')) });
+  }
+  if (path === '/api/addr/dns' && M === 'POST') {
+    const d = cleanDomain((await readBody(req)).domain); if (!d) return json(res, 400, { error: 'Домен выглядит так: vpn.example.ru' });
+    return json(res, 200, { domain: d, a: await resolve(d) });
+  }
+  if (path === '/api/addr' && M === 'POST') {
+    const b = await readBody(req), cur = addrState();
+    if (cur.mode === 'existing' || !cur.mode) return json(res, 409, { error: 'Xray настроен не через monolit: адрес меняется переустановкой' });
+    if (cur.job?.state === 'running' && now() - cur.job.at < 900) return json(res, 409, { error: 'Смена адреса уже идёт' });
+    const mode = ['bare', 'front', 'ip2'].includes(b.mode) ? b.mode : cur.mode, domain = b.domain === undefined ? cur.domain : cleanDomain(b.domain);
+    if (!domain) return json(res, 400, { error: 'Домен выглядит так: vpn.example.ru' });
+    const ip2 = mode === 'ip2' ? String(b.ip2 || '').trim() : '-';
+    if (mode === 'ip2' && !/^(\d{1,3}\.){3}\d{1,3}$/.test(ip2)) return json(res, 400, { error: 'Выберите второй IP для Xray' });
+    const drop = b.drop ? cleanDomain(b.drop) : '-';
+    if (b.drop && !drop) return json(res, 400, { error: 'Нет такого запасного домена' });
+    mgr.keep();
+    const r = await agent(`reconf ${mode} ${domain} ${ip2} ${b.keep_old && domain !== cur.domain ? 1 : 0} ${b.force ? 1 : 0} ${drop}`, 30000);
+    if (r.code === 0) { log('смена адреса:', cur.mode, cur.domain, '→', mode, domain, ip2); return json(res, 200, { ok: true }) }
+    setSetting(db, 'pre_reconf', '');
+    return json(res, r.code < 0 ? 503 : 400, { error: r.code === 2 && /нет такой команды/.test(r.out) ? 'Помощник на сервере старый: обновите monolit' : r.out || 'Не запустилось' });
+  }
+  if (path === '/api/addr/job' && M === 'GET') return json(res, 200, addrState());
+  if (path === '/api/watch' && M === 'POST') {
+    const b = await readBody(req);
+    if (b.on !== undefined) setSetting(db, 'watch_on', b.on ? '1' : '0');
+    if (b.every !== undefined) setSetting(db, 'watch_every', String(Math.min(360, Math.max(30, Math.round(Number(b.every) || 60)))));
+    watch.plan(); return json(res, 200, { watch: watch.state() });
+  }
+  if (path === '/api/watch/check' && M === 'POST') { await watch.check(true); return json(res, 200, { watch: watch.state() }) }
+  if (path === '/api/notify/test' && M === 'POST') {
+    const b = await readBody(req), token = String(b.token ?? getSetting(db, 'tg_token', '')).trim();
+    let chat = String(b.chat ?? getSetting(db, 'tg_chat', '')).trim();
+    try {
+      if (!chat) { chat = await tgFindChat(token); if (!chat) return json(res, 400, { error: 'Напишите боту /start в Telegram и нажмите «Проверить» ещё раз' }) }
+      await tgSend(token, chat, `monolit, ${getSetting(db, 'server_name', 'monolit')}: уведомления работают`);
+      return json(res, 200, { ok: true, chat });
+    } catch (e) { return json(res, 400, { error: e.message }) }
   }
   if (path === '/api/server' && M === 'GET') return json(res, 200, { manage: mgr.stateForAdmin(), status: await mgr.server.status(), presets: Object.entries(PRESETS).map(([id, p]) => ({ id, ...p })) });
   if (path === '/api/server/reload' && M === 'POST') return agentDone(await mgr.server.reload(), 'nginx перечитал настройки');
@@ -446,5 +503,15 @@ http.listen(Number(PORT), HOST, async () => {
   setInterval(() => db.prepare('DELETE FROM sessions WHERE expires < ?').run(now()), 3600_000);
   setInterval(() => db.prepare('DELETE FROM traffic_daily WHERE day < ?').run(dayOf(now() - 400 * 86400)), 24 * 3600_000);
   setTimeout(() => checkUpdate(), 30_000);
+  watch.start();
+  // Адрес меняли из админки: после перезапуска сообщить итог в Telegram и проверить новый адрес
+  const job = addrState().job;
+  if (job && job.state !== 'running' && String(job.at) !== getSetting(db, 'reconf_seen', '')) {
+    setSetting(db, 'reconf_seen', String(job.at));
+    if (now() - job.at < 3600) {
+      watch.notify(job.state === 'done' ? `адрес сервера сменён, домен ${getSetting(db, 'domain')}` : `сменить адрес не получилось: ${job.text}`);
+      if (job.state === 'done') setTimeout(() => watch.check(true), 60_000);
+    }
+  }
   setInterval(() => checkUpdate(), 24 * 3600_000);
 });

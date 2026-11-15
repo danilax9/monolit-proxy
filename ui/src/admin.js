@@ -64,7 +64,8 @@
     return {
       users,
       update: { current: '1.1.0', latest: { tag: 'v1.2.0', name: 'v1.2.0', notes: 'Несколько серверов в одной админке. График трафика по часам', published: t - 2 * d, url: '#' }, available: true, checked: t - 3 * 3600, error: '', status: null, repo: 'danilax9/monolit-proxy' },
-      settings: { server_name: 'aeza', domain: 'vpn.example.ru', fp: 'firefox', kinds: 'vision,hy2', autoupdate: true, support_url: '', update_hours: 12, login: 'admin' },
+      settings: { server_name: 'aeza', domain: 'vpn.example.ru', fp: 'firefox', kinds: 'vision,hy2', autoupdate: true, support_url: '', update_hours: 12, login: 'admin', tg_token: '', tg_chat: '' },
+      watch: { state: 'blocked', at: t - 600, since: t - 4000, ip: '203.0.113.7', on: true, every: 60 },
       xray: { ok: true, error: '', last_sync: t - 20, inbounds: { vision: { tag: 'vision', port: 443 }, hy2: { tag: 'hy2', port: 443 }, xhttp: null } },
       template: { version: '162', hash: '47ffac58afcb3992', source: 'github', since: t - 3 * d, checked: t - 2 * 3600, rollback: true, pending: null, rejected: null }
     }
@@ -85,6 +86,7 @@
     if (u && path.endsWith('/regen')) { u.token = 'demo' + Date.now().toString(36); u.url = 'https://' + S.settings.domain + '/s/' + u.token; return { user: u } }
     if (u && method === 'DELETE') { S.users = S.users.filter((x) => x !== u); return {} }
     if (path === 'api/settings') { Object.assign(S.settings, body); delete S.settings.password; return S }
+    if (path === 'api/notify/test') { if (!/^\d{5,}:[\w-]{20,}$/.test(body.token || '')) throw new Error('Токен бота выглядит так: 123456789:AA…'); return { ok: true, chat: body.chat || '123456789' } }
     if (path === 'api/template/check') { S.template.checked = now(); return { ok: true, changed: false, state: S } }
     if (path === 'api/template/rollback') { S.template.rollback = false; return S }
     if (path.startsWith('api/traffic')) {
@@ -220,6 +222,13 @@
     b.className = 'badge ' + (ok ? 'badge-success' : 'badge-danger')
     b.lastChild.textContent = ok ? 'Xray работает' : 'Xray не отвечает'
     $('mp-xray-alert').hidden = ok
+    // IP не открывается из России: плашка над списком и точка у «Адреса»
+    const w = S.watch || {}, cut = w.on && (w.state === 'blocked' || w.state === 'down')
+    $('mp-block-alert').hidden = !cut; $('mp-addr-dot').hidden = !cut
+    if (cut) {
+      $('mp-block-t').textContent = w.state === 'down' ? 'Сервер не отвечает ни из России, ни из-за границы' : `IP ${w.ip} не открывается из России`
+      $('mp-block-p').textContent = w.state === 'down' ? 'Посмотрите, работает ли он у хостера' : 'Приложения в России не подключатся. Можно сменить IP или домен'
+    }
     if (!ok && S.xray.error) $('mp-xray-err').textContent = S.xray.error + '. Изменения применятся, когда он снова заработает'
     $('mp-sub').textContent = `Сервер ${S.settings.server_name}, обновлено в ${TF.format(new Date())}`
     $('mp-server-foot').textContent = S.settings.domain || S.settings.server_name
@@ -405,7 +414,8 @@
   const KINDS = [['vision', 'Vision', 'VLESS через TCP с TLS'], ['hy2', 'Hysteria2', 'через UDP, быстрее на плохой связи'], ['xhttp', 'XHTTP', 'через HTTP, если TCP режут']]
   function fillSet() {
     const s = S.settings, on = s.kinds.split(','), ib = S.xray.inbounds || {}
-    sForm.server_name.value = s.server_name; sForm.domain.value = s.domain; sForm.update_hours.value = s.update_hours; sForm.support_url.value = s.support_url || ''; sForm.password.value = ''; sForm.login.value = s.login || ''
+    sForm.server_name.value = s.server_name; sForm.update_hours.value = s.update_hours; sForm.support_url.value = s.support_url || ''; sForm.password.value = ''; sForm.login.value = s.login || ''
+    sForm.tg_token.value = s.tg_token || ''; sForm.tg_chat.value = s.tg_chat || ''
     sForm.fp.value = s.fp; sForm.fp.dispatchEvent(new Event('change'))
     $('mp-kinds').innerHTML = KINDS.map(([k, n, h]) => `<label class="choice"><input type="checkbox" class="check" value="${k}" ${on.includes(k) && ib[k] ? 'checked' : ''} ${ib[k] ? '' : 'disabled'}><span>${n}<small>${ib[k] ? h : 'на этом сервере нет такого входа Xray'}</small></span></label>`).join('')
   }
@@ -486,15 +496,26 @@
     if (!kinds.length) { toast({ type: 'error', title: 'Оставьте хотя бы один протокол' }); return }
     busy(document.querySelector('[form="mp-set-form"]'), async () => {
       try {
-        S = await api('PATCH', 'api/settings', { server_name: sForm.server_name.value, domain: sForm.domain.value, fp: sForm.fp.value, update_hours: sForm.update_hours.value, support_url: sForm.support_url.value, kinds, login, ...(pw ? { password: pw } : {}) })
+        S = await api('PATCH', 'api/settings', { server_name: sForm.server_name.value, tg_token: sForm.tg_token.value, tg_chat: sForm.tg_chat.value, fp: sForm.fp.value, update_hours: sForm.update_hours.value, support_url: sForm.support_url.value, kinds, login, ...(pw ? { password: pw } : {}) })
         paint(); $('mp-set').close()
         if (relogin) { toast({ type: 'success', title: pw ? 'Пароль сменён' : 'Логин сменён', text: 'Войдите заново' }); showLogin() } else toast({ type: 'success', title: 'Настройки сохранены' })
       } catch (err) { fail(err) }
     })
   })
 
-  // Для разделов сервера (server.js)
-  window.mpAdmin = { demo: () => DEMO, api: (m, p, b) => api(m, p, b), confirm: confirmAct, setCopy, domain: () => S?.settings?.domain || location.hostname }
+  // Проверка Telegram: тестовое сообщение по введённым токену и чату. Чат пустой — сервер возьмёт его из сообщения боту
+  $('mp-tg-test').addEventListener('click', (e) => {
+    const token = sForm.tg_token.value.trim(), chat = sForm.tg_chat.value.trim()
+    if (!token) { window.fieldError?.(sForm.tg_token, 'Вставьте токен от @BotFather'); return }
+    window.fieldError?.(sForm.tg_token, '')
+    busy(e.currentTarget, async () => {
+      try { const r = await api('POST', 'api/notify/test', { token, chat }); if (r.chat && !chat) sForm.tg_chat.value = r.chat; toast({ type: 'success', title: 'Сообщение отправлено', text: 'Нажмите «Сохранить», чтобы уведомления приходили' }) } catch (err) { fail(err) }
+    })
+  })
+
+  // Для разделов сервера (server.js, addr.js)
+  window.mpAdmin = { demo: () => DEMO, api: (m, p, b) => api(m, p, b), confirm: confirmAct, setCopy, domain: () => S?.settings?.domain || location.hostname,
+    state: () => S, refresh: () => api('GET', 'api/state').then((s) => { S = s; paint() }).catch(() => {}) }
 
   // ---------- QR в SVG ----------
   function qrSvg(text) {
