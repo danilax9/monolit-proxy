@@ -3568,7 +3568,7 @@ button.alist-row { width: 100%; border: 0; background: none; font: inherit; colo
 .mp-rt .mp-rt-open:focus-visible::after { outline-color: var(--focus) }
 .mp-rt .mp-rt-open span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
 .mp-rt .switch { position: relative; z-index: 1 }
-.alist-row.mp-rt { grid-template-columns: 32px 1fr auto auto }
+.alist-row.mp-rt { grid-template-columns: var(--al-ic) 1fr auto auto }   /* колонка под иконку — во всю её ширину, иначе круг наезжал на текст */
 .mp-rt .mp-rt-del { margin-right: calc(-1 * var(--sp-1)); position: relative; z-index: 1; color: var(--text-muted) }
 .mp-rt-head { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3); min-height: 32px }
 .mp-rt :is(.alist-ic, .alist-tx) { transition: opacity var(--dur-hover-in) var(--ease-out) }
@@ -3595,7 +3595,7 @@ button.alist-row { width: 100%; border: 0; background: none; font: inherit; colo
 @media (max-width: 520px) { .mp-pair { grid-template-columns: minmax(0, 1fr) } }
 .mp-m-exp.is-devices { color: var(--warning) }
 /* Графики трафика: общий над списком, у пользователя — в шторке */
-.mp-chart-card { gap: var(--sp-4); padding: var(--sp-4) var(--sp-4) var(--sp-3); margin-bottom: var(--sp-4) }
+.mp-chart-card { gap: var(--sp-4); padding: var(--sp-4); margin-bottom: var(--sp-4) }
 .mp-chart-card .chart-head .mp-note { align-self: flex-end }
 .mp-chart { min-height: 160px; display: grid; align-content: center }
 .mp-chart:empty { min-height: 160px }
@@ -3620,3 +3620,13 @@ button.alist-row { width: 100%; border: 0; background: none; font: inherit; colo
 }
 /* «Удалить все» — в конце, подальше от правил */
 .mp-rt-foot .mp-danger { margin-left: auto }
+
+/* Списки действий (.alist): от рамки до первой и последней иконки, слева и между иконками — один шаг.
+   В системе сверху 20, слева 22, между иконками 28: край казался теснее промежутков. Шаг = поле списка + поле строки */
+.alist { --al-p: calc(var(--sp-4) / 2); --al-ic: 40px; padding: var(--al-p) }
+.alist-row { grid-template-columns: var(--al-ic) 1fr auto; min-height: 0; padding: var(--al-p) }
+.alist-row + .alist-row::before { left: calc(var(--al-p) + var(--al-ic) + var(--sp-3)); right: var(--al-p) }
+.alist-ic { width: var(--al-ic); height: var(--al-ic) }   /* 40 и на телефоне: круг почти в высоту двух строк подписи, отступы сходятся */
+/* Таблица: над заголовками и под последней строкой столько же, сколько слева до текста (поле 14 + ячейка 20).
+   Бока не трогаем: там поле системы ровное для подсветки строки */
+@container mplist (min-width: 841px) { .table-wrap:has(> .mp-table) { padding-top: calc(var(--sp-3) + var(--sp-2)); padding-bottom: calc(var(--sp-3) + var(--sp-1)) } }
