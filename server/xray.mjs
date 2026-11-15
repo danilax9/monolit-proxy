@@ -64,6 +64,7 @@ export class Xray {
     if (!cfg.stats) { cfg.stats = {}; changed = true; }
     cfg.policy ||= {}; cfg.policy.levels ||= {}; const l0 = cfg.policy.levels['0'] ||= {};
     if (!l0.statsUserUplink || !l0.statsUserDownlink) { l0.statsUserUplink = true; l0.statsUserDownlink = true; changed = true; }
+    if (!l0.statsUserOnline) { l0.statsUserOnline = true; changed = true; }   // кто онлайн и с каких IP
     if (changed) {
       const bak = this.config + '.monolit-original';
       if (!existsSync(bak)) copyFileSync(this.config, bak);
@@ -104,6 +105,18 @@ export class Xray {
       const m = /^user>>>mp-(\d+)>>>traffic>>>(uplink|downlink)$/.exec(s.name); if (!m) continue;
       const r = res[m[1]] ||= { up: 0, down: 0 };
       r[m[2] === 'uplink' ? 'up' : 'down'] += Number(s.value || 0);
+    }
+    return res;
+  }
+
+  // Кто сейчас онлайн: { id: { ip: unix-время последней активности } }. Нужен statsUserOnline в policy (ensureApi)
+  async online() {
+    const res = {};
+    let all; try { all = JSON.parse(await this.run(['api', 'statsgetallonlineusers', `--server=${this.api}`]) || '{}').users || []; } catch { return res; }
+    for (const name of all) {
+      const m = /^user>>>mp-(\d+)>>>online$/.exec(name); if (!m) continue;
+      try { res[m[1]] = JSON.parse(await this.run(['api', 'statsonlineiplist', `--server=${this.api}`, '-email', `mp-${m[1]}`]) || '{}').ips || {}; }
+      catch { res[m[1]] = {}; }
     }
     return res;
   }

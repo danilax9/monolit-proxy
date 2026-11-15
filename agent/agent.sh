@@ -75,6 +75,11 @@ case "$cmd" in
     if command -v ufw >/dev/null && ufw status 2>/dev/null | grep -q '^Status: active'; then ufw allow "$a1/$a2" 2>&1 | tail -1
     elif command -v firewall-cmd >/dev/null && firewall-cmd --state >/dev/null 2>&1; then firewall-cmd -q --permanent --add-port="$a1/$a2" && firewall-cmd -q --reload; fi
     fin 0 ;;
+  self-update)   # обновить monolit до релиза: отдельной службой, потому что install.sh перезапустит и нас
+    [[ "$a1" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || fin 2
+    [ -x /usr/local/lib/monolit/update.sh ] || { echo "Нет update.sh"; fin 1; }
+    systemd-run --unit "monolit-update-$(date +%s)" --collect /usr/local/lib/monolit/update.sh "$a1" 2>&1 | tail -1
+    fin "${PIPESTATUS[0]}" ;;
   fw-close)   # закрыть порт, открытый fw-open (только правило allow порт/протокол)
     num "$a1" && [[ "$a2" =~ ^(tcp|udp)$ ]] || fin 2
     if command -v ufw >/dev/null && ufw status 2>/dev/null | grep -q '^Status: active'; then ufw delete allow "$a1/$a2" 2>&1 | tail -1

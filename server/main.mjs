@@ -1,18 +1,34 @@
 // monolit proxy — админка подписок Xray (Vision, Hysteria2, XHTTP) поверх уже установленного Xray
 import { createServer } from 'node:http';
-import { readFileSync, existsSync, statSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, statSync, renameSync, rmSync } from 'node:fs';
 import { join, extname, normalize } from 'node:path';
-import { openDb, now, token, newUuid, getSetting, setSetting, hashPassword, checkPassword, userState } from './db.mjs';
+import { DatabaseSync } from 'node:sqlite';
+import { openDb, now, token, newUuid, getSetting, setSetting, hashPassword, checkPassword, userState, nextReset } from './db.mjs';
 import { Xray } from './xray.mjs';
 import { AUTOXRAY_URL, parseAutoXray, hashOf, renderAll, links } from './template.mjs';
-import { createManager, PRESETS } from './manage.mjs';
+import { createManager, PRESETS, agent } from './manage.mjs';
 
 const env = (k, d) => process.env[k] ?? d;
 const DATA = env('MP_DATA', '/data');
 const UI = env('MP_UI', new URL('../ui/dist', import.meta.url).pathname.replace(/^\/([A-Z]:)/, '$1'));
 const [HOST, PORT] = env('MP_LISTEN', '127.0.0.1:7380').split(':');
 const ADMIN = '/' + env('MP_ADMIN_PATH', 'admin').replace(/^\/|\/$/g, '');
-const db = openDb(join(DATA, 'monolit.db'));
+const REPO = env('MP_REPO', 'danilax9/monolit-proxy');
+const VERSION = (() => { for (const f of ['/app/VERSION', new URL('../VERSION', import.meta.url)]) { try { return readFileSync(f, 'utf8').trim() } catch {} } return env('MP_VERSION', '0.0.0'); })();
+const DBF = join(DATA, 'monolit.db');
+const DATA_FILES = ['warp.json', 'warp-reg.json'];   // что кроме базы входит в бэкап
+
+// Восстановление из бэкапа: новая база подготовлена прошлым запуском, подменяем её до открытия.
+// Прежняя остаётся рядом. Отметку установки стираем — на старте маршруты и WARP из бэкапа соберутся в конфиг Xray заново
+if (existsSync(join(DATA, 'restore.db'))) {
+  const keep = `${DBF}.before-restore-${Math.floor(Date.now() / 1000)}`;
+  if (existsSync(DBF)) renameSync(DBF, keep);
+  for (const s of ['-wal', '-shm']) rmSync(DBF + s, { force: true });
+  renameSync(join(DATA, 'restore.db'), DBF);
+  const r = new DatabaseSync(DBF); r.exec("DELETE FROM settings WHERE k IN ('apply_sig', 'managed'); DELETE FROM sessions"); r.close();
+  console.log('база восстановлена из бэкапа, прежняя:', keep);
+}
+const db = openDb(DBF);
 const xray = new Xray({ bin: env('MP_XRAY_BIN', '/usr/local/bin/xray'), config: env('MP_XRAY_CONFIG', '/usr/local/etc/xray/config.json'), api: env('MP_XRAY_API', '127.0.0.1:10085') });
 const BUNDLED = new URL('./autoXRAY2.sh', import.meta.url);
 
@@ -28,6 +44,10 @@ if (env('MP_DOMAIN', '') && getSetting(db, 'domain_env') !== env('MP_DOMAIN', ''
 }
 
 const log = (...a) => console.log(new Date().toISOString(), ...a);
+// День для графиков — в часовом поясе сервера (install.sh передаёт его в MP_TZ)
+const TZ = (() => { try { new Intl.DateTimeFormat('en-CA', { timeZone: env('MP_TZ', 'UTC') }); return env('MP_TZ', 'UTC'); } catch { return 'UTC'; } })();
+const DAYF = new Intl.DateTimeFormat('en-CA', { timeZone: TZ, year: 'numeric', month: '2-digit', day: '2-digit' });
+const dayOf = t => DAYF.format(new Date(t * 1000));
 const kindsOn = () => { const d = xray.detect(); return getSetting(db, 'kinds', 'vision,hy2').split(',').filter(k => d[k]); };
 const serverCtx = () => {
   const d = xray.detect();
@@ -88,14 +108,35 @@ function rollbackTemplate() {
 // ---------- синхронизация с Xray и лимиты ----------
 let applied = null;           // id пользователей, которые сейчас есть в Xray
 let xrayOk = false, lastSync = 0, syncError = '';
+let online = {};              // { id: { ip: время } } — кто сейчас подключён
+const over = new Map();       // id → сколько проверок подряд IP больше разрешённого
+
+const BLOCK_SECS = 600;       // на сколько отключать за лишние устройства
+// Лишние устройства: две проверки подряд (2 минуты) — чтобы смена сети на телефоне (Wi‑Fi → LTE) не считалась вторым устройством
+function checkDevices(t) {
+  for (const u of db.prepare('SELECT id, name, devices, block_until FROM users WHERE devices > 0 AND enabled = 1').all()) {
+    const n = Object.keys(online[u.id] || {}).length;
+    if (n > u.devices && !(u.block_until > t)) {
+      const c = (over.get(u.id) || 0) + 1; over.set(u.id, c);
+      if (c >= 2) { db.prepare('UPDATE users SET block_until = ? WHERE id = ?').run(t + BLOCK_SECS, u.id); over.delete(u.id); log(`${u.name}: ${n} IP при разрешённых ${u.devices}, отключён на ${BLOCK_SECS / 60} минут`); }
+    } else over.delete(u.id);
+  }
+}
 
 async function sync({ full = false } = {}) {
   try {
     xrayOk = await xray.apiAlive();
     if (!xrayOk) { syncError = 'API Xray не отвечает'; return; }
-    const t = now(), traffic = await xray.takeTraffic();
+    const t = now(), traffic = await xray.takeTraffic(), day = dayOf(t);
     const add = db.prepare('UPDATE users SET up = up + ?, down = down + ?, last_active = ? WHERE id = ?');
-    for (const [id, v] of Object.entries(traffic)) if (v.up || v.down) add.run(v.up, v.down, t, Number(id));
+    const addDay = db.prepare('INSERT INTO traffic_daily (user_id, day, up, down) VALUES (?, ?, ?, ?) ON CONFLICT(user_id, day) DO UPDATE SET up = up + excluded.up, down = down + excluded.down');
+    for (const [id, v] of Object.entries(traffic)) if (v.up || v.down) { add.run(v.up, v.down, t, Number(id)); addDay.run(Number(id), day, v.up, v.down); }
+    // Месячный лимит: в день сброса счётчик с нуля, и человек снова активен
+    for (const u of db.prepare("SELECT id, name, created_at FROM users WHERE period = 'month' AND reset_at > 0 AND reset_at <= ?").all(t)) {
+      db.prepare('UPDATE users SET up = 0, down = 0, reset_at = ? WHERE id = ?').run(nextReset(u.created_at, t), u.id); log(`${u.name}: месячный трафик обнулён`);
+    }
+    online = await xray.online();
+    checkDevices(t);
     const kinds = kindsOn(), all = users(), want = new Set(all.filter(u => userState(u, t) === 'active').map(u => u.id));
     const was = applied || new Set();
     if (full || !applied) {
@@ -121,6 +162,7 @@ const mgr = createManager({ db, xray, queue, log, activeUsers: () => users().fil
 const MIME = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.svg': 'image/svg+xml', '.woff2': 'font/woff2', '.png': 'image/png', '.ico': 'image/x-icon', '.json': 'application/json' };
 const send = (res, code, body, headers = {}) => { res.writeHead(code, { 'cache-control': 'no-store', ...headers }); res.end(body); };
 const json = (res, code, obj) => send(res, code, JSON.stringify(obj), { 'content-type': 'application/json; charset=utf-8' });
+const readRaw = (req, max) => new Promise((ok, bad) => { const parts = []; let n = 0; req.on('data', c => { n += c.length; if (n > max) { bad(new Error('Файл слишком большой')); req.destroy(); } else parts.push(c); }); req.on('end', () => ok(Buffer.concat(parts).toString('utf8'))); req.on('error', bad); });
 const readBody = req => new Promise((ok, bad) => { let s = ''; req.on('data', c => { s += c; if (s.length > 1e5) req.destroy(); }); req.on('end', () => { try { ok(s ? JSON.parse(s) : {}); } catch { bad(new Error('bad json')); } }); });
 const cookie = req => Object.fromEntries((req.headers.cookie || '').split(';').map(s => s.trim().split('=')).filter(p => p[0]));
 // Перед monolit всегда nginx на 127.0.0.1: он кладёт адрес посетителя в X-Real-IP (сам заголовок клиента затирает)
@@ -141,13 +183,41 @@ function authed(req) {
 const fails = new Map();   // защита входа от перебора
 function publicUser(u) {
   const st = userState(u);
-  return { id: u.id, name: u.name, note: u.note, token: u.token, limit: u.limit_bytes, expire: u.expire_at, enabled: !!u.enabled, up: u.up, down: u.down, used: u.up + u.down, state: st, last_active: u.last_active, last_sub: u.last_sub, created: u.created_at };
+  const ips = online[u.id] || {};
+  return { id: u.id, name: u.name, note: u.note, token: u.token, limit: u.limit_bytes, expire: u.expire_at, enabled: !!u.enabled, up: u.up, down: u.down, used: u.up + u.down, state: st, last_active: u.last_active, last_sub: u.last_sub, created: u.created_at,
+    period: u.period || '', reset_at: u.reset_at, devices: u.devices, block_until: u.block_until,
+    online: Object.entries(ips).map(([ip, at]) => ({ ip, at: Number(at) })).sort((a, b) => b.at - a.at) };
 }
+const cleanDevices = v => Math.min(50, Math.max(0, Math.round(Number(v) || 0)));
+const cleanPeriod = v => v === 'month' ? 'month' : '';
 const subUrl = u => `https://${getSetting(db, 'domain')}/s/${u.token}`;
+
+// ---------- обновление из релизов GitHub ----------
+const semver = v => (String(v).replace(/^v/, '').match(/^(\d+)\.(\d+)\.(\d+)/) || []).slice(1).map(Number);
+const newer = (a, b) => { const x = semver(a), y = semver(b); if (x.length < 3 || y.length < 3) return false; for (let i = 0; i < 3; i++) if (x[i] !== y[i]) return x[i] > y[i]; return false; };
+async function checkUpdate() {
+  try {
+    const r = await fetch(`https://api.github.com/repos/${REPO}/releases/latest`, { headers: { 'user-agent': 'monolit-proxy', accept: 'application/vnd.github+json' }, signal: AbortSignal.timeout(15000) });
+    if (r.status === 404) setSetting(db, 'upd_latest', '');   // релизов ещё нет
+    else if (!r.ok) throw new Error('GitHub ответил ' + r.status);
+    else {
+      const j = await r.json();
+      setSetting(db, 'upd_latest', JSON.stringify({ tag: j.tag_name, name: j.name || j.tag_name, notes: String(j.body || '').slice(0, 4000), published: Math.floor(Date.parse(j.published_at) / 1000) || 0, url: j.html_url }));
+    }
+    setSetting(db, 'upd_error', ''); setSetting(db, 'upd_checked', now()); return { ok: true };
+  } catch (e) { setSetting(db, 'upd_error', e.message); setSetting(db, 'upd_checked', now()); return { ok: false, error: e.message }; }
+}
+function updateState() {
+  let latest = null, status = null;
+  try { latest = JSON.parse(getSetting(db, 'upd_latest', '') || 'null'); } catch {}
+  try { status = JSON.parse(readFileSync(join(DATA, 'update.json'), 'utf8')); } catch {}   // пишет update.sh на хосте
+  return { current: VERSION, latest, available: !!latest && newer(latest.tag, VERSION), checked: Number(getSetting(db, 'upd_checked', '0')), error: getSetting(db, 'upd_error', ''), status, repo: REPO };
+}
 
 function stateForAdmin() {
   const tpl = activeTpl(), d = xray.detect();
   return {
+    update: updateState(),
     users: users().map(u => ({ ...publicUser(u), url: subUrl(u) })),
     settings: { server_name: getSetting(db, 'server_name'), domain: getSetting(db, 'domain'), fp: getSetting(db, 'fp'), kinds: getSetting(db, 'kinds'), autoupdate: getSetting(db, 'autoupdate') === '1', support_url: getSetting(db, 'support_url'), update_hours: Number(getSetting(db, 'update_hours', '12')), login: getSetting(db, 'admin_login') },
     xray: { ok: xrayOk, error: syncError, last_sync: lastSync, inbounds: { vision: d.vision, hy2: d.hy2, xhttp: d.xhttp } },
@@ -178,8 +248,10 @@ async function adminApi(req, res, path) {
   if (path === '/api/users' && req.method === 'POST') {
     const b = await readBody(req), name = String(b.name || '').trim().slice(0, 40);
     if (!name) return json(res, 400, { error: 'Нужно имя' });
-    const r = db.prepare('INSERT INTO users (name, note, token, uuid, hy2, limit_bytes, expire_at, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)')
-      .run(name, String(b.note || '').slice(0, 200), token(16), newUuid(), token(12), Math.max(0, Math.round(Number(b.limit) || 0)), Math.max(0, Math.round(Number(b.expire) || 0)), now());
+    const t = now(), period = cleanPeriod(b.period);
+    const r = db.prepare('INSERT INTO users (name, note, token, uuid, hy2, limit_bytes, expire_at, created_at, period, reset_at, devices) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
+      .run(name, String(b.note || '').slice(0, 200), token(16), newUuid(), token(12), Math.max(0, Math.round(Number(b.limit) || 0)), Math.max(0, Math.round(Number(b.expire) || 0)), t,
+        period, period ? nextReset(t, t) : 0, cleanDevices(b.devices));
     await queueSync(); return json(res, 200, { user: { ...publicUser(userById(r.lastInsertRowid)), url: subUrl(userById(r.lastInsertRowid)) } });
   }
   if (m && !m[2] && req.method === 'PATCH') {
@@ -187,8 +259,15 @@ async function adminApi(req, res, path) {
     const b = await readBody(req);
     const f = { name: b.name !== undefined ? String(b.name).trim().slice(0, 40) || u.name : u.name, note: b.note !== undefined ? String(b.note).slice(0, 200) : u.note,
       limit_bytes: b.limit !== undefined ? Math.max(0, Math.round(Number(b.limit) || 0)) : u.limit_bytes, expire_at: b.expire !== undefined ? Math.max(0, Math.round(Number(b.expire) || 0)) : u.expire_at,
-      enabled: b.enabled !== undefined ? (b.enabled ? 1 : 0) : u.enabled };
-    db.prepare('UPDATE users SET name = ?, note = ?, limit_bytes = ?, expire_at = ?, enabled = ? WHERE id = ?').run(f.name, f.note, f.limit_bytes, f.expire_at, f.enabled, u.id);
+      enabled: b.enabled !== undefined ? (b.enabled ? 1 : 0) : u.enabled,
+      period: b.period !== undefined ? cleanPeriod(b.period) : u.period, devices: b.devices !== undefined ? cleanDevices(b.devices) : u.devices };
+    // месячный лимит включили — первый сброс в ближайший «день рождения» подписки; выключили — сбросов нет
+    const reset_at = f.period === u.period ? u.reset_at : f.period ? nextReset(u.created_at, now()) : 0;
+    // лимит устройств сменили или сняли блокировку вручную — блокировка снимается
+    const block_until = b.unblock || f.devices !== u.devices || !f.enabled ? 0 : u.block_until;
+    if (block_until !== u.block_until) over.delete(u.id);
+    db.prepare('UPDATE users SET name = ?, note = ?, limit_bytes = ?, expire_at = ?, enabled = ?, period = ?, reset_at = ?, devices = ?, block_until = ? WHERE id = ?')
+      .run(f.name, f.note, f.limit_bytes, f.expire_at, f.enabled, f.period, reset_at, f.devices, block_until, u.id);
     await queueSync(); return json(res, 200, { user: { ...publicUser(userById(u.id)), url: subUrl(userById(u.id)) } });
   }
   if (m && m[2] === '/reset' && req.method === 'POST') { db.prepare('UPDATE users SET up = 0, down = 0 WHERE id = ?').run(Number(m[1])); await queueSync(); return json(res, 200, {}); }
@@ -200,7 +279,7 @@ async function adminApi(req, res, path) {
   }
   if (m && !m[2] && req.method === 'DELETE') {
     const id = Number(m[1]); await xray.removeUser(id, ['vision', 'hy2', 'xhttp']);
-    db.prepare('DELETE FROM users WHERE id = ?').run(id); applied?.delete(id); await queueSync({ full: false }); return json(res, 200, {});
+    db.prepare('DELETE FROM users WHERE id = ?').run(id); db.prepare('DELETE FROM traffic_daily WHERE user_id = ?').run(id); applied?.delete(id); await queueSync({ full: false }); return json(res, 200, {});
   }
   if (path === '/api/settings' && req.method === 'PATCH') {
     const b = await readBody(req);
@@ -225,6 +304,56 @@ async function adminApi(req, res, path) {
   const agentDone = (r, okText) => r.code === 0 ? json(res, 200, { ok: true, out: r.out, text: okText }) : json(res, r.code < 0 ? 503 : 400, { error: r.out.split(/\n/).filter(Boolean).slice(-3).join(' ') || 'Не получилось' });
   const managed = () => mgr.stateForAdmin().managed || (json(res, 409, { error: 'Xray настроен не через monolit (autoXRAY). Чтобы управлять им здесь, переустановите: install.sh --reconfigure --replace-autoxray' }), false);
   let mm;
+  // ---------- трафик по дням ----------
+  if (path === '/api/traffic' && M === 'GET') {
+    const days = Math.min(90, Math.max(7, Number(qs.get('days')) || 30)), uid = Number(qs.get('user')) || 0, t = now(), list = [];
+    for (let i = days - 1; i >= 0; i--) { const d = dayOf(t - i * 86400); if (!list.includes(d)) list.push(d); }
+    const rows = uid ? db.prepare('SELECT day, up, down FROM traffic_daily WHERE user_id = ? AND day >= ?').all(uid, list[0])
+      : db.prepare('SELECT day, SUM(up) AS up, SUM(down) AS down FROM traffic_daily WHERE day >= ? GROUP BY day').all(list[0]);
+    const by = new Map(rows.map(r => [r.day, r]));
+    return json(res, 200, { tz: TZ, days: list.map(d => ({ day: d, up: Number(by.get(d)?.up || 0), down: Number(by.get(d)?.down || 0) })) });
+  }
+  // ---------- бэкап и восстановление ----------
+  if (path === '/api/backup' && M === 'GET') {
+    const tmp = join(DATA, `backup-${process.pid}.db`); rmSync(tmp, { force: true });
+    db.exec(`VACUUM INTO '${tmp.replace(/'/g, "''")}'`);
+    const files = {}; for (const f of DATA_FILES) if (existsSync(join(DATA, f))) files[f] = readFileSync(join(DATA, f), 'utf8');
+    const srv = getSetting(db, 'server_name', 'monolit');
+    const body = JSON.stringify({ monolit_backup: 1, version: VERSION, created: now(), server: srv, domain: getSetting(db, 'domain'), users: users().length, db: readFileSync(tmp).toString('base64'), files });
+    rmSync(tmp, { force: true });
+    const name = `monolit-${srv.replace(/[^\w.-]+/g, '_') || 'backup'}-${dayOf(now())}.json`;
+    return send(res, 200, body, { 'content-type': 'application/json; charset=utf-8', 'content-disposition': `attachment; filename="${name}"` });
+  }
+  if (path === '/api/restore' && M === 'POST') {
+    let b; try { b = JSON.parse(await readRaw(req, 64e6)); } catch (e) { return json(res, 400, { error: /большой/.test(e.message) ? e.message : 'Это не файл бэкапа monolit' }); }
+    if (b?.monolit_backup !== 1 || typeof b.db !== 'string') return json(res, 400, { error: 'Это не файл бэкапа monolit' });
+    const tmp = join(DATA, 'restore-check.db'); writeFileSync(tmp, Buffer.from(b.db, 'base64'));
+    let n = 0;
+    try { const c = new DatabaseSync(tmp, { readOnly: true }); n = c.prepare('SELECT COUNT(*) AS n FROM users').get().n; if (!c.prepare("SELECT 1 FROM settings WHERE k = 'admin_hash'").get()) throw new Error(); c.close(); }
+    catch { rmSync(tmp, { force: true }); return json(res, 400, { error: 'В файле нет базы monolit или она повреждена' }); }
+    const t = now();
+    for (const [f, text] of Object.entries(b.files || {})) if (DATA_FILES.includes(f) && typeof text === 'string') {
+      if (existsSync(join(DATA, f))) renameSync(join(DATA, f), join(DATA, `${f}.before-restore-${t}`));
+      writeFileSync(join(DATA, f), text, { mode: 0o600 });
+    }
+    renameSync(tmp, join(DATA, 'restore.db'));
+    json(res, 200, { ok: true, users: n, server: b.server || '' });
+    // база подменится при запуске: Docker поднимет админку сам (--restart unless-stopped)
+    log('восстановление из бэкапа, пользователей', n, '— перезапуск');
+    try { db.exec('PRAGMA wal_checkpoint(TRUNCATE)'); } catch {}
+    setTimeout(() => process.exit(0), 500); return;
+  }
+  // ---------- обновление monolit ----------
+  if (path === '/api/update' && M === 'GET') return json(res, 200, updateState());
+  if (path === '/api/update/check' && M === 'POST') { const r = await checkUpdate(); return json(res, r.ok ? 200 : 502, r.ok ? updateState() : { error: 'Не получилось проверить: ' + r.error }); }
+  if (path === '/api/update' && M === 'POST') {
+    const st = updateState();
+    if (!st.available) return json(res, 400, { error: 'Новой версии нет' });
+    if (st.status?.state === 'running' && now() - st.status.at < 900) return json(res, 409, { error: 'Обновление уже идёт' });
+    const r = await agent('self-update ' + st.latest.tag, 30000);
+    if (r.code === 0) return json(res, 200, { ok: true });
+    return json(res, r.code < 0 ? 503 : 400, { error: r.code === 2 ? 'Помощник на сервере старый и не умеет обновлять. Один раз обновите вручную: git pull и bash install.sh --yes' : (r.out || 'Обновление не запустилось') });
+  }
   if (path === '/api/server' && M === 'GET') return json(res, 200, { manage: mgr.stateForAdmin(), status: await mgr.server.status(), presets: Object.entries(PRESETS).map(([id, p]) => ({ id, ...p })) });
   if (path === '/api/server/reload' && M === 'POST') return agentDone(await mgr.server.reload(), 'nginx перечитал настройки');
   if ((mm = /^\/api\/server\/(restart|update|geo|cert)$/.exec(path)) && M === 'POST') return json(res, 200, await mgr.server[mm[1]]());
@@ -278,7 +407,7 @@ function subscription(req, res, tok, mode) {
     'subscription-userinfo': `upload=${u.up};download=${u.down};total=${u.limit_bytes};expire=${u.expire_at}`,
     'profile-web-page-url': subUrl(u),
     ...(getSetting(db, 'support_url') ? { 'support-url': getSetting(db, 'support_url') } : {}),
-    ...(st !== 'active' ? { announce: 'base64:' + b64({ off: 'Доступ отключён', expired: 'Срок подписки закончился', limit: 'Трафик по подписке закончился' }[st]) } : {}),
+    ...(st !== 'active' ? { announce: 'base64:' + b64({ off: 'Доступ отключён', expired: 'Срок подписки закончился', limit: 'Трафик по подписке закончился', devices: 'Подключено больше устройств, чем разрешено. Доступ вернётся через 10 минут' }[st]) } : {}),
   };
   const asLinks = mode === 'links' || (mode === 'auto' && /v2rayn\b|nekobox|throne|shadowrocket/i.test(ua) && !/v2rayng/i.test(ua));
   if (asLinks) return send(res, 200, b64(info.configs.join('\n')), { ...headers, 'content-type': 'text/plain; charset=utf-8' });
@@ -315,4 +444,7 @@ http.listen(Number(PORT), HOST, async () => {
   setInterval(() => queueSync({ full: true }), 10 * 60_000);    // если Xray перезапускали — вернуть пользователей
   setInterval(() => checkTemplate().catch(e => log('tpl', e.message)), 24 * 3600_000);
   setInterval(() => db.prepare('DELETE FROM sessions WHERE expires < ?').run(now()), 3600_000);
+  setInterval(() => db.prepare('DELETE FROM traffic_daily WHERE day < ?').run(dayOf(now() - 400 * 86400)), 24 * 3600_000);
+  setTimeout(() => checkUpdate(), 30_000);
+  setInterval(() => checkUpdate(), 24 * 3600_000);
 });

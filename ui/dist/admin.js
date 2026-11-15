@@ -1,7 +1,7 @@
 // icons.js
 // Иконки Lucide 0.460.0 (ISC), только нужные: замена <i data-lucide> на svg, как lucide.createIcons()
 (() => {
-  const P = {"apple":"<path d=\"M12 20.94c1.5 0 2.75 1.06 4 1.06 3 0 6-8 6-12.22A4.91 4.91 0 0 0 17 5c-2.22 0-4 1.44-5 2-1-.56-2.78-2-5-2a4.9 4.9 0 0 0-5 4.78C2 14 5 22 8 22c1.25 0 2.5-1.06 4-1.06Z\"/><path d=\"M10 2c1 .5 2 2 2 5\"/>","check":"<path d=\"M20 6 9 17l-5-5\"/>","chevron-right":"<path d=\"m9 18 6-6-6-6\"/>","circle-alert":"<circle cx=\"12\" cy=\"12\" r=\"10\"/><line x1=\"12\" x2=\"12\" y1=\"8\" y2=\"12\"/><line x1=\"12\" x2=\"12.01\" y1=\"16\" y2=\"16\"/>","circle-check":"<circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"m9 12 2 2 4-4\"/>","clock":"<circle cx=\"12\" cy=\"12\" r=\"10\"/><polyline points=\"12 6 12 12 16 14\"/>","copy":"<rect width=\"14\" height=\"14\" x=\"8\" y=\"8\" rx=\"2\" ry=\"2\"/><path d=\"M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2\"/>","download":"<path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\"/><polyline points=\"7 10 12 15 17 10\"/><line x1=\"12\" x2=\"12\" y1=\"15\" y2=\"3\"/>","external-link":"<path d=\"M15 3h6v6\"/><path d=\"M10 14 21 3\"/><path d=\"M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6\"/>","file-code":"<path d=\"M10 12.5 8 15l2 2.5\"/><path d=\"m14 12.5 2 2.5-2 2.5\"/><path d=\"M14 2v4a2 2 0 0 0 2 2h4\"/><path d=\"M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z\"/>","infinity":"<path d=\"M12 12c-2-2.67-4-4-6-4a4 4 0 1 0 0 8c2 0 4-1.33 6-4Zm0 0c2 2.67 4 4 6 4a4 4 0 0 0 0-8c-2 0-4 1.33-6 4Z\"/>","key-round":"<path d=\"M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z\"/><circle cx=\"16.5\" cy=\"7.5\" r=\".5\" fill=\"currentColor\"/>","link":"<path d=\"M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71\"/><path d=\"M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71\"/>","log-out":"<path d=\"M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4\"/><polyline points=\"16 17 21 12 16 7\"/><line x1=\"21\" x2=\"9\" y1=\"12\" y2=\"12\"/>","monitor":"<rect width=\"20\" height=\"14\" x=\"2\" y=\"3\" rx=\"2\"/><line x1=\"8\" x2=\"16\" y1=\"21\" y2=\"21\"/><line x1=\"12\" x2=\"12\" y1=\"17\" y2=\"21\"/>","moon":"<path d=\"M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z\"/>","panel-left":"<rect width=\"18\" height=\"18\" x=\"3\" y=\"3\" rx=\"2\"/><path d=\"M9 3v18\"/>","plus":"<path d=\"M5 12h14\"/><path d=\"M12 5v14\"/>","qr-code":"<rect width=\"5\" height=\"5\" x=\"3\" y=\"3\" rx=\"1\"/><rect width=\"5\" height=\"5\" x=\"16\" y=\"3\" rx=\"1\"/><rect width=\"5\" height=\"5\" x=\"3\" y=\"16\" rx=\"1\"/><path d=\"M21 16h-3a2 2 0 0 0-2 2v3\"/><path d=\"M21 21v.01\"/><path d=\"M12 7v3a2 2 0 0 1-2 2H7\"/><path d=\"M3 12h.01\"/><path d=\"M12 3h.01\"/><path d=\"M12 16v.01\"/><path d=\"M16 12h1\"/><path d=\"M21 12v.01\"/><path d=\"M12 21v-1\"/>","refresh-cw":"<path d=\"M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8\"/><path d=\"M21 3v5h-5\"/><path d=\"M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16\"/><path d=\"M8 16H3v5\"/>","rotate-ccw":"<path d=\"M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8\"/><path d=\"M3 3v5h5\"/>","search":"<circle cx=\"11\" cy=\"11\" r=\"8\"/><path d=\"m21 21-4.3-4.3\"/>","settings":"<path d=\"M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z\"/><circle cx=\"12\" cy=\"12\" r=\"3\"/>","smartphone":"<rect width=\"14\" height=\"20\" x=\"5\" y=\"2\" rx=\"2\" ry=\"2\"/><path d=\"M12 18h.01\"/>","sun":"<circle cx=\"12\" cy=\"12\" r=\"4\"/><path d=\"M12 2v2\"/><path d=\"M12 20v2\"/><path d=\"m4.93 4.93 1.41 1.41\"/><path d=\"m17.66 17.66 1.41 1.41\"/><path d=\"M2 12h2\"/><path d=\"M20 12h2\"/><path d=\"m6.34 17.66-1.41 1.41\"/><path d=\"m19.07 4.93-1.41 1.41\"/>","trash-2":"<path d=\"M3 6h18\"/><path d=\"M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6\"/><path d=\"M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2\"/><line x1=\"10\" x2=\"10\" y1=\"11\" y2=\"17\"/><line x1=\"14\" x2=\"14\" y1=\"11\" y2=\"17\"/>","triangle-alert":"<path d=\"m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3\"/><path d=\"M12 9v4\"/><path d=\"M12 17h.01\"/>","undo-2":"<path d=\"M9 14 4 9l5-5\"/><path d=\"M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11\"/>","users":"<path d=\"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2\"/><circle cx=\"9\" cy=\"7\" r=\"4\"/><path d=\"M22 21v-2a4 4 0 0 0-3-3.87\"/><path d=\"M16 3.13a4 4 0 0 1 0 7.75\"/>","x":"<path d=\"M18 6 6 18\"/><path d=\"m6 6 12 12\"/>","arrow-down":"<path d=\"M12 5v14\"/><path d=\"m19 12-7 7-7-7\"/>","arrow-up":"<path d=\"m5 12 7-7 7 7\"/><path d=\"M12 19V5\"/>","cloud":"<path d=\"M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z\"/>","eye":"<path d=\"M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0\"/><circle cx=\"12\" cy=\"12\" r=\"3\"/>","globe":"<circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20\"/><path d=\"M2 12h20\"/>","history":"<path d=\"M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8\"/><path d=\"M3 3v5h5\"/><path d=\"M12 7v5l4 2\"/>","network":"<rect x=\"16\" y=\"16\" width=\"6\" height=\"6\" rx=\"1\"/><rect x=\"2\" y=\"16\" width=\"6\" height=\"6\" rx=\"1\"/><rect x=\"9\" y=\"2\" width=\"6\" height=\"6\" rx=\"1\"/><path d=\"M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3\"/><path d=\"M12 12V8\"/>","pencil":"<path d=\"M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z\"/><path d=\"m15 5 4 4\"/>","route":"<circle cx=\"6\" cy=\"19\" r=\"3\"/><path d=\"M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15\"/><circle cx=\"18\" cy=\"5\" r=\"3\"/>","scroll-text":"<path d=\"M15 12h-5\"/><path d=\"M15 8h-5\"/><path d=\"M19 17V5a2 2 0 0 0-2-2H4\"/><path d=\"M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3\"/>","send":"<path d=\"M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z\"/><path d=\"m21.854 2.147-10.94 10.939\"/>","server":"<rect width=\"20\" height=\"8\" x=\"2\" y=\"2\" rx=\"2\" ry=\"2\"/><rect width=\"20\" height=\"8\" x=\"2\" y=\"14\" rx=\"2\" ry=\"2\"/><line x1=\"6\" x2=\"6.01\" y1=\"6\" y2=\"6\"/><line x1=\"6\" x2=\"6.01\" y1=\"18\" y2=\"18\"/>","shield-check":"<path d=\"M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z\"/><path d=\"m9 12 2 2 4-4\"/>","shield":"<path d=\"M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z\"/>"};
+  const P = {"upload":"<path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\"/><polyline points=\"17 8 12 3 7 8\"/><line x1=\"12\" x2=\"12\" y1=\"3\" y2=\"15\"/>","lock-open":"<rect width=\"18\" height=\"11\" x=\"3\" y=\"11\" rx=\"2\" ry=\"2\"/><path d=\"M7 11V7a5 5 0 0 1 9.9-1\"/>","apple":"<path d=\"M12 20.94c1.5 0 2.75 1.06 4 1.06 3 0 6-8 6-12.22A4.91 4.91 0 0 0 17 5c-2.22 0-4 1.44-5 2-1-.56-2.78-2-5-2a4.9 4.9 0 0 0-5 4.78C2 14 5 22 8 22c1.25 0 2.5-1.06 4-1.06Z\"/><path d=\"M10 2c1 .5 2 2 2 5\"/>","check":"<path d=\"M20 6 9 17l-5-5\"/>","chevron-right":"<path d=\"m9 18 6-6-6-6\"/>","circle-alert":"<circle cx=\"12\" cy=\"12\" r=\"10\"/><line x1=\"12\" x2=\"12\" y1=\"8\" y2=\"12\"/><line x1=\"12\" x2=\"12.01\" y1=\"16\" y2=\"16\"/>","circle-check":"<circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"m9 12 2 2 4-4\"/>","clock":"<circle cx=\"12\" cy=\"12\" r=\"10\"/><polyline points=\"12 6 12 12 16 14\"/>","copy":"<rect width=\"14\" height=\"14\" x=\"8\" y=\"8\" rx=\"2\" ry=\"2\"/><path d=\"M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2\"/>","download":"<path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\"/><polyline points=\"7 10 12 15 17 10\"/><line x1=\"12\" x2=\"12\" y1=\"15\" y2=\"3\"/>","external-link":"<path d=\"M15 3h6v6\"/><path d=\"M10 14 21 3\"/><path d=\"M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6\"/>","file-code":"<path d=\"M10 12.5 8 15l2 2.5\"/><path d=\"m14 12.5 2 2.5-2 2.5\"/><path d=\"M14 2v4a2 2 0 0 0 2 2h4\"/><path d=\"M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z\"/>","infinity":"<path d=\"M12 12c-2-2.67-4-4-6-4a4 4 0 1 0 0 8c2 0 4-1.33 6-4Zm0 0c2 2.67 4 4 6 4a4 4 0 0 0 0-8c-2 0-4 1.33-6 4Z\"/>","key-round":"<path d=\"M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z\"/><circle cx=\"16.5\" cy=\"7.5\" r=\".5\" fill=\"currentColor\"/>","link":"<path d=\"M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71\"/><path d=\"M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71\"/>","log-out":"<path d=\"M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4\"/><polyline points=\"16 17 21 12 16 7\"/><line x1=\"21\" x2=\"9\" y1=\"12\" y2=\"12\"/>","monitor":"<rect width=\"20\" height=\"14\" x=\"2\" y=\"3\" rx=\"2\"/><line x1=\"8\" x2=\"16\" y1=\"21\" y2=\"21\"/><line x1=\"12\" x2=\"12\" y1=\"17\" y2=\"21\"/>","moon":"<path d=\"M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z\"/>","panel-left":"<rect width=\"18\" height=\"18\" x=\"3\" y=\"3\" rx=\"2\"/><path d=\"M9 3v18\"/>","plus":"<path d=\"M5 12h14\"/><path d=\"M12 5v14\"/>","qr-code":"<rect width=\"5\" height=\"5\" x=\"3\" y=\"3\" rx=\"1\"/><rect width=\"5\" height=\"5\" x=\"16\" y=\"3\" rx=\"1\"/><rect width=\"5\" height=\"5\" x=\"3\" y=\"16\" rx=\"1\"/><path d=\"M21 16h-3a2 2 0 0 0-2 2v3\"/><path d=\"M21 21v.01\"/><path d=\"M12 7v3a2 2 0 0 1-2 2H7\"/><path d=\"M3 12h.01\"/><path d=\"M12 3h.01\"/><path d=\"M12 16v.01\"/><path d=\"M16 12h1\"/><path d=\"M21 12v.01\"/><path d=\"M12 21v-1\"/>","refresh-cw":"<path d=\"M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8\"/><path d=\"M21 3v5h-5\"/><path d=\"M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16\"/><path d=\"M8 16H3v5\"/>","rotate-ccw":"<path d=\"M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8\"/><path d=\"M3 3v5h5\"/>","search":"<circle cx=\"11\" cy=\"11\" r=\"8\"/><path d=\"m21 21-4.3-4.3\"/>","settings":"<path d=\"M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z\"/><circle cx=\"12\" cy=\"12\" r=\"3\"/>","smartphone":"<rect width=\"14\" height=\"20\" x=\"5\" y=\"2\" rx=\"2\" ry=\"2\"/><path d=\"M12 18h.01\"/>","sun":"<circle cx=\"12\" cy=\"12\" r=\"4\"/><path d=\"M12 2v2\"/><path d=\"M12 20v2\"/><path d=\"m4.93 4.93 1.41 1.41\"/><path d=\"m17.66 17.66 1.41 1.41\"/><path d=\"M2 12h2\"/><path d=\"M20 12h2\"/><path d=\"m6.34 17.66-1.41 1.41\"/><path d=\"m19.07 4.93-1.41 1.41\"/>","trash-2":"<path d=\"M3 6h18\"/><path d=\"M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6\"/><path d=\"M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2\"/><line x1=\"10\" x2=\"10\" y1=\"11\" y2=\"17\"/><line x1=\"14\" x2=\"14\" y1=\"11\" y2=\"17\"/>","triangle-alert":"<path d=\"m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3\"/><path d=\"M12 9v4\"/><path d=\"M12 17h.01\"/>","undo-2":"<path d=\"M9 14 4 9l5-5\"/><path d=\"M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11\"/>","users":"<path d=\"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2\"/><circle cx=\"9\" cy=\"7\" r=\"4\"/><path d=\"M22 21v-2a4 4 0 0 0-3-3.87\"/><path d=\"M16 3.13a4 4 0 0 1 0 7.75\"/>","x":"<path d=\"M18 6 6 18\"/><path d=\"m6 6 12 12\"/>","arrow-down":"<path d=\"M12 5v14\"/><path d=\"m19 12-7 7-7-7\"/>","arrow-up":"<path d=\"m5 12 7-7 7 7\"/><path d=\"M12 19V5\"/>","cloud":"<path d=\"M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z\"/>","eye":"<path d=\"M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0\"/><circle cx=\"12\" cy=\"12\" r=\"3\"/>","globe":"<circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20\"/><path d=\"M2 12h20\"/>","history":"<path d=\"M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8\"/><path d=\"M3 3v5h5\"/><path d=\"M12 7v5l4 2\"/>","network":"<rect x=\"16\" y=\"16\" width=\"6\" height=\"6\" rx=\"1\"/><rect x=\"2\" y=\"16\" width=\"6\" height=\"6\" rx=\"1\"/><rect x=\"9\" y=\"2\" width=\"6\" height=\"6\" rx=\"1\"/><path d=\"M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3\"/><path d=\"M12 12V8\"/>","pencil":"<path d=\"M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z\"/><path d=\"m15 5 4 4\"/>","route":"<circle cx=\"6\" cy=\"19\" r=\"3\"/><path d=\"M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15\"/><circle cx=\"18\" cy=\"5\" r=\"3\"/>","scroll-text":"<path d=\"M15 12h-5\"/><path d=\"M15 8h-5\"/><path d=\"M19 17V5a2 2 0 0 0-2-2H4\"/><path d=\"M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3\"/>","send":"<path d=\"M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z\"/><path d=\"m21.854 2.147-10.94 10.939\"/>","server":"<rect width=\"20\" height=\"8\" x=\"2\" y=\"2\" rx=\"2\" ry=\"2\"/><rect width=\"20\" height=\"8\" x=\"2\" y=\"14\" rx=\"2\" ry=\"2\"/><line x1=\"6\" x2=\"6.01\" y1=\"6\" y2=\"6\"/><line x1=\"6\" x2=\"6.01\" y1=\"18\" y2=\"18\"/>","shield-check":"<path d=\"M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z\"/><path d=\"m9 12 2 2 4-4\"/>","shield":"<path d=\"M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z\"/>"};
   const make = (i) => { const n = i.getAttribute('data-lucide'), p = P[n]; if (!p) return;
     const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     for (const [k, v] of Object.entries({ xmlns: 'http://www.w3.org/2000/svg', width: 24, height: 24, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': 2, 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'aria-hidden': 'true' })) s.setAttribute(k, v);
@@ -4278,10 +4278,14 @@ var qrcode = function() {
     if (days <= 0) return 'закончилась ' + date(u.expire)
     return 'до ' + date(u.expire) + (days <= 7 ? `, ${days} ${plural(days, 'день', 'дня', 'дней')}` : '')
   }
-  const ST = { active: ['Активна', 'badge-success'], expired: ['Срок вышел', 'badge-warning'], limit: ['Трафик кончился', 'badge-warning'], off: ['Выключена', ''] }
+  const ST = { active: ['Активна', 'badge-success'], expired: ['Срок вышел', 'badge-warning'], limit: ['Трафик кончился', 'badge-warning'], devices: ['Много устройств', 'badge-warning'], off: ['Выключена', ''] }
   const badge = (u) => `<span class="badge ${ST[u.state][1]}">${ST[u.state][0]}</span>`
   const group = (u) => u.state === 'active' ? 'active' : u.state === 'off' ? 'off' : 'ended'
-  const stateOf = (u, t = now()) => !u.enabled ? 'off' : u.expire && u.expire <= t ? 'expired' : u.limit && u.used >= u.limit ? 'limit' : 'active'
+  const stateOf = (u, t = now()) => !u.enabled ? 'off' : u.expire && u.expire <= t ? 'expired' : u.limit && u.used >= u.limit ? 'limit' : u.block_until > t ? 'devices' : 'active'
+  const MON = ['янв', 'фев', 'мар', 'апр', 'мая', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек']
+  const dayLabel = (d) => { const [, m, dd] = d.split('-').map(Number); return dd + ' ' + MON[m - 1] }
+  // онлайн: «сейчас» или «сейчас с 3 IP»; иначе — когда был
+  const seen = (u) => u.online?.length ? (u.online.length > 1 ? `сейчас с ${u.online.length} IP` : 'сейчас') : ago(u.last_active)
 
   // ---------- связь с сервером или демо ----------
   let DEMO = location.protocol === 'file:' || new URLSearchParams(location.search).has('demo')
@@ -4290,12 +4294,19 @@ var qrcode = function() {
   function demoState() {
     const t = now(), d = 86400, mk = (id, name, note, used, limitGb, expDays, enabled, seen) => {
       const u = { id, name, note, token: 'demo' + id + 'Kx7Qp2Lm9Ts4', used, up: Math.round(used * .1), down: Math.round(used * .9), limit: limitGb * GB, expire: expDays === null ? 0 : t + expDays * d, enabled, last_active: seen === null ? 0 : t - seen, created: t - 40 * d }
+      u.period = ''; u.reset_at = 0; u.devices = 0; u.block_until = 0; u.online = []
       u.url = 'https://vpn.example.ru/s/' + u.token; u.state = stateOf(u, t); return u
     }
+    const users = [mk(1, 'Маша', 'сестра, iPhone', 2.4 * GB, 50, 24, true, 300), mk(2, 'Игорь Белов', 'работа', 48.7 * GB, 50, 61, true, 4000), mk(3, 'Папа', '', 0.3 * GB, 0, null, true, 90000),
+      mk(4, 'Дима', 'Android', 50 * GB, 50, 12, true, 7 * d), mk(5, 'Ксения', 'тестовый месяц', 6.1 * GB, 30, -3, true, 5 * d), mk(6, 'Старый ноутбук', '', 120 * GB, 0, null, false, 30 * d),
+      mk(7, 'Аня', '', 0, 20, 5, true, null)]
+    Object.assign(users[0], { period: 'month', reset_at: t + 9 * d, devices: 2, online: [{ ip: '95.24.181.7', at: t - 40 }] })
+    Object.assign(users[1], { devices: 1, block_until: t + 7 * 60, online: [{ ip: '188.170.84.12', at: t - 20 }, { ip: '31.173.86.201', at: t - 75 }] })
+    Object.assign(users[2], { online: [{ ip: '46.138.20.99', at: t - 15 }] })
+    users.forEach((u) => { u.state = stateOf(u, t) })
     return {
-      users: [mk(1, 'Маша', 'сестра, iPhone', 2.4 * GB, 50, 24, true, 300), mk(2, 'Игорь Белов', 'работа', 48.7 * GB, 50, 61, true, 4000), mk(3, 'Папа', '', 0.3 * GB, 0, null, true, 90000),
-        mk(4, 'Дима', 'Android', 50 * GB, 50, 12, true, 7 * d), mk(5, 'Ксения', 'тестовый месяц', 6.1 * GB, 30, -3, true, 5 * d), mk(6, 'Старый ноутбук', '', 120 * GB, 0, null, false, 30 * d),
-        mk(7, 'Аня', '', 0, 20, 5, true, null)],
+      users,
+      update: { current: '1.1.0', latest: { tag: 'v1.2.0', name: 'v1.2.0', notes: 'Несколько серверов в одной админке. График трафика по часам', published: t - 2 * d, url: '#' }, available: true, checked: t - 3 * 3600, error: '', status: null, repo: 'danilax9/monolit-proxy' },
       settings: { server_name: 'aeza', domain: 'vpn.example.ru', fp: 'firefox', kinds: 'vision,hy2', autoupdate: true, support_url: '', update_hours: 12, login: 'admin' },
       xray: { ok: true, error: '', last_sync: t - 20, inbounds: { vision: { tag: 'vision', port: 443 }, hy2: { tag: 'hy2', port: 443 }, xhttp: null } },
       template: { version: '162', hash: '47ffac58afcb3992', source: 'github', since: t - 3 * d, checked: t - 2 * 3600, rollback: true, pending: null, rejected: null }
@@ -4309,22 +4320,35 @@ var qrcode = function() {
     if (path === 'api/login') { if (body.password !== 'demo1234' || body.login !== 'admin') throw new Error('Неверный логин или пароль'); return {} }
     if (path === 'api/state') return S
     if (path === 'api/users' && method === 'POST') {
-      const nu = { id: Math.max(0, ...S.users.map((x) => x.id)) + 1, name: body.name, note: body.note, token: 'demo' + Date.now().toString(36), used: 0, up: 0, down: 0, limit: body.limit, expire: body.expire, enabled: true, last_active: 0, created: now() }
+      const nu = { id: Math.max(0, ...S.users.map((x) => x.id)) + 1, name: body.name, note: body.note, token: 'demo' + Date.now().toString(36), used: 0, up: 0, down: 0, limit: body.limit, expire: body.expire, enabled: true, last_active: 0, created: now(), period: body.period, reset_at: body.period ? now() + 30 * 86400 : 0, devices: body.devices, block_until: 0, online: [] }
       nu.url = 'https://' + S.settings.domain + '/s/' + nu.token; S.users.push(fix(nu)); return { user: nu }
     }
-    if (u && method === 'PATCH') { Object.assign(u, body); return { user: fix(u) } }
+    if (u && method === 'PATCH') { if (body.unblock || 'devices' in body) u.block_until = 0; delete body.unblock; Object.assign(u, body); return { user: fix(u) } }
     if (u && path.endsWith('/reset')) { u.used = u.up = u.down = 0; fix(u); return {} }
     if (u && path.endsWith('/regen')) { u.token = 'demo' + Date.now().toString(36); u.url = 'https://' + S.settings.domain + '/s/' + u.token; return { user: u } }
     if (u && method === 'DELETE') { S.users = S.users.filter((x) => x !== u); return {} }
     if (path === 'api/settings') { Object.assign(S.settings, body); delete S.settings.password; return S }
     if (path === 'api/template/check') { S.template.checked = now(); return { ok: true, changed: false, state: S } }
     if (path === 'api/template/rollback') { S.template.rollback = false; return S }
+    if (path.startsWith('api/traffic')) {
+      const uid = Number(new URLSearchParams(path.split('?')[1]).get('user')) || 0, days = []
+      for (let i = 29; i >= 0; i--) {
+        const dt = new Date(Date.now() - i * 86400e3), k = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`
+        const v = uid === 7 ? 0 : Math.round((0.6 + Math.sin(i * 1.3 + uid) * 0.4 + (i % 7 === 2 ? 0.8 : 0)) * (uid ? 0.4 : 2.2) * GB)
+        days.push({ day: k, up: Math.round(v * 0.1), down: Math.round(v * 0.9) })
+      }
+      return { tz: 'Europe/Moscow', days }
+    }
+    if (path === 'api/update/check') { S.update.checked = now(); return S.update }
+    if (path === 'api/update' && method === 'POST') { S.update.status = { state: 'running', to: S.update.latest.tag, from: S.update.current, at: now(), text: 'Скачиваю ' + S.update.latest.tag }; return { ok: true } }
+    if (path === 'api/update') { const st = S.update.status; if (st?.state === 'running' && now() - st.at > 4) { S.update.status = { ...st, state: 'done', text: 'Обновлено до ' + st.to }; S.update.current = st.to.slice(1); S.update.available = false } return S.update }
     throw new Error('Нет такого действия')
   }
 
   async function api(method, path, body) {
     if (DEMO) return demoApi(method, path, body)
-    const r = await fetch(path, { method, headers: body ? { 'content-type': 'application/json' } : {}, body: body ? JSON.stringify(body) : undefined, credentials: 'same-origin' })
+    const raw = typeof body === 'string'
+    const r = await fetch(path, { method, headers: body ? { 'content-type': raw ? 'application/octet-stream' : 'application/json' } : {}, body: body ? (raw ? body : JSON.stringify(body)) : undefined, credentials: 'same-origin' })
     let j = {}; try { j = await r.json() } catch (e) {}
     if (r.status === 401 && path !== 'api/login') { showLogin(); throw new Error('Нужно войти') }
     if (!r.ok) throw new Error(j.error || 'Сервер ответил ' + r.status)
@@ -4347,6 +4371,32 @@ var qrcode = function() {
   })
   $('mp-logout').addEventListener('click', async () => { try { await api('POST', 'api/logout') } catch (e) {} showLogin() })
 
+  // ---------- графики трафика ----------
+  // Система рисует график один раз из data-атрибутов: при новых данных ставим новый узел, если цифры поменялись
+  function drawChart(box, days, title) {
+    const vals = days.map((d) => d.up + d.down), max = Math.max(0, ...vals)
+    const key = days.map((d) => d.day + ':' + (d.up + d.down)).join(',')
+    if (box._key === key) return
+    box._key = key
+    if (!max) { box.innerHTML = '<p class="mp-note mp-chart-empty">За 30 дней трафика не было</p>'; return }
+    const mb = max < GB, k = mb ? 1024 ** 2 : GB
+    const el = document.createElement('div')
+    el.className = 'chart'; el.dataset.type = 'bar'; el.dataset.h = '160'; el.dataset.unit = mb ? ' МБ' : ' ГБ'; el.setAttribute('aria-label', title)
+    el.dataset.values = vals.map((v) => mb ? Math.round(v / k) : Math.round(v / k * 10) / 10).join(',')
+    el.dataset.labels = days.map((d) => dayLabel(d.day)).join(',')
+    box.replaceChildren(el); window.initData?.(box)
+  }
+  async function loadTotal() {
+    try {
+      const r = await api('GET', 'api/traffic?days=30')
+      const sum = r.days.reduce((a, d) => a + d.up + d.down, 0)
+      $('mp-tr-card').hidden = !S.users.length
+      $('mp-tr-sum').textContent = bytes(sum)
+      $('mp-tr-tz').textContent = r.tz && r.tz !== Intl.DateTimeFormat().resolvedOptions().timeZone ? 'Дни по времени сервера, ' + r.tz : ''
+      drawChart($('mp-tr-chart'), r.days, 'Трафик по дням')
+    } catch (e) {}
+  }
+
   // ---------- таблица ----------
   const tbody = $('mp-rows')
   const view = 'all'   // вкладок нет: по видам делят цифры над списком
@@ -4367,7 +4417,7 @@ var qrcode = function() {
       + (u.limit ? `<span class="progress" aria-hidden="true"><i style="--p:${p.toFixed(3)}"></i></span>` : '') + '</span>'
   }
   const rowHtml = (u) => `<th scope="row"><span class="mp-who">${esc(u.name)}</span>${u.note ? `<span class="mp-what">${esc(u.note)}</span>` : ''}${mobileHtml(u)}</th>`
-    + `<td class="mp-st-col">${badge(u)}</td><td>${useHtml(u)}</td><td class="mp-exp-col"><span class="${u.state === 'expired' ? 'mp-muted' : ''}">${left(u)}</span></td><td class="mp-seen-col"><span class="mp-muted">${ago(u.last_active)}</span></td>`
+    + `<td class="mp-st-col">${badge(u)}</td><td>${useHtml(u)}</td><td class="mp-exp-col"><span class="${u.state === 'expired' ? 'mp-muted' : ''}">${left(u)}</span></td><td class="mp-seen-col"><span class="${u.online?.length ? '' : 'mp-muted'}">${seen(u)}</span></td>`
 
   function render() {
     const q = query.toLowerCase()
@@ -4399,6 +4449,8 @@ var qrcode = function() {
     for (const u of S.users) c[group(u)]++
     $('mp-count-all').textContent = c.all
     $('mp-n-active').textContent = c.active
+    const on = S.users.filter((u) => u.online?.length).length
+    $('mp-n-active-f').textContent = on ? `${on} в сети сейчас` : 'подписка работает'
     $('mp-n-ended').textContent = c.ended
     $('mp-n-ended').closest('.stat').classList.toggle('mp-bad', c.ended > 0)
     $('mp-traffic').textContent = bytes(S.users.reduce((a, u) => a + u.used, 0))
@@ -4442,16 +4494,35 @@ var qrcode = function() {
     const p = u.limit ? Math.min(1, u.used / u.limit) : 0
     $('mp-d-prog').hidden = !u.limit
     $('mp-d-prog').firstElementChild.style.setProperty('--p', p.toFixed(3))
-    $('mp-d-usage-note').textContent = `Отдано ${bytes(u.down)}, принято ${bytes(u.up)}. В сети ${ago(u.last_active)}`
+    $('mp-d-usage-note').textContent = (u.period === 'month' && u.reset_at ? `Лимит на месяц, счётчик обнулится ${date(u.reset_at)}. ` : '') + `Отдано ${bytes(u.down)}, принято ${bytes(u.up)}`
+    // устройства: IP, с которых подключён сейчас
+    const blocked = u.block_until > now()
+    $('mp-d-block').hidden = !blocked
+    if (blocked) $('mp-d-block-t').textContent = 'Доступ закрыт до ' + TF.format(new Date(u.block_until * 1000))
+    $('mp-d-unblock-row').hidden = !blocked
+    $('mp-d-ips').innerHTML = (u.online || []).map((o) => `<div><dt>${esc(o.ip)}</dt><dd>${now() - o.at < 120 ? 'сейчас' : ago(o.at)}</dd></div>`).join('')
+    $('mp-d-ips').hidden = !u.online?.length
+    $('mp-d-dev-note').textContent = (u.online?.length ? '' : `Сейчас не подключён, в сети ${ago(u.last_active)}. `) + (u.devices ? `Разрешено устройств одновременно: ${u.devices}` : 'Без ограничения по устройствам')
     if (!form) return
     dForm.enabled.checked = u.enabled
     dForm.name.value = u.name
     dForm.note.value = u.note || ''
     dForm.limit.value = gbOf(u.limit)
+    dForm.period.value = u.period || ''; dForm.period.dispatchEvent(new Event('change'))
+    dForm.devices.value = u.devices || ''
+    window.fieldError?.(dForm.devices, '')
     dForm.expire.value = toDateInput(u.expire)
     window.fieldError?.(dForm.limit, '')
   }
-  function openDetail(id) { openId = Number(id); fillDetail(); $('mp-detail').showModal() }
+  async function loadUserChart(id) {
+    const box = $('mp-d-chart'); box._key = ''; box.replaceChildren()
+    try { const r = await api('GET', 'api/traffic?days=30&user=' + id); if (openId === id) drawChart(box, r.days, 'Трафик по дням') } catch (e) {}
+  }
+  function openDetail(id) { openId = Number(id); fillDetail(); $('mp-detail').showModal(); loadUserChart(openId) }
+  $('mp-d-unblock').addEventListener('click', (e) => busy(e.currentTarget, async () => {
+    const u = cur(); if (!u) return
+    try { const r = await api('PATCH', 'api/users/' + u.id, { unblock: true }); putUser(r.user); fillDetail(false); toast({ type: 'success', title: 'Доступ открыт', text: u.name }) } catch (err) { fail(err) }
+  }))
   $('mp-detail').addEventListener('close', () => { openId = null })
   tbody.addEventListener('click', (e) => { const tr = e.target.closest('tr'); if (tr) openDetail(tr.dataset.id) })
   tbody.addEventListener('keydown', (e) => { if (e.key === 'Enter' && e.target.matches('tr')) openDetail(e.target.dataset.id) })
@@ -4465,15 +4536,21 @@ var qrcode = function() {
     if (!ok) inp.focus()
     return ok
   }
+  const devOk = (inp) => {
+    const v = inp.value.trim(), ok = !v || (/^\d{1,2}$/.test(v) && Number(v) <= 50)
+    window.fieldError?.(inp, ok ? '' : 'Число от 1 до 50, пусто — без ограничения')
+    if (!ok) inp.focus()
+    return ok
+  }
   const putUser = (u) => { const i = S.users.findIndex((x) => x.id === u.id); if (i >= 0) S.users[i] = u; else S.users.push(u); paint() }
 
   dForm.addEventListener('submit', (e) => {
     e.preventDefault()
     const u = cur(); if (!u) return
-    if (!limitOk(dForm.limit)) return
+    if (!limitOk(dForm.limit) || !devOk(dForm.devices)) return
     busy(document.querySelector('[form="mp-d-form"]'), async () => {
       try {
-        const r = await api('PATCH', 'api/users/' + u.id, { name: dForm.name.value, note: dForm.note.value, limit: parseGb(dForm.limit.value), expire: fromDateInput(dForm.expire.value), enabled: dForm.enabled.checked })
+        const r = await api('PATCH', 'api/users/' + u.id, { name: dForm.name.value, note: dForm.note.value, limit: parseGb(dForm.limit.value), expire: fromDateInput(dForm.expire.value), enabled: dForm.enabled.checked, period: dForm.period.value, devices: Number(dForm.devices.value) || 0 })
         putUser(r.user); fillDetail(); toast({ type: 'success', title: 'Сохранено', text: ST[r.user.state][0] + ', ' + left(r.user) })
       } catch (err) { fail(err) }
     })
@@ -4529,12 +4606,12 @@ var qrcode = function() {
     const name = aForm.name.value.trim()
     if (!name) { window.fieldError?.(aForm.name, 'Напишите, кому подписка'); aForm.name.focus(); return }
     window.fieldError?.(aForm.name, '')
-    if (!limitOk(aForm.limit)) return
+    if (!limitOk(aForm.limit) || !devOk(aForm.devices)) return
     busy(aForm.querySelector('button[type=submit]'), async () => {
       try {
-        const r = await api('POST', 'api/users', { name, note: aForm.note.value.trim(), limit: parseGb(aForm.limit.value), expire: Number(aForm.days.value) ? now() + Number(aForm.days.value) * 86400 : 0 })
+        const r = await api('POST', 'api/users', { name, note: aForm.note.value.trim(), limit: parseGb(aForm.limit.value), period: aForm.period.value, devices: Number(aForm.devices.value) || 0, expire: Number(aForm.days.value) ? now() + Number(aForm.days.value) * 86400 : 0 })
         putUser(r.user)
-        $('mp-add').close(); aForm.reset(); aForm.days.dispatchEvent(new Event('change'))
+        $('mp-add').close(); aForm.reset(); aForm.days.dispatchEvent(new Event('change')); aForm.period.dispatchEvent(new Event('change'))
         setCopy($('mp-made-url'), $('mp-made-copy'), r.user.url)
         $('mp-made-t').textContent = `Ссылка для «${r.user.name}» готова`
         $('mp-made-p').textContent = 'Отправьте её человеку: по ней откроется страница с инструкцией'
@@ -4578,7 +4655,70 @@ var qrcode = function() {
     sForm.fp.value = s.fp; sForm.fp.dispatchEvent(new Event('change'))
     $('mp-kinds').innerHTML = KINDS.map(([k, n, h]) => `<label class="choice"><input type="checkbox" class="check" value="${k}" ${on.includes(k) && ib[k] ? 'checked' : ''} ${ib[k] ? '' : 'disabled'}><span>${n}<small>${ib[k] ? h : 'на этом сервере нет такого входа Xray'}</small></span></label>`).join('')
   }
-  document.querySelectorAll('[data-open="mp-set"]').forEach((b) => b.addEventListener('click', (e) => { e.preventDefault(); fillSet() }))
+  document.querySelectorAll('[data-open="mp-set"]').forEach((b) => b.addEventListener('click', (e) => { e.preventDefault(); fillSet(); fillUpd() }))
+
+  // ---------- обновление monolit из релизов GitHub ----------
+  let updPoll = 0
+  function fillUpd() {
+    const u = S.update; if (!u) return
+    const st = u.status, running = st?.state === 'running' && now() - st.at < 900
+    const rows = [['Установлена', 'v' + u.current], ['Последняя', u.latest ? u.latest.tag + (u.latest.published ? ' от ' + date(u.latest.published) : '') : 'релизов пока нет'], ['Проверено', u.checked ? ago(u.checked) : 'ещё нет']]
+    if (u.error) rows.push(['Ошибка проверки', u.error])
+    $('mp-up-kv').innerHTML = rows.map(([k, v]) => `<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join('')
+    const failed = st?.state === 'failed' && now() - st.at < 86400
+    $('mp-up-fail').hidden = !failed
+    if (failed) $('mp-up-fail-t').textContent = st.text
+    $('mp-up-new').hidden = !u.available || running
+    if (u.available) { $('mp-up-new-t').textContent = 'Вышла ' + u.latest.tag; $('mp-up-notes').textContent = u.latest.notes || 'Без описания' }
+    $('mp-up-run').hidden = !running
+    if (running) $('mp-up-run').textContent = st.text + '. Админка перезапустится, страница обновится сама'
+    $('mp-up-go').hidden = !u.available || running
+    if (u.available) $('mp-up-go').lastElementChild.textContent = 'Обновить до ' + u.latest.tag
+    if (running && !updPoll) watchUpd()
+  }
+  // Во время установки админка перезапускается: ошибки запросов ожидаемы, ждём ответа с итогом
+  function watchUpd() {
+    const from = S.update.current, t0 = Date.now()
+    updPoll = setInterval(async () => {
+      let u; try { u = await api('GET', 'api/update') } catch (e) { return }
+      S.update = u; fillUpd()
+      const st = u.status
+      if (st?.state === 'done' || u.current !== from) { clearInterval(updPoll); updPoll = 0; toast({ type: 'success', title: 'monolit обновлён', text: 'Версия ' + u.current }); if (!DEMO) setTimeout(() => location.reload(), 1500) }
+      else if (st?.state === 'failed') { clearInterval(updPoll); updPoll = 0; toast({ type: 'error', title: 'Обновление не встало', text: st.text }) }
+      else if (Date.now() - t0 > 15 * 60e3) { clearInterval(updPoll); updPoll = 0 }
+    }, 3000)
+  }
+  $('mp-up-check').addEventListener('click', (e) => busy(e.currentTarget, async () => {
+    try { S.update = await api('POST', 'api/update/check'); fillUpd(); toast(S.update.available ? { type: 'success', title: 'Есть новая версия', text: S.update.latest.tag } : { title: 'Новой версии нет', text: 'Установлена последняя, v' + S.update.current }) } catch (err) { fail(err) }
+  }))
+  $('mp-up-go').addEventListener('click', async (e) => {
+    const u = S.update, btn = e.currentTarget
+    if (!await confirmAct(`Обновить до ${u.latest.tag}?`, 'Скачаем релиз с GitHub и переустановим. Админка перезапустится, подключения VPN могут оборваться на пару секунд. Если новая версия не встанет, вернём прежнюю', 'Обновить')) return
+    busy(btn, async () => {
+      try { await api('POST', 'api/update'); S.update.status = { state: 'running', to: u.latest.tag, from: u.current, at: now(), text: 'Скачиваю ' + u.latest.tag }; fillUpd() } catch (err) { fail(err) }
+    })
+  })
+
+  // ---------- бэкап и восстановление ----------
+  $('mp-bk-get').addEventListener('click', (e) => { if (DEMO) { e.preventDefault(); toast({ title: 'В демо бэкапа нет' }) } })
+  $('mp-bk-dz').addEventListener('files-added', async (e) => {
+    const f = e.detail.files[0]; if (!f) return
+    if (f.size > 64 * 1024 ** 2) { fail(new Error('Файл больше 64 МБ')); return }
+    let text, b
+    try { text = await f.text(); b = JSON.parse(text); if (b.monolit_backup !== 1) throw new Error() } catch (err) { fail(new Error('Это не файл бэкапа monolit')); return }
+    const when = b.created ? date(b.created) + ' в ' + TF.format(new Date(b.created * 1000)) : 'без даты'
+    if (!await confirmAct('Восстановить из бэкапа?', `Сервер «${b.server || '?'}», ${when}, пользователей: ${b.users ?? '?'}. Всё, что сейчас в админке, заменится. Текущая база останется на сервере рядом, но вернуть её можно только вручную. После перезапуска войдите с логином и паролем из бэкапа`, 'Восстановить')) return
+    try {
+      await api('POST', 'api/restore', text)
+      toast({ type: 'success', title: 'Восстанавливаем', text: 'Админка перезапускается' })
+      if (DEMO) return
+      // ждём, пока админка поднимется с новой базой
+      const t0 = Date.now(), iv = setInterval(async () => {
+        try { const r = await fetch('api/state', { credentials: 'same-origin' }); if (r.status === 401 || r.ok) { clearInterval(iv); location.reload() } } catch (err) {}
+        if (Date.now() - t0 > 120e3) clearInterval(iv)
+      }, 2000)
+    } catch (err) { fail(err) }
+  })
   sForm.addEventListener('submit', (e) => {
     e.preventDefault()
     const pw = sForm.password.value
@@ -4618,11 +4758,11 @@ var qrcode = function() {
       else throw e
     }
     $('mp-login').hidden = true; $('mp-app').hidden = false
-    paint()
+    paint(); loadTotal()
   }
   if (DEMO) S = demoState()
   load().catch(fail)
-  setInterval(() => { if (!document.hidden && !$('mp-app').hidden && !DEMO) api('GET', 'api/state').then((s) => { S = s; paint() }).catch(() => {}) }, 60000)
+  setInterval(() => { if (!document.hidden && !$('mp-app').hidden && !DEMO) api('GET', 'api/state').then((s) => { S = s; paint(); loadTotal(); if (openId) api('GET', 'api/traffic?days=30&user=' + openId).then((r) => openId && drawChart($('mp-d-chart'), r.days, 'Трафик по дням')).catch(() => {}) }).catch(() => {}) }, 60000)
 })()
 
 ;

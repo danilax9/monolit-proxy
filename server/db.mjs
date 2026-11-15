@@ -33,8 +33,36 @@ export function openDb(file) {
       error TEXT NOT NULL DEFAULT '',
       fetched_at INTEGER NOT NULL
     );
+    -- трафик по дням (день — в часовом поясе сервера), для графиков
+    CREATE TABLE IF NOT EXISTS traffic_daily (
+      user_id INTEGER NOT NULL,
+      day TEXT NOT NULL,                    -- YYYY-MM-DD
+      up INTEGER NOT NULL DEFAULT 0,
+      down INTEGER NOT NULL DEFAULT 0,
+      PRIMARY KEY (user_id, day)
+    );
   `);
+  // Новые поля пользователя: базы прошлых версий дополняем
+  const have = new Set(db.prepare('PRAGMA table_info(users)').all().map((c) => c.name));
+  for (const [col, def] of [
+    ['period', "TEXT NOT NULL DEFAULT ''"],        // '' — лимит на всё время, 'month' — на месяц
+    ['reset_at', 'INTEGER NOT NULL DEFAULT 0'],    // когда обнулить счётчик (для 'month')
+    ['devices', 'INTEGER NOT NULL DEFAULT 0'],     // сколько IP одновременно, 0 — без ограничения
+    ['block_until', 'INTEGER NOT NULL DEFAULT 0'], // отключён за лишние устройства до этого времени
+  ]) if (!have.has(col)) db.exec(`ALTER TABLE users ADD COLUMN ${col} ${def}`);
   return db;
+}
+
+// Следующий сброс месячного лимита: тот же день месяца, что у даты создания (31-го — в последний день короткого месяца),
+// в то же время суток. Строго позже after
+export function nextReset(created, after) {
+  const c = new Date(created * 1000), day = c.getUTCDate();
+  const at = (y, m) => { const dim = new Date(Date.UTC(y, m + 1, 0)).getUTCDate();
+    return Math.floor(Date.UTC(y, m, Math.min(day, dim), c.getUTCHours(), c.getUTCMinutes(), c.getUTCSeconds()) / 1000) };
+  const a = new Date(after * 1000); let y = a.getUTCFullYear(), m = a.getUTCMonth();
+  let t = at(y, m);
+  while (t <= after) { m++; if (m > 11) { m = 0; y++; } t = at(y, m); }
+  return t;
 }
 
 export const now = () => Math.floor(Date.now() / 1000);
@@ -65,5 +93,6 @@ export function userState(u, t = now()) {
   if (!u.enabled) return 'off';
   if (u.expire_at && u.expire_at <= t) return 'expired';
   if (u.limit_bytes && u.up + u.down >= u.limit_bytes) return 'limit';
+  if (u.block_until && u.block_until > t) return 'devices';
   return 'active';
 }

@@ -3581,3 +3581,18 @@ button.alist-row { width: 100%; border: 0; background: none; font: inherit; colo
   .side-ws.mp-logo:hover { background: none }
   .side-ws.mp-logo:hover svg { color: color-mix(in oklch, var(--accent), #fff 30%) }
 }
+
+/* Лимит и как его считать — одним рядом, на телефоне друг под другом */
+.mp-pair { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--sp-3) }
+@media (max-width: 520px) { .mp-pair { grid-template-columns: minmax(0, 1fr) } }
+.mp-m-exp.is-devices { color: var(--warning) }
+/* Графики трафика: общий над списком, у пользователя — в шторке */
+.mp-chart-card { gap: var(--sp-4); padding: var(--sp-4) var(--sp-4) var(--sp-3); margin-bottom: var(--sp-4) }
+.mp-chart-card .chart-head .mp-note { align-self: flex-end }
+.mp-chart { min-height: 160px; display: grid; align-content: center }
+.mp-chart:empty { min-height: 160px }
+.mp-chart-empty { text-align: center }
+/* Обновление: описание релиза как есть, с переносами строк */
+.mp-up-new { display: grid; gap: var(--sp-1) }
+.mp-up-notes { white-space: pre-wrap; max-height: 160px; overflow: auto }
+@media (max-width: 640px) { .mp-chart-card { display: none } }   /* на телефоне главное — список, график есть в карточке человека */

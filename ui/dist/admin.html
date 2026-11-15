@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex, nofollow">
 <title>monolit proxy</title>
 <link rel="icon" href="_/mark.svg" type="image/svg+xml">
-<link rel="stylesheet" href="_/admin.css?v=0d94473784">
+<link rel="stylesheet" href="_/admin.css?v=adf3b63f4b">
 <script>/* Тема: предпочтение light | dark | system.
    Подключать в <head> БЕЗ defer — тема ставится до первой отрисовки, без мигания чужой темы.
    Переключатели: любые кнопки с data-theme-v="light|dark|system" (aria-checked ставится сам).
@@ -129,7 +129,7 @@ const DS_KEY = (k) => (document.documentElement.dataset.store ? document.documen
 })();
 </script>
 <script>document.documentElement.classList.add('js')</script>
-<script src="_/admin.js?v=347ff030a5" defer></script>
+<script src="_/admin.js?v=7bfb271426" defer></script>
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="mp-mark" viewBox="0 0 24 24"><rect x="7" y="2" width="10" height="20" rx="2.5" fill="currentColor"/></symbol></svg>
@@ -175,11 +175,16 @@ const DS_KEY = (k) => (document.documentElement.dataset.store ? document.documen
   </div>
 
   <div class="mp-stats">
-    <div class="stat"><div class="stat-head"><span>Активны</span></div><div class="stat-num" id="mp-n-active">0</div><div class="stat-foot">подписка работает</div></div>
-    <div class="stat"><div class="stat-head"><span>Истекли</span></div><div class="stat-num" id="mp-n-ended">0</div><div class="stat-foot">срок или трафик</div></div>
+    <div class="stat"><div class="stat-head"><span>Активны</span></div><div class="stat-num" id="mp-n-active">0</div><div class="stat-foot" id="mp-n-active-f">подписка работает</div></div>
+    <div class="stat"><div class="stat-head"><span>Истекли</span></div><div class="stat-num" id="mp-n-ended">0</div><div class="stat-foot">доступ закрыт</div></div>
     <div class="stat"><div class="stat-head"><span>Трафик</span></div><div class="stat-num" id="mp-traffic">0</div><div class="stat-foot">у всех за всё время</div></div>
     <button class="stat mp-stat-btn" type="button" data-open="mp-tpl"><div class="stat-head"><span>autoXRAY</span></div><div class="stat-num" id="mp-tpl-ver">—</div><div class="stat-foot" id="mp-tpl-foot">не загружен</div></button>
   </div>
+
+  <section class="card mp-chart-card" id="mp-tr-card" hidden aria-label="Трафик по дням">
+    <div class="chart-head"><div><h4>Трафик за 30 дней</h4><div class="stat-num" id="mp-tr-sum">0</div></div><span class="mp-note" id="mp-tr-tz"></span></div>
+    <div class="mp-chart" id="mp-tr-chart"></div>
+  </section>
 
   <div class="mp-tools">
     <span class="input-wrap search"><i data-lucide="search"></i>
@@ -206,8 +211,12 @@ const DS_KEY = (k) => (document.documentElement.dataset.store ? document.documen
     <label class="field"><span class="label">Имя</span><input class="input" name="name" maxlength="40" placeholder="Например, Маша" autocomplete="off" required></label>
     <label class="field"><span class="label">Срок</span>
       <select class="select" name="days"><option value="30" selected>30 дней</option><option value="90">90 дней</option><option value="180">Полгода</option><option value="365">Год</option><option value="0">Бессрочно</option></select></label>
-    <label class="field"><span class="label">Лимит трафика, ГБ</span><input class="input" name="limit" inputmode="decimal" placeholder="Без лимита" autocomplete="off">
-      <span class="hint">Оставьте пустым, если без лимита</span></label>
+    <div class="mp-pair">
+      <label class="field"><span class="label">Лимит трафика, ГБ</span><input class="input" name="limit" inputmode="decimal" placeholder="Без лимита" autocomplete="off"></label>
+      <label class="field"><span class="label">Лимит считать</span><select class="select" name="period"><option value="" selected>За всё время</option><option value="month">Каждый месяц</option></select></label>
+    </div>
+    <label class="field"><span class="label">Устройств одновременно</span><input class="input" name="devices" inputmode="numeric" placeholder="Без ограничения" autocomplete="off">
+      <span class="hint">Считаются разные IP. Если их больше, доступ закроется на 10 минут</span></label>
     <label class="field"><span class="label">Заметка <span class="opt">необязательно</span></span><input class="input" name="note" maxlength="200" autocomplete="off"></label>
   </div>
   <div class="dialog-foot"><button type="button" class="btn btn-ghost" data-close>Отмена</button><button class="btn btn-primary" type="submit"><span>Создать</span></button></div>
@@ -236,6 +245,14 @@ const DS_KEY = (k) => (document.documentElement.dataset.store ? document.documen
     <div class="mp-section">
       <span class="t-label">Трафик</span>
       <div class="mp-usage"><div class="mp-usage-num" id="mp-d-used"></div><div class="progress" role="progressbar" aria-label="Трафик" id="mp-d-prog"><i></i></div><p class="mp-note" id="mp-d-usage-note"></p></div>
+      <div class="mp-chart" id="mp-d-chart"></div>
+    </div>
+    <div class="mp-section">
+      <span class="t-label">Устройства</span>
+      <div class="alert alert-warning" id="mp-d-block" hidden><i data-lucide="triangle-alert"></i><div><b id="mp-d-block-t">Доступ закрыт</b><span>Подключилось больше устройств, чем разрешено</span></div></div>
+      <dl class="mp-kv" id="mp-d-ips"></dl>
+      <p class="mp-note" id="mp-d-dev-note"></p>
+      <div class="btn-row" id="mp-d-unblock-row" hidden><button class="btn btn-secondary btn-sm" type="button" id="mp-d-unblock"><i data-lucide="lock-open"></i><span>Открыть доступ сейчас</span></button></div>
     </div>
     <form class="mp-section mp-form" id="mp-d-form" novalidate>
       <span class="t-label">Доступ</span>
@@ -243,7 +260,11 @@ const DS_KEY = (k) => (document.documentElement.dataset.store ? document.documen
       <label class="field"><span class="label">Имя</span><input class="input" name="name" maxlength="40" autocomplete="off"></label>
       <label class="field"><span class="label">Действует до</span><input class="input" type="date" name="expire"><span class="hint" id="mp-d-exp-hint">Оставьте пустым, если бессрочно</span></label>
       <div class="btn-row mp-quick"><button class="btn btn-secondary btn-sm" type="button" data-add-days="30">+30 дней</button><button class="btn btn-secondary btn-sm" type="button" data-add-days="90">+90 дней</button><button class="btn btn-secondary btn-sm" type="button" data-add-days="365">+год</button><button class="btn btn-ghost btn-sm" type="button" id="mp-d-noexp">Очистить</button></div>
-      <label class="field"><span class="label">Лимит трафика, ГБ</span><input class="input" name="limit" inputmode="decimal" placeholder="Без лимита" autocomplete="off"></label>
+      <div class="mp-pair">
+        <label class="field"><span class="label">Лимит трафика, ГБ</span><input class="input" name="limit" inputmode="decimal" placeholder="Без лимита" autocomplete="off"></label>
+        <label class="field"><span class="label">Лимит считать</span><select class="select" name="period"><option value="">За всё время</option><option value="month">Каждый месяц</option></select></label>
+      </div>
+      <label class="field"><span class="label">Устройств одновременно</span><input class="input" name="devices" inputmode="numeric" placeholder="Без ограничения" autocomplete="off"><span class="hint">Считаются разные IP. Если их больше, доступ закроется на 10 минут</span></label>
       <label class="field"><span class="label">Заметка</span><input class="input" name="note" maxlength="200" autocomplete="off"></label>
     </form>
     <div class="mp-section">
@@ -305,6 +326,22 @@ const DS_KEY = (k) => (document.documentElement.dataset.store ? document.documen
       <span class="t-label">Вход</span>
       <label class="field"><span class="label">Логин</span><input class="input" name="login" autocomplete="username" autocapitalize="none" spellcheck="false"></label>
       <label class="field"><span class="label">Новый пароль <span class="opt">не меньше 8 символов</span></span><input class="input" type="password" name="password" autocomplete="new-password"></label>
+    </div>
+    <div class="mp-section">
+      <span class="t-label">Обновление monolit</span>
+      <dl class="mp-kv" id="mp-up-kv"></dl>
+      <div class="alert alert-danger" id="mp-up-fail" hidden><i data-lucide="circle-alert"></i><div><b>Обновление не встало</b><span id="mp-up-fail-t"></span></div></div>
+      <div class="mp-up-new" id="mp-up-new" hidden><b id="mp-up-new-t"></b><p class="mp-note mp-up-notes" id="mp-up-notes"></p></div>
+      <p class="mp-note" id="mp-up-run" hidden></p>
+      <div class="btn-row"><button class="btn btn-primary" type="button" id="mp-up-go" hidden><i data-lucide="download"></i><span>Обновить</span></button>
+        <button class="btn btn-secondary" type="button" id="mp-up-check"><i data-lucide="refresh-cw"></i><span>Проверить</span></button></div>
+    </div>
+    <div class="mp-section">
+      <span class="t-label">Бэкап</span>
+      <p class="mp-note">В файле пользователи, ссылки подписок, маршруты, настройки и ключи WARP. Храните его как пароль: по нему можно подключиться</p>
+      <div class="btn-row"><a class="btn btn-secondary" id="mp-bk-get" href="api/backup" download><i data-lucide="download"></i>Скачать бэкап</a></div>
+      <label class="dz" data-max="64" data-accept=".json,application/json" tabindex="0" id="mp-bk-dz"><input type="file">
+        <span class="dz-ic"><i data-lucide="upload"></i></span><span><b>Восстановить: перетащите файл</b> или <u>выберите</u></span><span>monolit-….json, заменит всё на этом сервере</span></label>
     </div>
     <div class="mp-section">
       <span class="t-label">Оформление</span>

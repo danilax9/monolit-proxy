@@ -35,10 +35,14 @@
     if (days <= 0) return 'закончилась ' + date(u.expire)
     return 'до ' + date(u.expire) + (days <= 7 ? `, ${days} ${plural(days, 'день', 'дня', 'дней')}` : '')
   }
-  const ST = { active: ['Активна', 'badge-success'], expired: ['Срок вышел', 'badge-warning'], limit: ['Трафик кончился', 'badge-warning'], off: ['Выключена', ''] }
+  const ST = { active: ['Активна', 'badge-success'], expired: ['Срок вышел', 'badge-warning'], limit: ['Трафик кончился', 'badge-warning'], devices: ['Много устройств', 'badge-warning'], off: ['Выключена', ''] }
   const badge = (u) => `<span class="badge ${ST[u.state][1]}">${ST[u.state][0]}</span>`
   const group = (u) => u.state === 'active' ? 'active' : u.state === 'off' ? 'off' : 'ended'
-  const stateOf = (u, t = now()) => !u.enabled ? 'off' : u.expire && u.expire <= t ? 'expired' : u.limit && u.used >= u.limit ? 'limit' : 'active'
+  const stateOf = (u, t = now()) => !u.enabled ? 'off' : u.expire && u.expire <= t ? 'expired' : u.limit && u.used >= u.limit ? 'limit' : u.block_until > t ? 'devices' : 'active'
+  const MON = ['янв', 'фев', 'мар', 'апр', 'мая', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек']
+  const dayLabel = (d) => { const [, m, dd] = d.split('-').map(Number); return dd + ' ' + MON[m - 1] }
+  // онлайн: «сейчас» или «сейчас с 3 IP»; иначе — когда был
+  const seen = (u) => u.online?.length ? (u.online.length > 1 ? `сейчас с ${u.online.length} IP` : 'сейчас') : ago(u.last_active)
 
   // ---------- связь с сервером или демо ----------
   let DEMO = location.protocol === 'file:' || new URLSearchParams(location.search).has('demo')
@@ -47,12 +51,19 @@
   function demoState() {
     const t = now(), d = 86400, mk = (id, name, note, used, limitGb, expDays, enabled, seen) => {
       const u = { id, name, note, token: 'demo' + id + 'Kx7Qp2Lm9Ts4', used, up: Math.round(used * .1), down: Math.round(used * .9), limit: limitGb * GB, expire: expDays === null ? 0 : t + expDays * d, enabled, last_active: seen === null ? 0 : t - seen, created: t - 40 * d }
+      u.period = ''; u.reset_at = 0; u.devices = 0; u.block_until = 0; u.online = []
       u.url = 'https://vpn.example.ru/s/' + u.token; u.state = stateOf(u, t); return u
     }
+    const users = [mk(1, 'Маша', 'сестра, iPhone', 2.4 * GB, 50, 24, true, 300), mk(2, 'Игорь Белов', 'работа', 48.7 * GB, 50, 61, true, 4000), mk(3, 'Папа', '', 0.3 * GB, 0, null, true, 90000),
+      mk(4, 'Дима', 'Android', 50 * GB, 50, 12, true, 7 * d), mk(5, 'Ксения', 'тестовый месяц', 6.1 * GB, 30, -3, true, 5 * d), mk(6, 'Старый ноутбук', '', 120 * GB, 0, null, false, 30 * d),
+      mk(7, 'Аня', '', 0, 20, 5, true, null)]
+    Object.assign(users[0], { period: 'month', reset_at: t + 9 * d, devices: 2, online: [{ ip: '95.24.181.7', at: t - 40 }] })
+    Object.assign(users[1], { devices: 1, block_until: t + 7 * 60, online: [{ ip: '188.170.84.12', at: t - 20 }, { ip: '31.173.86.201', at: t - 75 }] })
+    Object.assign(users[2], { online: [{ ip: '46.138.20.99', at: t - 15 }] })
+    users.forEach((u) => { u.state = stateOf(u, t) })
     return {
-      users: [mk(1, 'Маша', 'сестра, iPhone', 2.4 * GB, 50, 24, true, 300), mk(2, 'Игорь Белов', 'работа', 48.7 * GB, 50, 61, true, 4000), mk(3, 'Папа', '', 0.3 * GB, 0, null, true, 90000),
-        mk(4, 'Дима', 'Android', 50 * GB, 50, 12, true, 7 * d), mk(5, 'Ксения', 'тестовый месяц', 6.1 * GB, 30, -3, true, 5 * d), mk(6, 'Старый ноутбук', '', 120 * GB, 0, null, false, 30 * d),
-        mk(7, 'Аня', '', 0, 20, 5, true, null)],
+      users,
+      update: { current: '1.1.0', latest: { tag: 'v1.2.0', name: 'v1.2.0', notes: 'Несколько серверов в одной админке. График трафика по часам', published: t - 2 * d, url: '#' }, available: true, checked: t - 3 * 3600, error: '', status: null, repo: 'danilax9/monolit-proxy' },
       settings: { server_name: 'aeza', domain: 'vpn.example.ru', fp: 'firefox', kinds: 'vision,hy2', autoupdate: true, support_url: '', update_hours: 12, login: 'admin' },
       xray: { ok: true, error: '', last_sync: t - 20, inbounds: { vision: { tag: 'vision', port: 443 }, hy2: { tag: 'hy2', port: 443 }, xhttp: null } },
       template: { version: '162', hash: '47ffac58afcb3992', source: 'github', since: t - 3 * d, checked: t - 2 * 3600, rollback: true, pending: null, rejected: null }
@@ -66,22 +77,35 @@
     if (path === 'api/login') { if (body.password !== 'demo1234' || body.login !== 'admin') throw new Error('Неверный логин или пароль'); return {} }
     if (path === 'api/state') return S
     if (path === 'api/users' && method === 'POST') {
-      const nu = { id: Math.max(0, ...S.users.map((x) => x.id)) + 1, name: body.name, note: body.note, token: 'demo' + Date.now().toString(36), used: 0, up: 0, down: 0, limit: body.limit, expire: body.expire, enabled: true, last_active: 0, created: now() }
+      const nu = { id: Math.max(0, ...S.users.map((x) => x.id)) + 1, name: body.name, note: body.note, token: 'demo' + Date.now().toString(36), used: 0, up: 0, down: 0, limit: body.limit, expire: body.expire, enabled: true, last_active: 0, created: now(), period: body.period, reset_at: body.period ? now() + 30 * 86400 : 0, devices: body.devices, block_until: 0, online: [] }
       nu.url = 'https://' + S.settings.domain + '/s/' + nu.token; S.users.push(fix(nu)); return { user: nu }
     }
-    if (u && method === 'PATCH') { Object.assign(u, body); return { user: fix(u) } }
+    if (u && method === 'PATCH') { if (body.unblock || 'devices' in body) u.block_until = 0; delete body.unblock; Object.assign(u, body); return { user: fix(u) } }
     if (u && path.endsWith('/reset')) { u.used = u.up = u.down = 0; fix(u); return {} }
     if (u && path.endsWith('/regen')) { u.token = 'demo' + Date.now().toString(36); u.url = 'https://' + S.settings.domain + '/s/' + u.token; return { user: u } }
     if (u && method === 'DELETE') { S.users = S.users.filter((x) => x !== u); return {} }
     if (path === 'api/settings') { Object.assign(S.settings, body); delete S.settings.password; return S }
     if (path === 'api/template/check') { S.template.checked = now(); return { ok: true, changed: false, state: S } }
     if (path === 'api/template/rollback') { S.template.rollback = false; return S }
+    if (path.startsWith('api/traffic')) {
+      const uid = Number(new URLSearchParams(path.split('?')[1]).get('user')) || 0, days = []
+      for (let i = 29; i >= 0; i--) {
+        const dt = new Date(Date.now() - i * 86400e3), k = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`
+        const v = uid === 7 ? 0 : Math.round((0.6 + Math.sin(i * 1.3 + uid) * 0.4 + (i % 7 === 2 ? 0.8 : 0)) * (uid ? 0.4 : 2.2) * GB)
+        days.push({ day: k, up: Math.round(v * 0.1), down: Math.round(v * 0.9) })
+      }
+      return { tz: 'Europe/Moscow', days }
+    }
+    if (path === 'api/update/check') { S.update.checked = now(); return S.update }
+    if (path === 'api/update' && method === 'POST') { S.update.status = { state: 'running', to: S.update.latest.tag, from: S.update.current, at: now(), text: 'Скачиваю ' + S.update.latest.tag }; return { ok: true } }
+    if (path === 'api/update') { const st = S.update.status; if (st?.state === 'running' && now() - st.at > 4) { S.update.status = { ...st, state: 'done', text: 'Обновлено до ' + st.to }; S.update.current = st.to.slice(1); S.update.available = false } return S.update }
     throw new Error('Нет такого действия')
   }
 
   async function api(method, path, body) {
     if (DEMO) return demoApi(method, path, body)
-    const r = await fetch(path, { method, headers: body ? { 'content-type': 'application/json' } : {}, body: body ? JSON.stringify(body) : undefined, credentials: 'same-origin' })
+    const raw = typeof body === 'string'
+    const r = await fetch(path, { method, headers: body ? { 'content-type': raw ? 'application/octet-stream' : 'application/json' } : {}, body: body ? (raw ? body : JSON.stringify(body)) : undefined, credentials: 'same-origin' })
     let j = {}; try { j = await r.json() } catch (e) {}
     if (r.status === 401 && path !== 'api/login') { showLogin(); throw new Error('Нужно войти') }
     if (!r.ok) throw new Error(j.error || 'Сервер ответил ' + r.status)
@@ -104,6 +128,32 @@
   })
   $('mp-logout').addEventListener('click', async () => { try { await api('POST', 'api/logout') } catch (e) {} showLogin() })
 
+  // ---------- графики трафика ----------
+  // Система рисует график один раз из data-атрибутов: при новых данных ставим новый узел, если цифры поменялись
+  function drawChart(box, days, title) {
+    const vals = days.map((d) => d.up + d.down), max = Math.max(0, ...vals)
+    const key = days.map((d) => d.day + ':' + (d.up + d.down)).join(',')
+    if (box._key === key) return
+    box._key = key
+    if (!max) { box.innerHTML = '<p class="mp-note mp-chart-empty">За 30 дней трафика не было</p>'; return }
+    const mb = max < GB, k = mb ? 1024 ** 2 : GB
+    const el = document.createElement('div')
+    el.className = 'chart'; el.dataset.type = 'bar'; el.dataset.h = '160'; el.dataset.unit = mb ? ' МБ' : ' ГБ'; el.setAttribute('aria-label', title)
+    el.dataset.values = vals.map((v) => mb ? Math.round(v / k) : Math.round(v / k * 10) / 10).join(',')
+    el.dataset.labels = days.map((d) => dayLabel(d.day)).join(',')
+    box.replaceChildren(el); window.initData?.(box)
+  }
+  async function loadTotal() {
+    try {
+      const r = await api('GET', 'api/traffic?days=30')
+      const sum = r.days.reduce((a, d) => a + d.up + d.down, 0)
+      $('mp-tr-card').hidden = !S.users.length
+      $('mp-tr-sum').textContent = bytes(sum)
+      $('mp-tr-tz').textContent = r.tz && r.tz !== Intl.DateTimeFormat().resolvedOptions().timeZone ? 'Дни по времени сервера, ' + r.tz : ''
+      drawChart($('mp-tr-chart'), r.days, 'Трафик по дням')
+    } catch (e) {}
+  }
+
   // ---------- таблица ----------
   const tbody = $('mp-rows')
   const view = 'all'   // вкладок нет: по видам делят цифры над списком
@@ -124,7 +174,7 @@
       + (u.limit ? `<span class="progress" aria-hidden="true"><i style="--p:${p.toFixed(3)}"></i></span>` : '') + '</span>'
   }
   const rowHtml = (u) => `<th scope="row"><span class="mp-who">${esc(u.name)}</span>${u.note ? `<span class="mp-what">${esc(u.note)}</span>` : ''}${mobileHtml(u)}</th>`
-    + `<td class="mp-st-col">${badge(u)}</td><td>${useHtml(u)}</td><td class="mp-exp-col"><span class="${u.state === 'expired' ? 'mp-muted' : ''}">${left(u)}</span></td><td class="mp-seen-col"><span class="mp-muted">${ago(u.last_active)}</span></td>`
+    + `<td class="mp-st-col">${badge(u)}</td><td>${useHtml(u)}</td><td class="mp-exp-col"><span class="${u.state === 'expired' ? 'mp-muted' : ''}">${left(u)}</span></td><td class="mp-seen-col"><span class="${u.online?.length ? '' : 'mp-muted'}">${seen(u)}</span></td>`
 
   function render() {
     const q = query.toLowerCase()
@@ -156,6 +206,8 @@
     for (const u of S.users) c[group(u)]++
     $('mp-count-all').textContent = c.all
     $('mp-n-active').textContent = c.active
+    const on = S.users.filter((u) => u.online?.length).length
+    $('mp-n-active-f').textContent = on ? `${on} в сети сейчас` : 'подписка работает'
     $('mp-n-ended').textContent = c.ended
     $('mp-n-ended').closest('.stat').classList.toggle('mp-bad', c.ended > 0)
     $('mp-traffic').textContent = bytes(S.users.reduce((a, u) => a + u.used, 0))
@@ -199,16 +251,35 @@
     const p = u.limit ? Math.min(1, u.used / u.limit) : 0
     $('mp-d-prog').hidden = !u.limit
     $('mp-d-prog').firstElementChild.style.setProperty('--p', p.toFixed(3))
-    $('mp-d-usage-note').textContent = `Отдано ${bytes(u.down)}, принято ${bytes(u.up)}. В сети ${ago(u.last_active)}`
+    $('mp-d-usage-note').textContent = (u.period === 'month' && u.reset_at ? `Лимит на месяц, счётчик обнулится ${date(u.reset_at)}. ` : '') + `Отдано ${bytes(u.down)}, принято ${bytes(u.up)}`
+    // устройства: IP, с которых подключён сейчас
+    const blocked = u.block_until > now()
+    $('mp-d-block').hidden = !blocked
+    if (blocked) $('mp-d-block-t').textContent = 'Доступ закрыт до ' + TF.format(new Date(u.block_until * 1000))
+    $('mp-d-unblock-row').hidden = !blocked
+    $('mp-d-ips').innerHTML = (u.online || []).map((o) => `<div><dt>${esc(o.ip)}</dt><dd>${now() - o.at < 120 ? 'сейчас' : ago(o.at)}</dd></div>`).join('')
+    $('mp-d-ips').hidden = !u.online?.length
+    $('mp-d-dev-note').textContent = (u.online?.length ? '' : `Сейчас не подключён, в сети ${ago(u.last_active)}. `) + (u.devices ? `Разрешено устройств одновременно: ${u.devices}` : 'Без ограничения по устройствам')
     if (!form) return
     dForm.enabled.checked = u.enabled
     dForm.name.value = u.name
     dForm.note.value = u.note || ''
     dForm.limit.value = gbOf(u.limit)
+    dForm.period.value = u.period || ''; dForm.period.dispatchEvent(new Event('change'))
+    dForm.devices.value = u.devices || ''
+    window.fieldError?.(dForm.devices, '')
     dForm.expire.value = toDateInput(u.expire)
     window.fieldError?.(dForm.limit, '')
   }
-  function openDetail(id) { openId = Number(id); fillDetail(); $('mp-detail').showModal() }
+  async function loadUserChart(id) {
+    const box = $('mp-d-chart'); box._key = ''; box.replaceChildren()
+    try { const r = await api('GET', 'api/traffic?days=30&user=' + id); if (openId === id) drawChart(box, r.days, 'Трафик по дням') } catch (e) {}
+  }
+  function openDetail(id) { openId = Number(id); fillDetail(); $('mp-detail').showModal(); loadUserChart(openId) }
+  $('mp-d-unblock').addEventListener('click', (e) => busy(e.currentTarget, async () => {
+    const u = cur(); if (!u) return
+    try { const r = await api('PATCH', 'api/users/' + u.id, { unblock: true }); putUser(r.user); fillDetail(false); toast({ type: 'success', title: 'Доступ открыт', text: u.name }) } catch (err) { fail(err) }
+  }))
   $('mp-detail').addEventListener('close', () => { openId = null })
   tbody.addEventListener('click', (e) => { const tr = e.target.closest('tr'); if (tr) openDetail(tr.dataset.id) })
   tbody.addEventListener('keydown', (e) => { if (e.key === 'Enter' && e.target.matches('tr')) openDetail(e.target.dataset.id) })
@@ -222,15 +293,21 @@
     if (!ok) inp.focus()
     return ok
   }
+  const devOk = (inp) => {
+    const v = inp.value.trim(), ok = !v || (/^\d{1,2}$/.test(v) && Number(v) <= 50)
+    window.fieldError?.(inp, ok ? '' : 'Число от 1 до 50, пусто — без ограничения')
+    if (!ok) inp.focus()
+    return ok
+  }
   const putUser = (u) => { const i = S.users.findIndex((x) => x.id === u.id); if (i >= 0) S.users[i] = u; else S.users.push(u); paint() }
 
   dForm.addEventListener('submit', (e) => {
     e.preventDefault()
     const u = cur(); if (!u) return
-    if (!limitOk(dForm.limit)) return
+    if (!limitOk(dForm.limit) || !devOk(dForm.devices)) return
     busy(document.querySelector('[form="mp-d-form"]'), async () => {
       try {
-        const r = await api('PATCH', 'api/users/' + u.id, { name: dForm.name.value, note: dForm.note.value, limit: parseGb(dForm.limit.value), expire: fromDateInput(dForm.expire.value), enabled: dForm.enabled.checked })
+        const r = await api('PATCH', 'api/users/' + u.id, { name: dForm.name.value, note: dForm.note.value, limit: parseGb(dForm.limit.value), expire: fromDateInput(dForm.expire.value), enabled: dForm.enabled.checked, period: dForm.period.value, devices: Number(dForm.devices.value) || 0 })
         putUser(r.user); fillDetail(); toast({ type: 'success', title: 'Сохранено', text: ST[r.user.state][0] + ', ' + left(r.user) })
       } catch (err) { fail(err) }
     })
@@ -286,12 +363,12 @@
     const name = aForm.name.value.trim()
     if (!name) { window.fieldError?.(aForm.name, 'Напишите, кому подписка'); aForm.name.focus(); return }
     window.fieldError?.(aForm.name, '')
-    if (!limitOk(aForm.limit)) return
+    if (!limitOk(aForm.limit) || !devOk(aForm.devices)) return
     busy(aForm.querySelector('button[type=submit]'), async () => {
       try {
-        const r = await api('POST', 'api/users', { name, note: aForm.note.value.trim(), limit: parseGb(aForm.limit.value), expire: Number(aForm.days.value) ? now() + Number(aForm.days.value) * 86400 : 0 })
+        const r = await api('POST', 'api/users', { name, note: aForm.note.value.trim(), limit: parseGb(aForm.limit.value), period: aForm.period.value, devices: Number(aForm.devices.value) || 0, expire: Number(aForm.days.value) ? now() + Number(aForm.days.value) * 86400 : 0 })
         putUser(r.user)
-        $('mp-add').close(); aForm.reset(); aForm.days.dispatchEvent(new Event('change'))
+        $('mp-add').close(); aForm.reset(); aForm.days.dispatchEvent(new Event('change')); aForm.period.dispatchEvent(new Event('change'))
         setCopy($('mp-made-url'), $('mp-made-copy'), r.user.url)
         $('mp-made-t').textContent = `Ссылка для «${r.user.name}» готова`
         $('mp-made-p').textContent = 'Отправьте её человеку: по ней откроется страница с инструкцией'
@@ -335,7 +412,70 @@
     sForm.fp.value = s.fp; sForm.fp.dispatchEvent(new Event('change'))
     $('mp-kinds').innerHTML = KINDS.map(([k, n, h]) => `<label class="choice"><input type="checkbox" class="check" value="${k}" ${on.includes(k) && ib[k] ? 'checked' : ''} ${ib[k] ? '' : 'disabled'}><span>${n}<small>${ib[k] ? h : 'на этом сервере нет такого входа Xray'}</small></span></label>`).join('')
   }
-  document.querySelectorAll('[data-open="mp-set"]').forEach((b) => b.addEventListener('click', (e) => { e.preventDefault(); fillSet() }))
+  document.querySelectorAll('[data-open="mp-set"]').forEach((b) => b.addEventListener('click', (e) => { e.preventDefault(); fillSet(); fillUpd() }))
+
+  // ---------- обновление monolit из релизов GitHub ----------
+  let updPoll = 0
+  function fillUpd() {
+    const u = S.update; if (!u) return
+    const st = u.status, running = st?.state === 'running' && now() - st.at < 900
+    const rows = [['Установлена', 'v' + u.current], ['Последняя', u.latest ? u.latest.tag + (u.latest.published ? ' от ' + date(u.latest.published) : '') : 'релизов пока нет'], ['Проверено', u.checked ? ago(u.checked) : 'ещё нет']]
+    if (u.error) rows.push(['Ошибка проверки', u.error])
+    $('mp-up-kv').innerHTML = rows.map(([k, v]) => `<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join('')
+    const failed = st?.state === 'failed' && now() - st.at < 86400
+    $('mp-up-fail').hidden = !failed
+    if (failed) $('mp-up-fail-t').textContent = st.text
+    $('mp-up-new').hidden = !u.available || running
+    if (u.available) { $('mp-up-new-t').textContent = 'Вышла ' + u.latest.tag; $('mp-up-notes').textContent = u.latest.notes || 'Без описания' }
+    $('mp-up-run').hidden = !running
+    if (running) $('mp-up-run').textContent = st.text + '. Админка перезапустится, страница обновится сама'
+    $('mp-up-go').hidden = !u.available || running
+    if (u.available) $('mp-up-go').lastElementChild.textContent = 'Обновить до ' + u.latest.tag
+    if (running && !updPoll) watchUpd()
+  }
+  // Во время установки админка перезапускается: ошибки запросов ожидаемы, ждём ответа с итогом
+  function watchUpd() {
+    const from = S.update.current, t0 = Date.now()
+    updPoll = setInterval(async () => {
+      let u; try { u = await api('GET', 'api/update') } catch (e) { return }
+      S.update = u; fillUpd()
+      const st = u.status
+      if (st?.state === 'done' || u.current !== from) { clearInterval(updPoll); updPoll = 0; toast({ type: 'success', title: 'monolit обновлён', text: 'Версия ' + u.current }); if (!DEMO) setTimeout(() => location.reload(), 1500) }
+      else if (st?.state === 'failed') { clearInterval(updPoll); updPoll = 0; toast({ type: 'error', title: 'Обновление не встало', text: st.text }) }
+      else if (Date.now() - t0 > 15 * 60e3) { clearInterval(updPoll); updPoll = 0 }
+    }, 3000)
+  }
+  $('mp-up-check').addEventListener('click', (e) => busy(e.currentTarget, async () => {
+    try { S.update = await api('POST', 'api/update/check'); fillUpd(); toast(S.update.available ? { type: 'success', title: 'Есть новая версия', text: S.update.latest.tag } : { title: 'Новой версии нет', text: 'Установлена последняя, v' + S.update.current }) } catch (err) { fail(err) }
+  }))
+  $('mp-up-go').addEventListener('click', async (e) => {
+    const u = S.update, btn = e.currentTarget
+    if (!await confirmAct(`Обновить до ${u.latest.tag}?`, 'Скачаем релиз с GitHub и переустановим. Админка перезапустится, подключения VPN могут оборваться на пару секунд. Если новая версия не встанет, вернём прежнюю', 'Обновить')) return
+    busy(btn, async () => {
+      try { await api('POST', 'api/update'); S.update.status = { state: 'running', to: u.latest.tag, from: u.current, at: now(), text: 'Скачиваю ' + u.latest.tag }; fillUpd() } catch (err) { fail(err) }
+    })
+  })
+
+  // ---------- бэкап и восстановление ----------
+  $('mp-bk-get').addEventListener('click', (e) => { if (DEMO) { e.preventDefault(); toast({ title: 'В демо бэкапа нет' }) } })
+  $('mp-bk-dz').addEventListener('files-added', async (e) => {
+    const f = e.detail.files[0]; if (!f) return
+    if (f.size > 64 * 1024 ** 2) { fail(new Error('Файл больше 64 МБ')); return }
+    let text, b
+    try { text = await f.text(); b = JSON.parse(text); if (b.monolit_backup !== 1) throw new Error() } catch (err) { fail(new Error('Это не файл бэкапа monolit')); return }
+    const when = b.created ? date(b.created) + ' в ' + TF.format(new Date(b.created * 1000)) : 'без даты'
+    if (!await confirmAct('Восстановить из бэкапа?', `Сервер «${b.server || '?'}», ${when}, пользователей: ${b.users ?? '?'}. Всё, что сейчас в админке, заменится. Текущая база останется на сервере рядом, но вернуть её можно только вручную. После перезапуска войдите с логином и паролем из бэкапа`, 'Восстановить')) return
+    try {
+      await api('POST', 'api/restore', text)
+      toast({ type: 'success', title: 'Восстанавливаем', text: 'Админка перезапускается' })
+      if (DEMO) return
+      // ждём, пока админка поднимется с новой базой
+      const t0 = Date.now(), iv = setInterval(async () => {
+        try { const r = await fetch('api/state', { credentials: 'same-origin' }); if (r.status === 401 || r.ok) { clearInterval(iv); location.reload() } } catch (err) {}
+        if (Date.now() - t0 > 120e3) clearInterval(iv)
+      }, 2000)
+    } catch (err) { fail(err) }
+  })
   sForm.addEventListener('submit', (e) => {
     e.preventDefault()
     const pw = sForm.password.value
@@ -375,9 +515,9 @@
       else throw e
     }
     $('mp-login').hidden = true; $('mp-app').hidden = false
-    paint()
+    paint(); loadTotal()
   }
   if (DEMO) S = demoState()
   load().catch(fail)
-  setInterval(() => { if (!document.hidden && !$('mp-app').hidden && !DEMO) api('GET', 'api/state').then((s) => { S = s; paint() }).catch(() => {}) }, 60000)
+  setInterval(() => { if (!document.hidden && !$('mp-app').hidden && !DEMO) api('GET', 'api/state').then((s) => { S = s; paint(); loadTotal(); if (openId) api('GET', 'api/traffic?days=30&user=' + openId).then((r) => openId && drawChart($('mp-d-chart'), r.days, 'Трафик по дням')).catch(() => {}) }).catch(() => {}) }, 60000)
 })()

@@ -128,7 +128,7 @@ if [ "$ACTION" = uninstall ]; then
   [ "$YES" = 1 ] || { [ "$TTY" = 1 ] && yesno "Удалить monolit?" нет; } || die "Отменено. Без терминала добавьте --yes"
   docker rm -f monolit monolit-mtg >>"$LOG" 2>&1 || true
   systemctl disable --now monolit-agent.socket >>"$LOG" 2>&1 || true
-  rm -f /etc/systemd/system/monolit-agent.socket /etc/systemd/system/monolit-agent@.service /usr/local/lib/monolit/agent.sh
+  rm -f /etc/systemd/system/monolit-agent.socket /etc/systemd/system/monolit-agent@.service /usr/local/lib/monolit/agent.sh /usr/local/lib/monolit/update.sh
   restore_before
   [ -f /etc/sysctl.d/99-monolit.conf ] && rm -f /etc/sysctl.d/99-monolit.conf && info "BBR-настройки убраны, старые значения ядра вернутся после перезагрузки"
   mv "$ENVF" "$BK/monolit.env-$STAMP"
@@ -508,6 +508,10 @@ MP_BACKUP_XRAY=$MP_BACKUP_XRAY
 MP_BACKUP_NGINX=$MP_BACKUP_NGINX
 MP_OWN_XRAY=${MP_OWN_XRAY:-}
 MP_FIREWALL=$FW
+MP_VERSION=$(cat "$SRC/VERSION" 2>/dev/null || echo 0.0.0)
+MP_SRC=$SRC
+MP_REPO=${MP_REPO:-danilax9/monolit-proxy}
+MP_TZ=$( { timedatectl show -p Timezone --value 2>/dev/null; cat /etc/timezone 2>/dev/null; echo UTC; } | grep -m1 . )
 EOF
 chmod 600 "$ENVF"; [ -f "$DATA/warp.json" ] && chmod 600 "$DATA/warp.json"
 
@@ -521,7 +525,7 @@ fi
 
 # Помощник админки на хосте: перезапуск и проверка Xray, обновления, журнал. Только команды из списка, сокет только для root
 install -d -m 755 /usr/local/lib/monolit
-install -m 755 "$SRC/agent/agent.sh" /usr/local/lib/monolit/agent.sh
+install -m 755 "$SRC/agent/agent.sh" "$SRC/agent/update.sh" /usr/local/lib/monolit/
 install -m 644 "$SRC/agent/monolit-agent.socket" "$SRC/agent/monolit-agent@.service" /etc/systemd/system/
 systemctl daemon-reload
 systemctl enable monolit-agent.socket >>"$LOG" 2>&1; systemctl restart monolit-agent.socket >>"$LOG" 2>&1 \
