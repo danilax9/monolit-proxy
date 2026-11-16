@@ -10,6 +10,7 @@ import * as warpApi from './warp.mjs';
 const SOCK = process.env.MP_AGENT_SOCK || '/run/monolit/agent.sock';
 const PROBE_PORT = 10086, KEEP = 40;
 const J = (s, d) => { try { return JSON.parse(s) } catch { return d } };
+const IPV4 = /^(25[0-5]|2[0-4]\d|1?\d?\d)(\.(25[0-5]|2[0-4]\d|1?\d?\d)){3}$/;
 
 // Помощник на хосте: одна строка запроса, ответ — вывод и «__EXIT код»
 export function agent(line, timeout = 30000) {
@@ -100,8 +101,8 @@ export function createManager({ db, xray, queue, activeUsers, log, onRestart }) 
   const put = (k, v) => setSetting(db, k, JSON.stringify(v));
   // Всё, чем управляем, одним объектом: его же кладём в историю
   const snapshot = () => ({ routes: get('routes', []), warp: getSetting(db, 'warp_on', '0') === '1', warp_out: get('warp_out', null), warp_reg: get('warp_reg', null), warp_acc: getSetting(db, 'warp_acc', ''),
-    proto: get('proto', { hy2: true, xhttp: true }), stash: get('stash', {}), socks: get('socks', { on: false, port: 1080, user: '', pass: '' }) });
-  const restore = (s) => { put('routes', s.routes); setSetting(db, 'warp_on', s.warp ? '1' : '0'); put('warp_out', s.warp_out); put('warp_reg', s.warp_reg); setSetting(db, 'warp_acc', s.warp_acc || ''); put('proto', s.proto); put('stash', s.stash); put('socks', s.socks) };
+    proto: get('proto', { hy2: true, xhttp: true }), stash: get('stash', {}), socks: get('socks', { on: false, port: 1080, user: '', pass: '' }), out_ip: getSetting(db, 'out_ip', '') });
+  const restore = (s) => { put('routes', s.routes); setSetting(db, 'warp_on', s.warp ? '1' : '0'); put('warp_out', s.warp_out); put('warp_reg', s.warp_reg); setSetting(db, 'warp_acc', s.warp_acc || ''); put('proto', s.proto); put('stash', s.stash); put('socks', s.socks); setSetting(db, 'out_ip', s.out_ip || '') };
 
   const tagsOf = (cfg) => ({
     direct: (cfg.outbounds || []).find((o) => o.protocol === 'freedom')?.tag || 'direct',
@@ -120,6 +121,9 @@ export function createManager({ db, xray, queue, activeUsers, log, onRestart }) 
       if (ib) { s.proto[k] = true; s.stash[k] = { ...ib, settings: { ...ib.settings, clients: [] } } }
       else if (!s.stash[k]) s.proto[k] = false;
     }
+    // Исходящий IP: если в конфиге задан — он; нет (install.sh переписал конфиг) — оставляем выбранный, build вернёт
+    const fr = (cfg.outbounds || []).find((o) => o.protocol === 'freedom' && o.tag === tagsOf(cfg).direct);
+    if (fr?.sendThrough && IPV4.test(fr.sendThrough)) s.out_ip = fr.sendThrough;
     const so = (cfg.inbounds || []).find(isSocks);
     if (so) { const a = so.settings?.accounts?.[0] || {}; s.socks = { on: true, port: so.port, user: a.user || '', pass: a.pass || '', tag: so.tag } }
     else s.socks.on = false;
@@ -150,6 +154,15 @@ export function createManager({ db, xray, queue, activeUsers, log, onRestart }) 
     if (warpOn) {
       cfg.outbounds.push(structuredClone(s.warp_out));
       cfg.inbounds.push({ tag: 'mp-probe', listen: '127.0.0.1', port: PROBE_PORT, protocol: 'socks', settings: { auth: 'noauth', udp: false } });
+    }
+    // Исходящий IP: адрес, с которого выход direct идёт в интернет. С IPv4-адресом на IPv6 не выйти — домены только в IPv4
+    const fr = cfg.outbounds.find((o) => o.protocol === 'freedom' && o.tag === tagsOf(cfg).direct);
+    if (fr) {
+      if (s.out_ip) { fr.sendThrough = s.out_ip; fr.settings = { ...fr.settings, domainStrategy: 'UseIPv4' } }
+      else if (fr.sendThrough) {
+        delete fr.sendThrough;
+        if (fr.settings?.domainStrategy === 'UseIPv4') { delete fr.settings.domainStrategy; if (!Object.keys(fr.settings).length) delete fr.settings }
+      }
     }
     // Правила: свои пересобираем, чужие и базовые (блок локальных адресов и т. п.) не трогаем
     const keep = cfg.routing.rules.filter((r) => !String(r.ruleTag || '').startsWith('mp-') && !(r.outboundTag === 'warp' && !r.ruleTag));
@@ -224,6 +237,7 @@ export function createManager({ db, xray, queue, activeUsers, log, onRestart }) 
       routes: s.routes, targets: TARGETS,
       warp: { on: s.warp, registered: !!s.warp_out, plus: !!s.warp_reg, account: s.warp_acc || 'free' },
       proto: { vision: true, hy2: s.proto.hy2, xhttp: s.proto.xhttp, hy2_known: !!(s.proto.hy2 || s.stash.hy2), xhttp_known: !!(s.proto.xhttp || s.stash.xhttp) },
+      out_ip: s.out_ip || '',
       socks: { on: s.socks.on, port: s.socks.port, user: s.socks.user, pass: s.socks.pass },
       mtg: process.env.MP_MTG_PORT ? { port: Number(process.env.MP_MTG_PORT), link: `tg://proxy?server=${getSetting(db, 'domain')}&port=${process.env.MP_MTG_PORT}&secret=${process.env.MP_MTG_SECRET || ''}` } : null,
       history: db.prepare('SELECT id, at, note, length(body) AS size FROM config_history ORDER BY id DESC').all(),
@@ -322,6 +336,26 @@ export function createManager({ db, xray, queue, activeUsers, log, onRestart }) 
     async mtg(on) { const r = await agent('mtg ' + (on ? 'on' : 'off')); return r.code === 0 ? { ok: true } : { ok: false, error: r.out || 'Не получилось' } },
   };
 
+  // Исходящий IP: '' — как решает сервер (таблица маршрутов), иначе один из IPv4 сервера.
+  // Сначала помощник проверяет, что с этого адреса есть выход в интернет и каким его видят снаружи
+  const egress = {
+    async set(ip) {
+      ip = String(ip || '').trim();
+      if (ip && !IPV4.test(ip)) return { ok: false, error: 'Выберите IP из списка' };
+      if (ip === (snapshot().out_ip || '')) return { ok: true, same: true };
+      let seen = '';
+      if (ip) {
+        const r = await agent('egress ' + ip, 30000);
+        if (r.code === 2 && /нет такой команды/.test(r.out)) return { ok: false, error: 'Помощник на сервере старый: обновите monolit' };
+        if (r.code === 3) return { ok: false, error: `Адреса ${ip} на сервере нет` };
+        seen = (r.out.split('\n').pop() || '').trim();
+        if (r.code !== 0 || !IPV4.test(seen)) return { ok: false, error: `С адреса ${ip} нет выхода в интернет. Проверьте, что провайдер разрешает отправку с него` };
+      }
+      const r = await apply(ip ? 'Исходящий IP ' + ip : 'Исходящий IP: как решает сервер', () => setSetting(db, 'out_ip', ip));
+      return r.ok ? { ...r, seen } : r;
+    },
+  };
+
   const history = {
     async rollback(id) {
       const h = db.prepare('SELECT * FROM config_history WHERE id = ?').get(id);
@@ -357,7 +391,7 @@ export function createManager({ db, xray, queue, activeUsers, log, onRestart }) 
       const kept = J(getSetting(db, 'pre_reconf', ''), null);
       if (kept) { restore({ ...kept, stash: { ...kept.stash, ...snapshot().stash } }); setSetting(db, 'pre_reconf', ''); log('после смены адреса вернул маршруты, WARP и протоколы') }
       const cfg = xray.read(), want = build(cfg, snapshot());
-      if (JSON.stringify(want.routing) !== JSON.stringify(cfg.routing) || want.inbounds.length !== cfg.inbounds.length) {
+      if (JSON.stringify(want.routing) !== JSON.stringify(cfg.routing) || want.inbounds.length !== cfg.inbounds.length || JSON.stringify(want.outbounds) !== JSON.stringify(cfg.outbounds)) {
         const r = await apply('Маршруты после переустановки', null, { history: false });
         if (!r.ok) log('маршруты после переустановки не применились:', r.error);
       }
@@ -366,7 +400,7 @@ export function createManager({ db, xray, queue, activeUsers, log, onRestart }) 
 
   // Перед сменой адреса: запомнить, что включено (start() вернёт это после переустановки)
   const keep = () => setSetting(db, 'pre_reconf', JSON.stringify(snapshot()));
-  return { stateForAdmin, routes, warp, proto, history, server, start, apply, keep };
+  return { stateForAdmin, routes, warp, proto, egress, history, server, start, apply, keep };
 }
 
 // Готовые наборы. Ничего не включено само: человек добавляет набор и видит, что в нём

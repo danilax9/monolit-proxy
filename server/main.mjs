@@ -222,7 +222,7 @@ const cleanDomain = v => { const d = String(v || '').trim().toLowerCase().replac
 const resolve = resolve4;
 function addrState() {
   let job = null; try { job = JSON.parse(readFileSync(join(DATA, 'reconf.json'), 'utf8')) } catch {}
-  return { mode: env('MP_MODE', ''), domain: getSetting(db, 'domain'), ip2: env('MP_IP2', ''), alt: env('MP_ALT', '').replace(/^"|"$/g, '').split(/[,;]/).map(x => x.split(/[:|]/)[0]).filter(x => cleanDomain(x)), admin: ADMIN, job, watch: watch.state() };
+  return { mode: env('MP_MODE', ''), domain: getSetting(db, 'domain'), ip2: env('MP_IP2', ''), out_ip: mgr.stateForAdmin().out_ip, alt: env('MP_ALT', '').replace(/^"|"$/g, '').split(/[,;]/).map(x => x.split(/[:|]/)[0]).filter(x => cleanDomain(x)), admin: ADMIN, job, watch: watch.state() };
 }
 
 function stateForAdmin() {
@@ -402,6 +402,7 @@ async function adminApi(req, res, path) {
     return json(res, r.code < 0 ? 503 : 400, { error: r.code === 2 && /нет такой команды/.test(r.out) ? 'Помощник на сервере старый: обновите monolit' : r.out || 'Не запустилось' });
   }
   if (path === '/api/addr/job' && M === 'GET') return json(res, 200, addrState());
+  if (path === '/api/egress' && M === 'POST') { if (!managed()) return; return done(await mgr.egress.set((await readBody(req)).ip)) }
   if (path === '/api/watch' && M === 'POST') {
     const b = await readBody(req);
     if (b.on !== undefined) setSetting(db, 'watch_on', b.on ? '1' : '0');

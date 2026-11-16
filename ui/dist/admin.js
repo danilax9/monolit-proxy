@@ -5272,11 +5272,11 @@ var qrcode = function() {
   const MODES = { bare: ['Весь сервер под VPN', 'Xray на 443, за ним страница входа, админка и подписки'], front: ['Рядом с сайтами', 'Xray на 443, сайты nginx открываются через него'], ip2: ['Второй IP', 'Xray на отдельном адресе, сайты остаются на основном'] }
   const W = { ok: ['Открывается', 'badge-success'], blocked: ['Не открывается', 'badge-danger'], down: ['Сервер не отвечает', 'badge-danger'], unknown: ['Не удалось проверить', 'badge-warning'], none: ['Ещё не проверяли', ''] }
 
-  let D = null   // { mode, domain, ip2, alt, admin, job, watch, net, dns }
+  let D = null   // { mode, domain, ip2, out_ip, alt, admin, job, watch, net, dns }
 
   // ---------- демо ----------
   const demo = {
-    mode: 'front', domain: 'vpn.example.ru', ip2: '', alt: ['old.example.ru'], admin: '/adm', job: null, dns: ['203.0.113.7'],
+    mode: 'front', domain: 'vpn.example.ru', ip2: '', out_ip: '', alt: ['old.example.ru'], admin: '/adm', job: null, dns: ['203.0.113.7'],
     net: { ips: ['203.0.113.7', '203.0.113.8'], ip1: '203.0.113.7', sites: [{ names: ['example.ru', 'www.example.ru'] }] },
     watch: { state: 'blocked', at: now() - 600, since: now() - 4000, ip: '203.0.113.7', on: true, every: 60, error: '',
       ru: [{ node: 'ru1', city: 'Moscow', ok: false, healthy: false, answered: true }, { node: 'ru2', city: 'Moscow', ok: false, healthy: true, answered: true }],
@@ -5296,6 +5296,7 @@ var qrcode = function() {
       }
       return structuredClone(demo)
     }
+    if (path === 'api/egress') { await sleep(1000); demo.out_ip = body.ip; return { ok: true, seen: body.ip || demo.net.ip1 } }
     if (path === 'api/watch') { if ('on' in body) demo.watch.on = body.on; if ('every' in body) demo.watch.every = Number(body.every); return { watch: demo.watch } }
     if (path === 'api/watch/check') { await sleep(1500); Object.assign(demo.watch, { state: 'ok', at: now(), since: now(), ru: demo.watch.ru.map((x) => ({ ...x, ok: x.healthy, ms: 41 })) }); return { watch: demo.watch } }
     throw new Error('Нет такого действия')
@@ -5339,7 +5340,7 @@ var qrcode = function() {
       ['Домен', D.domain],
       ['Смотрит на', D.dns?.length ? D.dns.join(', ') + (dnsOk === false && on.length ? ', это не этот сервер' : '') : 'никуда', dnsOk === false ? 'mp-warn' : ''],
       MODES[D.mode] ? ['Способ', MODES[D.mode][0]] : null,
-      D.mode === 'ip2' ? ['IP для VPN', D.ip2] : null,
+      D.mode === 'ip2' ? ['Входящий IP', D.ip2] : null,
       on.length ? [on.length > 1 ? 'Адреса сервера' : 'Адрес сервера', on.join(', ')] : null,
       D.mode === 'front' && sites().length ? ['Сайты рядом', sites().join(', ')] : null,
     ])
@@ -5350,6 +5351,10 @@ var qrcode = function() {
     window.lucide?.createIcons()
     $('mp-a-edit').disabled = foreign || running || !D.net
     $('mp-a-edit').closest('.btn-row').hidden = foreign
+    // исходящий IP: только когда конфигом Xray управляет monolit
+    $('mp-o-sec').hidden = foreign
+    $('mp-o-kv').innerHTML = kv([['Сейчас', D.out_ip || 'как решает сервер' + (D.net?.ip1 ? `, ${D.net.ip1}` : '')]])
+    $('mp-o-edit').disabled = foreign || running || !D.net
   }
   const paint = () => { paintWatch(); paintAddr() }
 
@@ -5425,7 +5430,7 @@ var qrcode = function() {
     const changed = []
     if (domain !== D.domain) changed.push(`домен ${D.domain} → ${domain}`)
     if (mode !== D.mode) changed.push(`способ «${MODES[D.mode]?.[0] || D.mode}» → «${MODES[mode][0]}»`)
-    if (mode === 'ip2' && ip2 !== D.ip2) changed.push(`IP для VPN ${D.ip2 || 'основной'} → ${ip2}`)
+    if (mode === 'ip2' && ip2 !== D.ip2) changed.push(`входящий IP ${D.ip2 || 'основной'} → ${ip2}`)
     if (!changed.length) { toast({ title: 'Ничего не изменилось' }); return }
     const warn = !$('mp-a-force-f').hidden
     if (warn && !F.force.checked) { toast({ type: 'error', title: 'DNS не совпадает', text: 'Поправьте A-запись или отметьте «Применить, хотя DNS не совпадает»' }); return }
@@ -5435,6 +5440,41 @@ var qrcode = function() {
     if (!await A().confirm('Сменить адрес?', `Меняем: ${fix}. VPN и сайты прервутся примерно на минуту, админка перезапустится. Если что-то не поднимется, вернём как было.${lost}`, 'Сменить')) return
     await send({ mode, domain, ip2, keep_old: keep, force: warn && F.force.checked }, F.querySelector('[type="submit"]'))
     dlg.close()
+  })
+
+  // ---------- исходящий IP ----------
+  // Меняется без переустановки: конфиг Xray проверяется и перезапускается, результат ждём по api/job
+  const O = $('mp-o-form'), odlg = $('mp-o-dlg')
+  const autoName = () => 'Как решает сервер' + (D.net?.ip1 ? ` (сейчас ${D.net.ip1})` : '')
+  $('mp-o-edit').addEventListener('click', () => {
+    const list = [...new Set([...ips(), ...(D.out_ip ? [D.out_ip] : [])])]
+    setSelect(O.ip, [['', autoName()], ...list.map((a) => [a, a + (a === D.ip2 ? ', входящий' : '')])], D.out_ip || '')
+    odlg.showModal()
+  })
+  async function waitJob(r) {
+    if (!r?.pending) return
+    const until = Date.now() + 150000
+    await sleep(1500)
+    while (Date.now() < until) {
+      let j = null
+      try { j = await api('GET', 'api/job') } catch (e) {}
+      if (j && j.job.id === r.job && !j.job.running) { if (!j.job.ok) throw new Error(j.job.error || 'Не получилось'); return }
+      await sleep(1500)
+    }
+    throw new Error('Xray долго не отвечает, загляните в раздел «Сервер»')
+  }
+  O.addEventListener('submit', async (e) => {
+    e.preventDefault()
+    const ip = O.ip.value
+    if (ip === (D.out_ip || '')) { odlg.close(); return }
+    await busy(O.querySelector('[type="submit"]'), async () => {
+      try {
+        const r = await api('POST', 'api/egress', { ip })
+        await waitJob(r)
+        D.out_ip = ip; paintAddr(); odlg.close()
+        toast({ type: 'success', title: 'Исходящий IP изменён', text: r.seen ? `Интернет видит сервер как ${r.seen}` : 'Сервер выходит, как решает система' })
+      } catch (err) { fail(err) }
+    })
   })
 
   $('mp-a-alt').addEventListener('click', async (e) => {

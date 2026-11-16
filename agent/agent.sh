@@ -101,6 +101,13 @@ case "$cmd" in
     wait
     echo "server $(cat /tmp/mp-reach-d.$$)"; [ -f /tmp/mp-reach-w.$$ ] && echo "warp $(cat /tmp/mp-reach-w.$$)"
     rm -f /tmp/mp-reach-[dw].$$; fin 0 ;;
+  egress)   # egress IP — есть ли выход в интернет с этого адреса сервера; последняя строка — каким IP видят снаружи
+    [[ "$a1" =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}$ ]] || { echo "плохой адрес"; fin 2; }
+    ip -4 -o addr show 2>/dev/null | grep -q " inet $a1/" || { echo "адреса нет на сервере"; fin 3; }
+    seen=$(curl -4 -s -m 10 --interface "$a1" https://www.cloudflare.com/cdn-cgi/trace 2>/dev/null | sed -n 's/^ip=//p')
+    [ -n "$seen" ] || seen=$(curl -4 -s -m 10 --interface "$a1" https://api.ipify.org 2>/dev/null)
+    [[ "$seen" =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}$ ]] || { echo "нет выхода"; fin 1; }
+    echo "$seen"; fin 0 ;;
   netinfo)   # адреса сервера, основной IP, сайты nginx на 443 — для смены домена, IP и способа
     ips=$(ip -4 -o addr show scope global 2>/dev/null | while read -r _ dev _ addr _; do dev=${dev%%@*}
       { [ -e "/sys/class/net/$dev/bridge" ] || [ -e "/sys/class/net/$dev/brport" ]; } && continue

@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex, nofollow">
 <title>monolit proxy</title>
 <link rel="icon" href="_/mark.svg" type="image/svg+xml">
-<link rel="stylesheet" href="_/admin.css?v=f2fc40dc8b">
+<link rel="stylesheet" href="_/admin.css?v=b4d488f6da">
 <script>/* Тема: предпочтение light | dark | system.
    Подключать в <head> БЕЗ defer — тема ставится до первой отрисовки, без мигания чужой темы.
    Переключатели: любые кнопки с data-theme-v="light|dark|system" (aria-checked ставится сам).
@@ -129,7 +129,7 @@ const DS_KEY = (k) => (document.documentElement.dataset.store ? document.documen
 })();
 </script>
 <script>document.documentElement.classList.add('js')</script>
-<script src="_/admin.js?v=786e6bfcfe" defer></script>
+<script src="_/admin.js?v=32258111cf" defer></script>
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="mp-mark" viewBox="0 0 24 24"><rect x="7" y="2" width="10" height="20" rx="2.5" fill="currentColor"/></symbol></svg>
@@ -416,8 +416,22 @@ const DS_KEY = (k) => (document.documentElement.dataset.store ? document.documen
       <div class="alist" id="mp-a-alt" hidden></div>
       <div class="btn-row"><button class="btn btn-primary" type="button" id="mp-a-edit"><i data-lucide="pencil"></i><span>Изменить</span></button></div>
     </div>
+    <div class="mp-section" id="mp-o-sec" hidden>
+      <span class="t-label">Исходящий IP</span>
+      <dl class="mp-kv" id="mp-o-kv"></dl>
+      <p class="mp-note">С этого адреса сервер выходит в интернет: его видят сайты и приложения людей</p>
+      <div class="btn-row"><button class="btn btn-secondary" type="button" id="mp-o-edit"><i data-lucide="pencil"></i><span>Изменить</span></button></div>
+    </div>
   </div>
 </dialog>
+
+<dialog class="dialog dialog-md dialog-scroll" id="mp-o-dlg" aria-labelledby="mp-od-t"><form novalidate id="mp-o-form">
+  <div class="dialog-head"><div><h2 id="mp-od-t">Исходящий IP</h2><p>Сначала проверим, что с адреса есть выход в интернет. Xray перезапустится, VPN прервётся на несколько секунд</p></div><button class="icon-btn icon-btn-sm" type="button" data-close aria-label="Закрыть"><i data-lucide="x"></i></button></div>
+  <div class="dialog-main mp-form">
+    <label class="field"><span class="label">Адрес</span><select class="select" name="ip" id="mp-o-ip"></select><span class="hint" id="mp-o-h">Подписки и DNS не меняются</span></label>
+  </div>
+  <div class="dialog-foot"><button type="button" class="btn btn-ghost" data-close>Отмена</button><button class="btn btn-primary" type="submit"><span>Применить</span></button></div>
+</form></dialog>
 
 <dialog class="dialog dialog-md dialog-scroll" id="mp-a-dlg" aria-labelledby="mp-ad-t"><form novalidate id="mp-a-form">
   <div class="dialog-head"><div><h2 id="mp-ad-t">Домен и IP</h2><p>Перед сменой сохраним копии настроек. Не поднимется, вернём как было</p></div><button class="icon-btn icon-btn-sm" type="button" data-close aria-label="Закрыть"><i data-lucide="x"></i></button></div>
@@ -425,7 +439,7 @@ const DS_KEY = (k) => (document.documentElement.dataset.store ? document.documen
     <label class="field"><span class="label">Домен</span><input class="input" name="domain" autocomplete="off" spellcheck="false" autocapitalize="none"><span class="hint" id="mp-a-dns">К нему подключаются приложения, на нём ссылки подписок</span></label>
     <label class="choice" id="mp-a-keep-f" hidden><input type="checkbox" class="check" name="keep_old" checked><span>Оставить старый домен запасным<small>Старые ссылки подписок продолжат работать, приложения перейдут на новый домен при обновлении подписки</small></span></label>
     <label class="field"><span class="label">Способ</span><select class="select" name="mode" id="mp-a-mode"></select><span class="hint" id="mp-a-mode-h"></span></label>
-    <label class="field" id="mp-a-ip-f" hidden><span class="label">IP для VPN</span><select class="select" name="ip2" id="mp-a-ip"></select><span class="hint">Домен должен смотреть на этот адрес</span></label>
+    <label class="field" id="mp-a-ip-f" hidden><span class="label">Входящий IP</span><select class="select" name="ip2" id="mp-a-ip"></select><span class="hint">На нём Xray принимает подключения. Домен должен смотреть на этот адрес</span></label>
     <label class="choice" id="mp-a-force-f" hidden><input type="checkbox" class="check" name="force"><span>Применить, хотя DNS не совпадает<small>Если сервер за NAT или запись ещё обновляется. Новый сертификат так не выпустится</small></span></label>
   </div>
   <div class="dialog-foot"><button type="button" class="btn btn-ghost" data-close>Отмена</button><button class="btn btn-primary" type="submit"><span>Применить</span></button></div>
