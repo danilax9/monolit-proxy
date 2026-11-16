@@ -1682,15 +1682,35 @@
       if (sel.disabled || isOpen()) return;
       // открываем вверх, если снизу не помещается
       const r = btn.getBoundingClientRect();
-      list.classList.toggle('up', innerHeight - r.bottom < Math.min(296, list.scrollHeight + 16) && r.top > innerHeight - r.bottom);
+      const up = innerHeight - r.bottom < Math.min(296, list.scrollHeight + 16) && r.top > innerHeight - r.bottom;
+      list.classList.toggle('up', up);
+      // В окне с прокруткой середины (.dialog-scroll) список обрезался бы краем середины и самого окна:
+      // показываем его в верхнем слое (popover) и ставим по экрану под полем
+      if (btn.closest('.dialog-scroll') && list.showPopover) {
+        clearTimeout(hideT);
+        const gap = 4, room = up ? r.top - 16 : innerHeight - r.bottom - 16;
+        list.popover = 'manual';
+        Object.assign(list.style, { left: r.left + 'px', width: r.width + 'px',
+          top: up ? 'auto' : r.bottom + gap + 'px', bottom: up ? innerHeight - r.top + gap + 'px' : 'auto', maxHeight: Math.min(280, room) + 'px' });
+        if (!list.matches(':popover-open')) list.showPopover();
+        list.getBoundingClientRect();   // кадр с закрытым видом: иначе появление без перехода
+        clipped = btn.closest('.dialog-main');
+        clipped?.addEventListener('scroll', close, { passive: true });
+        addEventListener('resize', close);
+      }
       list.classList.add('open');
       btn.setAttribute('aria-expanded', 'true');
       const cur = opts.find(o => o.getAttribute('aria-selected') === 'true') || enabled()[0];
       setActive(cur, false);
       if (cur) reveal(list, cur, true);
     };
+    let clipped = null, hideT;
     const close = () => {
       if (!isOpen()) return;
+      if (clipped) {
+        clipped.removeEventListener('scroll', close); removeEventListener('resize', close); clipped = null;
+        hideT = setTimeout(() => { if (!isOpen() && list.matches(':popover-open')) list.hidePopover() }, 300);   // после исчезновения
+      }
       list.classList.remove('open');
       btn.setAttribute('aria-expanded', 'false');
       btn.removeAttribute('aria-activedescendant');

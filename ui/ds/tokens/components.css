@@ -198,6 +198,8 @@ input.input { text-overflow: ellipsis }   /* длинное значение в 
 /* полоса прокрутки: тонкая, без стрелок, отстоит от края (отступ — прозрачной рамкой бегунка) */
 .listbox.up { top: auto; bottom: calc(100% + var(--sp-1)); --origin: bottom center; transform: translateY(var(--shift-sm)) scale(var(--scale-in)) }
 .listbox.up.open { transform: none }
+/* в окне с прокруткой середины список — в верхнем слое (popover, см. select.js): без рамки и полей браузера, место ставит скрипт */
+.listbox[popover] { position: fixed; inset: auto; margin: 0; border: 0; color: inherit }
 .option { display: flex; align-items: center; gap: var(--sp-2); padding: 6px var(--sp-2); border-radius: var(--r-xs); cursor: pointer;
   font-size: var(--fs-sm); line-height: var(--lh-sm); color: var(--text-secondary); --hd: var(--dur-item-out);
   transition: background-color var(--hd) var(--ease-hover), color var(--hd) var(--ease-hover) }
