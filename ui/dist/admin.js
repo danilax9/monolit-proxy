@@ -5578,7 +5578,7 @@ var qrcode = function() {
   async function demoCall(method, path, b = {}) {
     await new Promise((r) => setTimeout(r, 300))
     const s = S(), kit = (id) => s.kits.find((k) => k.id === Number(id)), nm = (id) => id ? s.nodes.find((n) => n.id === id).name : s.settings.server_name
-    const line = (l, old = {}) => { const out = Number(l.out ?? old.out) || 0, via = Number(l.via ?? old.via) || 0, e = via || out, proto = e ? 'reality' : (l.proto in PROTO && l.proto !== 'reality' ? l.proto : old.proto && old.proto !== 'reality' ? old.proto : 'vision')
+    const line = (l, old = {}) => { const out = Number(l.out ?? old.out) || 0, via = Number(l.via ?? old.via) || 0, e = via || out, proto = e ? (['vision', 'hy2'].includes(l.proto ?? old.proto) && s.nodes.find((n) => n.id === e)?.domain ? (l.proto ?? old.proto) : 'reality') : (l.proto in PROTO && l.proto !== 'reality' ? l.proto : old.proto && old.proto !== 'reality' ? old.proto : 'vision')
       return { ...old, out, via, proto, on: l.on ?? old.on ?? true, problem: '', name: String(l.name ?? old.name ?? '').trim() || (via ? `${nm(out)} через «${nm(via)}»` : e ? nm(out) : `${nm(0)} ${PROTO[proto]}`) } }
     let m, extra = {}
     if (path === 'api/nodes' && method === 'POST') {
@@ -5588,7 +5588,7 @@ var qrcode = function() {
     } else if ((m = /^api\/nodes\/(\d+)(\/token)?$/.exec(path))) {
       const n = s.nodes.find((x) => x.id === Number(m[1]))
       if (m[2]) extra = { command: `bash <(curl -fsSL https://${s.settings.domain}/s/_n/install.sh) --join 9Zp4nWc2kR8sDemo` }
-      else if (method === 'PATCH') Object.assign(n, { name: b.name || n.name, mask: b.mask || n.mask })
+      else if (method === 'PATCH') { Object.assign(n, { name: b.name || n.name, mask: b.mask || n.mask, domain: b.domain ?? n.domain, tls: false, cert_err: '' }); if (n.domain) setTimeout(() => { n.tls = true; A.setState(s) }, 4000) }
       else { s.nodes = s.nodes.filter((x) => x !== n); s.kits.forEach((k) => { k.lines = k.lines.filter((l) => l.out !== n.id && l.via !== n.id) }) }
     } else if (path === 'api/kits') { const k = { id: ++demoId, name: b.name, is_default: false, users: 0, lines: [] }; s.kits.push(k); extra = { kit: k.id } }
     else if ((m = /^api\/kits\/(\d+)(\/lines|\/order|\/users)?$/.exec(path))) {
@@ -5660,7 +5660,9 @@ var qrcode = function() {
     $('nd-s-seen').textContent = n.up && n.seen ? 'отчёт ' + since(n.seen) + ' назад' : ''
     $('nd-s-err').hidden = !n.err; $('nd-s-err-t').textContent = n.err
     put($('nd-s-kv'), [['Занята', usage(n.id)], ['Xray', n.xray || 'нет данных'], ['В сети', n.up ? n.online : 'нет данных'], ['За сутки', n.day ? A.bytes(n.day) : '0'], ['Нагрузка', n.load || 'нет данных']].map(([k, v]) => `<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join(''))
-    if (form) { $('nd-s-form').name.value = n.name; $('nd-s-form').mask.value = n.mask }
+    if (form) { const f = $('nd-s-form'); f.name.value = n.name; f.mask.value = n.mask; f.domain.value = n.domain || ''; window.fieldError?.(f.domain, ''); window.fieldError?.(f.mask, '') }
+    const h = $('nd-s-dom-h'); h.textContent = !n.domain ? '' : n.tls ? 'Сертификат выпущен, на ноде работают Vision и Hysteria2' : n.cert_err ? 'Сертификат не выпустился: ' + n.cert_err : 'Нода выпускает сертификат, это до минуты'
+    h.classList.toggle('mp-warn', !!n.domain && !n.tls && !!n.cert_err)
   }
   const openRow = (id) => { if (!Number(id)) { document.querySelector('.side-item[data-open="mp-srv"]').click(); return } sheetId = Number(id); fillSheet(); $('nd-sheet').showModal() }
   $('nd-rows').addEventListener('click', (e) => { const tr = e.target.closest('tr'); if (tr) openRow(tr.dataset.id) })
@@ -5668,8 +5670,8 @@ var qrcode = function() {
   $('nd-s-form').addEventListener('submit', (e) => {
     e.preventDefault(); const f = e.target
     busy(document.querySelector('[form="nd-s-form"]'), async () => {
-      try { await call('PATCH', 'api/nodes/' + sheetId, { name: f.name.value, mask: f.mask.value }); $('nd-sheet').close(); toast({ type: 'success', title: 'Нода сохранена', text: 'Настройки дойдут до неё за полминуты' }) }
-      catch (err) { /маскировк/i.test(err.message) ? window.fieldError?.(f.mask, err.message) : fail(err) }
+      try { await call('PATCH', 'api/nodes/' + sheetId, { name: f.name.value, mask: f.mask.value, domain: f.domain.value }); $('nd-sheet').close(); toast({ type: 'success', title: 'Нода сохранена', text: 'Настройки дойдут до неё за полминуты' }) }
+      catch (err) { /маскировк/i.test(err.message) ? window.fieldError?.(f.mask, err.message) : /домен/i.test(err.message) ? window.fieldError?.(f.domain, err.message) : fail(err) }
     })
   })
   $('nd-s-del').addEventListener('click', async () => {
@@ -5765,7 +5767,7 @@ var qrcode = function() {
   let lineId = 0
   const lForm = $('ln-form'), lineOf = (id) => kit().lines.find((l) => l.id === Number(id))
   function fillProto(keep) {
-    const node = Number(lForm.via.value) || Number(lForm.out.value), list = node ? ['reality'] : S().main.protos
+    const e = Number(lForm.via.value) || Number(lForm.out.value), list = e ? ['reality', ...(node(e)?.domain ? ['vision', 'hy2'] : [])] : S().main.protos
     setSelect(lForm.proto, list.map((p) => `<option value="${p}">${PROTO[p]}</option>`).join(''), list.includes(keep) ? keep : list[0])
   }
   function fillVia(keep) {

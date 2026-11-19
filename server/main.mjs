@@ -265,7 +265,7 @@ async function adminApi(req, res, path) {
   }
   if (!authed(req)) return json(res, 401, { error: 'Нужно войти' });
   const m = /^\/api\/users\/(\d+)(\/[a-z-]+)?$/.exec(path);
-  if (/^\/api\/(nodes|kits|lines)(\/|$)/.test(path)) return nodes.api(req, res, path, { json, readBody, state: stateForAdmin, sync: () => queueSync({ full: true }) });
+  if (/^\/api\/(nodes|kits|lines)(\/|$)/.test(path)) return nodes.api(req, res, path, { json, readBody, state: stateForAdmin, sync: () => queueSync({ full: true }), resolve: resolve4 });
 
   if (path === '/api/logout' && req.method === 'POST') { db.prepare('DELETE FROM sessions WHERE token = ?').run(cookie(req).mp_s); return send(res, 200, '{}', { 'set-cookie': `mp_s=; Path=${ADMIN}; Max-Age=0` }); }
   if (path === '/api/state' && req.method === 'GET') return json(res, 200, stateForAdmin());

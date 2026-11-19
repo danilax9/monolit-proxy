@@ -2,7 +2,8 @@
 // Нода — второй сервер с Xray и агентом: ставится одной командой, сама раз в 30 секунд приходит сюда за конфигом
 // и приносит трафик. Роли у ноды нет: чем она работает, решает подключение в наборе.
 // Подключение: сервер (out, 0 — этот сервер), мост (via, 0 — без моста), протокол. Человек подключается ко входу —
-// мосту, если он есть, иначе к серверу. Вход на этом сервере — Vision, XHTTP или Hysteria2; вход на ноде — Reality.
+// мосту, если он есть, иначе к серверу. Вход на этом сервере — Vision, XHTTP или Hysteria2; вход на ноде — Reality,
+// а если ноде задан домен и она выпустила сертификат — ещё Vision (порт 8443) и Hysteria2.
 import { createHash, generateKeyPairSync, randomBytes, timingSafeEqual } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { now, token, newUuid, getSetting, userState } from './db.mjs';
@@ -14,10 +15,18 @@ const J = (s, d) => { try { return JSON.parse(s) } catch { return d } };
 export const LINK = (id) => `mpn-${id}`;                       // клиент «нода → следующий сервер», в трафик людей не идёт
 export const PROTO = { vision: 'Vision', xhttp: 'XHTTP', hy2: 'Hysteria2', reality: 'Reality' };
 const LOCAL = ['vision', 'xhttp', 'hy2'];
+const NODE_TLS = ['vision', 'hy2'];                           // входы ноды, которым нужен её домен и сертификат
+const VISION_PORT = 8443;                                      // 443 на ноде занят Reality
 const SEEN = 100;                                              // секунд без отчёта — нода «не на связи»
 // Ключ человека на ноде — свой для каждого подключения: по нему нода понимает, куда его вести
 export const lineUuid = (uuid, lineId) => { const h = sha(`${uuid}:${lineId}`); return `${h.slice(0, 8)}-${h.slice(8, 12)}-4${h.slice(13, 16)}-a${h.slice(17, 20)}-${h.slice(20, 32)}` };
 const cleanHost = (v) => { const d = String(v || '').trim().toLowerCase().replace(/^[a-z]+:\/\//, '').replace(/[/:?#].*$/, ''); return /^[a-z0-9-]+(\.[a-z0-9-]+)*\.[a-z]{2,}$/.test(d) && d.length <= 253 ? d : '' };
+
+// Что видит посторонний, открывший домен ноды в браузере: обычная с виду страница входа
+const PAGE = `<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex"><title>Вход</title>
+<style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0b0c0e;color:#e6e7ea;font:15px/1.5 system-ui,sans-serif}form{width:min(320px,90vw);display:grid;gap:12px}h1{font-size:20px;font-weight:600;margin:0 0 4px}input,button{height:40px;border-radius:10px;border:1px solid #2a2c31;background:#141518;color:inherit;padding:0 12px;font:inherit}button{background:#e6e7ea;color:#0b0c0e;border:0;font-weight:600}p{margin:0;color:#e5484d;min-height:22px}</style></head>
+<body><form onsubmit="event.preventDefault();this.querySelector('p').textContent='Неверный логин или пароль'"><h1>Вход</h1><input placeholder="Логин" autocomplete="username"><input type="password" placeholder="Пароль" autocomplete="current-password"><button>Войти</button><p></p></form></body></html>
+`;
 
 export function createNodes({ db, xray, log, dayOf, server, users }) {
   db.exec(`
@@ -44,6 +53,7 @@ export function createNodes({ db, xray, log, dayOf, server, users }) {
     );
     CREATE TABLE IF NOT EXISTS node_daily (node_id INTEGER NOT NULL, day TEXT NOT NULL, bytes INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (node_id, day));
   `);
+  if (!db.prepare('PRAGMA table_info(nodes)').all().some((c) => c.name === 'domain')) db.exec("ALTER TABLE nodes ADD COLUMN domain TEXT NOT NULL DEFAULT ''");
   if (!db.prepare('PRAGMA table_info(users)').all().some((c) => c.name === 'kit_id')) db.exec('ALTER TABLE users ADD COLUMN kit_id INTEGER NOT NULL DEFAULT 0');
   // Первая версия с наборами: что раньше включалось галочками «Протоколы в подписке», становится набором «Обычный» с теми же названиями
   if (!db.prepare('SELECT 1 FROM kits').get()) {
@@ -57,6 +67,8 @@ export function createNodes({ db, xray, log, dayOf, server, users }) {
   const all = () => db.prepare('SELECT * FROM nodes ORDER BY id').all();
   const byId = (id) => db.prepare('SELECT * FROM nodes WHERE id = ?').get(Number(id) || 0);
   const joined = (n) => !!(n && n.key_hash && n.addr);
+  const tls = (n) => !!n?.domain && J(n.info, {}).cert === n.domain;   // домен задан, и нода сообщила, что сертификат на него есть
+  const sni = (n) => tls(n) ? n.domain : n.mask;                       // с доменом Reality маскируется под собственный сайт ноды
   const kits = () => db.prepare('SELECT * FROM kits ORDER BY is_default DESC, id').all();
   const defKit = () => db.prepare('SELECT * FROM kits ORDER BY is_default DESC, id LIMIT 1').get();
   const kitOf = (u) => (u.kit_id && db.prepare('SELECT * FROM kits WHERE id = ?').get(u.kit_id)) || defKit();
@@ -68,7 +80,8 @@ export function createNodes({ db, xray, log, dayOf, server, users }) {
   function usable(l, d = xray.detect()) {
     const e = entry(l);
     if (!e) return LOCAL.includes(l.proto) && !!d[l.proto];
-    if (l.proto !== 'reality' || !joined(byId(e))) return false;
+    const en = byId(e); if (!joined(en)) return false;
+    if (l.proto !== 'reality' && !(NODE_TLS.includes(l.proto) && tls(en))) return false;
     return !l.via || (l.out ? joined(byId(l.out)) : !!d.vision);
   }
   const whyNot = (l, d) => {
@@ -76,6 +89,7 @@ export function createNodes({ db, xray, log, dayOf, server, users }) {
     const e = entry(l);
     if (!e) return 'На этом сервере выключен такой вход';
     if (!joined(byId(e))) return 'Нода ещё не подключилась';
+    if (l.proto !== 'reality' && !tls(byId(e))) return byId(e).domain ? 'Нода ещё не выпустила сертификат' : 'У ноды не задан домен';
     return 'Сервер, на который ведёт мост, недоступен';
   };
 
@@ -91,11 +105,18 @@ export function createNodes({ db, xray, log, dayOf, server, users }) {
     const out = [];
     for (const l of forUser(u)) {
       const e = entry(l), n = e && byId(e);
-      const kind = e ? 'vision' : l.proto;
+      const kind = !e ? l.proto : l.proto === 'hy2' ? 'hy2' : 'vision';
       if (!parsed.outbounds[kind]) continue;
       out.push(renderOne(parsed, kind, { user: u, server: srv }, { remark: l.name, outbound: !e ? null : (ob) => {
-        const v = ob.settings.vnext[0]; v.address = n.addr; v.port = 443; v.users[0].id = lineUuid(u.uuid, l.id);
-        ob.streamSettings = { network: 'raw', security: 'reality', realitySettings: { serverName: n.mask, fingerprint: srv.fp || 'firefox', publicKey: n.pub, shortId: n.sid } };
+        if (l.proto === 'hy2') {
+          Object.assign(ob.settings, { address: n.domain, port: 443 });
+          ob.streamSettings.tlsSettings.serverName = n.domain; ob.streamSettings.hysteriaSettings.auth = lineUuid(u.hy2, l.id);
+          return;
+        }
+        const v = ob.settings.vnext[0]; v.users[0].id = lineUuid(u.uuid, l.id);
+        if (l.proto === 'vision') { v.address = n.domain; v.port = VISION_PORT; ob.streamSettings.tlsSettings.serverName = n.domain; return }
+        v.address = n.addr; v.port = 443;
+        ob.streamSettings = { network: 'raw', security: 'reality', realitySettings: { serverName: sni(n), fingerprint: srv.fp || 'firefox', publicKey: n.pub, shortId: n.sid } };
       } }));
     }
     return out;
@@ -104,7 +125,9 @@ export function createNodes({ db, xray, log, dayOf, server, users }) {
     const fp = srv.fp || 'firefox', d = srv.domain, out = [];
     for (const l of forUser(u)) {
       const e = entry(l), n = e && byId(e), name = encodeURIComponent(l.name);
-      if (e) out.push(`vless://${lineUuid(u.uuid, l.id)}@${n.addr}:443?encryption=none&security=reality&type=tcp&flow=xtls-rprx-vision&sni=${n.mask}&fp=${fp}&pbk=${n.pub}&sid=${n.sid}#${name}`);
+      if (e && l.proto === 'hy2') out.push(`hysteria2://${encodeURIComponent(lineUuid(u.hy2, l.id))}@${n.domain}:443?sni=${n.domain}&alpn=h3#${name}`);
+      else if (e && l.proto === 'vision') out.push(`vless://${lineUuid(u.uuid, l.id)}@${n.domain}:${VISION_PORT}?encryption=none&security=tls&type=tcp&flow=xtls-rprx-vision&sni=${n.domain}&fp=${fp}#${name}`);
+      else if (e) out.push(`vless://${lineUuid(u.uuid, l.id)}@${n.addr}:443?encryption=none&security=reality&type=tcp&flow=xtls-rprx-vision&sni=${sni(n)}&fp=${fp}&pbk=${n.pub}&sid=${n.sid}#${name}`);
       else if (l.proto === 'vision') out.push(`vless://${u.uuid}@${d}:${srv.ports.vision}?encryption=none&security=tls&type=tcp&flow=xtls-rprx-vision&sni=${d}&fp=${fp}#${name}`);
       else if (l.proto === 'xhttp' && srv.xhttpPath) out.push(`vless://${u.uuid}@${d}:443?encryption=none&security=tls&type=xhttp&mode=stream-up&path=%2F${encodeURIComponent(srv.xhttpPath)}&sni=${d}&fp=${fp}&alpn=h2#${name}`);
       else if (l.proto === 'hy2') out.push(`hysteria2://${encodeURIComponent(u.hy2)}@${d}:${srv.ports.hy2}?sni=${d}&alpn=h3#${name}`);
@@ -118,12 +141,13 @@ export function createNodes({ db, xray, log, dayOf, server, users }) {
     const lines = linesOn().filter((l) => usable(l, d));
     const mine = lines.filter((l) => entry(l) === n.id), byKit = new Map();
     for (const l of mine) byKit.set(l.kit_id, (byKit.get(l.kit_id) || []).concat(l));
-    const clients = [], route = new Map();   // сервер назначения → почты людей, которых туда вести
+    const clients = [], vision = [], hy2 = [], route = new Map();   // сервер назначения → почты людей, которых туда вести
     for (const u of users()) {
       if (userState(u, t) !== 'active') continue;
       for (const l of byKit.get(kitOf(u).id) || []) {
         const email = `mp-${u.id}-${l.id}`;
-        clients.push({ id: lineUuid(u.uuid, l.id), flow: 'xtls-rprx-vision', email, level: 0 });
+        if (l.proto === 'hy2') hy2.push({ auth: lineUuid(u.hy2, l.id), email, level: 0 });
+        else (l.proto === 'vision' ? vision : clients).push({ id: lineUuid(u.uuid, l.id), flow: 'xtls-rprx-vision', email, level: 0 });
         if (l.via === n.id) route.set(l.out, (route.get(l.out) || []).concat(email));
       }
     }
@@ -131,11 +155,12 @@ export function createNodes({ db, xray, log, dayOf, server, users }) {
     const from = new Set(lines.filter((l) => l.via && l.out === n.id).map((l) => l.via));
     for (const id of from) { const a = byId(id); if (joined(a)) clients.push({ id: a.link_uuid, flow: 'xtls-rprx-vision', email: LINK(a.id), level: 0 }) }
     const user = { id: n.link_uuid, flow: 'xtls-rprx-vision', encryption: 'none' };
+    const cert = { certificateFile: `/etc/letsencrypt/live/${n.domain}/fullchain.pem`, keyFile: `/etc/letsencrypt/live/${n.domain}/privkey.pem` };
     const outbounds = [{ tag: 'direct', protocol: 'freedom' }, { tag: 'block', protocol: 'blackhole' }], rules = [{ ip: ['geoip:private'], outboundTag: 'block' }];
     for (const [to, emails] of route) {
       const b = to && byId(to), tag = `to-${to}`;
       outbounds.push(b
-        ? { tag, protocol: 'vless', settings: { vnext: [{ address: b.addr, port: 443, users: [user] }] }, streamSettings: { network: 'raw', security: 'reality', realitySettings: { serverName: b.mask, fingerprint: fp, publicKey: b.pub, shortId: b.sid } } }
+        ? { tag, protocol: 'vless', settings: { vnext: [{ address: b.addr, port: 443, users: [user] }] }, streamSettings: { network: 'raw', security: 'reality', realitySettings: { serverName: sni(b), fingerprint: fp, publicKey: b.pub, shortId: b.sid } } }
         : { tag, protocol: 'vless', settings: { vnext: [{ address: srv.domain, port: srv.ports.vision || 443, users: [user] }] }, streamSettings: { network: 'raw', security: 'tls', tlsSettings: { serverName: srv.domain, fingerprint: fp } } });
       rules.push({ user: emails, outboundTag: tag });
     }
@@ -145,7 +170,14 @@ export function createNodes({ db, xray, log, dayOf, server, users }) {
       stats: {},
       policy: { levels: { 0: { statsUserUplink: true, statsUserDownlink: true, statsUserOnline: true } } },
       inbounds: [{ tag: 'in', listen: '0.0.0.0', port: 443, protocol: 'vless', settings: { clients, decryption: 'none' },
-        streamSettings: { network: 'raw', security: 'reality', realitySettings: { dest: `${n.mask}:443`, serverNames: [n.mask], privateKey: n.priv, shortIds: [n.sid] } } }],
+        // с доменом Reality показывает проверяющему собственный сайт ноды: её же вход Vision с настоящим сертификатом
+        streamSettings: { network: 'raw', security: 'reality', realitySettings: { dest: tls(n) ? `127.0.0.1:${VISION_PORT}` : `${n.mask}:443`, serverNames: [sni(n)], privateKey: n.priv, shortIds: [n.sid] } } },
+      ...(!tls(n) ? [] : [
+        { tag: 'vision', listen: '0.0.0.0', port: VISION_PORT, protocol: 'vless', settings: { clients: vision, decryption: 'none', fallbacks: [{ dest: 8081 }] },   // не VPN — на страницу-заглушку
+          streamSettings: { network: 'raw', security: 'tls', tlsSettings: { minVersion: '1.2', alpn: ['http/1.1'], certificates: [cert] } } },
+        { tag: 'hy2', listen: '0.0.0.0', port: 443, protocol: 'hysteria', settings: { version: 2, clients: hy2 },
+          streamSettings: { network: 'hysteria', security: 'tls', tlsSettings: { serverName: n.domain, alpn: ['h3'], certificates: [{ usage: 'encipherment', ...cert }] },
+            hysteriaSettings: { version: 2 }, finalmask: { quicParams: { congestion: 'bbr' } } } }])],
       outbounds, routing: { domainStrategy: 'AsIs', rules },
     };
   }
@@ -166,8 +198,8 @@ export function createNodes({ db, xray, log, dayOf, server, users }) {
     const ips = {};
     for (const [email, v] of Object.entries(b.ips || {})) { const m = /^mp-(\d+)(?:-\d+)?$/.exec(email); if (m) Object.assign(ips[m[1]] ||= {}, v?.ips || {}) }
     online.set(n.id, { at: t, ips });
-    const err = b.err ? Buffer.from(String(b.err), 'base64').toString('utf8').slice(0, 400) : '';
-    db.prepare('UPDATE nodes SET seen_at = ?, info = ? WHERE id = ?').run(t, JSON.stringify({ xray: String(b.xray || '').slice(0, 20), load: String(b.load || '').slice(0, 8), active: b.active === 'active', err }), n.id);
+    const un = (v) => v ? Buffer.from(String(v), 'base64').toString('utf8').slice(0, 400) : '';
+    db.prepare('UPDATE nodes SET seen_at = ?, info = ? WHERE id = ?').run(t, JSON.stringify({ xray: String(b.xray || '').slice(0, 20), load: String(b.load || '').slice(0, 8), active: b.active === 'active', err: un(b.err), cert: cleanHost(b.cert), cert_err: un(b.cert_err) }), n.id);
   }
   // Кто сейчас подключён через ноды: добавляется к тем, кого видит Xray этого сервера
   function onlineMap() {
@@ -184,6 +216,7 @@ export function createNodes({ db, xray, log, dayOf, server, users }) {
     const text = (code, body) => h.send(res, code, body, { 'content-type': 'text/plain; charset=utf-8' });
     if (sub === 'install.sh' && req.method === 'GET') return text(200, script('./node-install.sh').replaceAll('__URL__', base()));
     if (sub === 'agent.sh' && req.method === 'GET') return text(200, script('./node-agent.sh'));
+    if (sub === 'page.html' && req.method === 'GET') return h.send(res, 200, PAGE, { 'content-type': 'text/html; charset=utf-8' });
     if (sub === 'join' && req.method === 'POST') {
       const tok = (await h.readRaw(req, 200)).trim();
       const n = tok.length >= 12 && db.prepare('SELECT * FROM nodes WHERE join_hash = ?').get(sha(tok));
@@ -200,8 +233,10 @@ export function createNodes({ db, xray, log, dayOf, server, users }) {
       const ip = h.ipOf(req);
       if (ip && ip !== n.addr) { db.prepare('UPDATE nodes SET addr = ? WHERE id = ?').run(ip, n.id); log(`нода «${n.name}»: адрес сменился на ${ip}`) }
       report(n, b);
-      const cfg = JSON.stringify(nodeConfig(byId(n.id)), null, 2), sig = sha(cfg).slice(0, 16);
-      return text(200, sig === b.sig ? sig : `${sig}\n${cfg}`);
+      const cur = byId(n.id), cfg = JSON.stringify(nodeConfig(cur), null, 2), sig = sha(cfg).slice(0, 16);
+      // агент второй версии получает в первой строке ещё домен (для сертификата) и подпись свежего агента (обновится сам)
+      const head = b.v >= 2 ? `${sig} ${cur.domain || '-'} ${sha(script('./node-agent.sh')).slice(0, 16)}` : sig;
+      return text(200, sig === b.sig ? head : `${head}\n${cfg}`);
     }
     return text(404, 'not found');
   }
@@ -214,7 +249,7 @@ export function createNodes({ db, xray, log, dayOf, server, users }) {
     return {
       main: { day: Number(db.prepare('SELECT SUM(up + down) AS s FROM traffic_daily WHERE day = ?').get(dayOf(t))?.s || 0), protos: LOCAL.filter((k) => d[k]) },
       nodes: all().map((n) => { const i = J(n.info, {}), on = online.get(n.id);
-        return { id: n.id, name: n.name, addr: n.addr, mask: n.mask, joined: joined(n), waiting: !!n.join_hash, seen: n.seen_at, up: joined(n) && t - n.seen_at < SEEN, xray: i.xray || '', load: i.load || '', xray_ok: i.active !== false, err: i.err || '',
+        return { id: n.id, name: n.name, addr: n.addr, mask: n.mask, domain: n.domain, tls: tls(n), cert_err: n.domain && !tls(n) ? i.cert_err || '' : '', joined: joined(n), waiting: !!n.join_hash, seen: n.seen_at, up: joined(n) && t - n.seen_at < SEEN, xray: i.xray || '', load: i.load || '', xray_ok: i.active !== false, err: i.err || '',
           online: on && t - on.at < SEEN ? Object.keys(on.ips).length : 0, day: dayBytes(n.id) } }),
       kits: kits().map((k) => ({ id: k.id, name: k.name, is_default: k.id === def.id, users: count.filter((c) => c.kit_id === k.id || (k.id === def.id && !kits().some((x) => x.id === c.kit_id))).reduce((s, c) => s + c.n, 0),
         lines: linesOf(k.id).map((l) => ({ id: l.id, name: l.name, out: l.out, via: l.via, proto: l.proto, on: !!l.enabled, problem: whyNot(l, d) })) })),
@@ -227,7 +262,8 @@ export function createNodes({ db, xray, log, dayOf, server, users }) {
     if (out && !byId(out)) return { error: 'Нет такого сервера' };
     if (via && !byId(via)) return { error: 'Нет такой ноды для моста' };
     if (via && via === out) return { error: 'Мост и сервер должны быть разными' };
-    const e = via || out, proto = e ? 'reality' : LOCAL.includes(b.proto) ? b.proto : LOCAL.includes(old?.proto) ? old.proto : 'vision';
+    const e = via || out, want = b.proto ?? old?.proto;
+    const proto = e ? (NODE_TLS.includes(want) && byId(e).domain ? want : 'reality') : LOCAL.includes(want) ? want : 'vision';
     const nm = (id) => id ? byId(id).name : server().name;
     const name = cleanName(b.name ?? old?.name, 40) || (via ? `${nm(out)} через «${nm(via)}»` : e ? nm(out) : `${nm(0)} ${PROTO[proto]}`);
     return { out, via, proto, name };
@@ -253,7 +289,17 @@ export function createNodes({ db, xray, log, dayOf, server, users }) {
       if (!m[2] && M === 'PATCH') {
         const b = await h.readBody(req), name = b.name !== undefined ? cleanName(b.name, 24) || n.name : n.name, mask = b.mask !== undefined ? cleanHost(b.mask) : n.mask;
         if (!mask) return bad('Сайт для маскировки выглядит так: ya.ru');
-        db.prepare('UPDATE nodes SET name = ?, mask = ? WHERE id = ?').run(name, mask, n.id); return ok({}, false);
+        let domain = n.domain;
+        if (b.domain !== undefined && String(b.domain).trim() !== n.domain) {
+          domain = String(b.domain).trim() ? cleanHost(b.domain) : '';
+          if (String(b.domain).trim() && !domain) return bad('Домен выглядит так: msk.example.ru');
+          if (domain) {
+            if (!n.addr) return bad('Домен задаётся после того, как нода подключится');
+            const a = await h.resolve(domain);
+            if (!a.includes(n.addr)) return bad(a.length ? `Домен смотрит на ${a.join(', ')}, а нода на ${n.addr}. Поправьте запись A в DNS` : `У домена нет записи A. Создайте её на адрес ${n.addr}`);
+          }
+        }
+        db.prepare('UPDATE nodes SET name = ?, mask = ?, domain = ? WHERE id = ?').run(name, mask, domain, n.id); return ok({}, false);
       }
       if (!m[2] && M === 'DELETE') {
         db.prepare('DELETE FROM kit_lines WHERE out = ? OR via = ?').run(n.id, n.id); db.prepare('DELETE FROM nodes WHERE id = ?').run(n.id); db.prepare('DELETE FROM node_daily WHERE node_id = ?').run(n.id);
