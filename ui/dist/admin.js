@@ -5663,6 +5663,8 @@ var qrcode = function() {
     if (form) { const f = $('nd-s-form'); f.name.value = n.name; f.mask.value = n.mask; f.domain.value = n.domain || ''; window.fieldError?.(f.domain, ''); window.fieldError?.(f.mask, '') }
     const h = $('nd-s-dom-h'); h.textContent = !n.domain ? '' : n.tls ? 'Сертификат выпущен, на ноде работают Vision и Hysteria2' : n.old_agent ? 'На ноде старый агент, он не умеет выпускать сертификат. Запустите на ней «Команду для переустановки»' : n.cert_err ? 'Сертификат не выпустился: ' + n.cert_err : 'Нода выпускает сертификат, это до минуты'
     h.classList.toggle('mp-warn', !!n.domain && !n.tls && (!!n.cert_err || !!n.old_agent))
+    // с доменом и сертификатом Reality маскируется под сам домен ноды: чужой сайт не используется, поле только путает
+    $('nd-s-form').mask.closest('.field').hidden = !!n.tls
   }
   const openRow = (id) => { if (!Number(id)) { document.querySelector('.side-item[data-open="mp-srv"]').click(); return } sheetId = Number(id); fillSheet(); $('nd-sheet').showModal() }
   $('nd-rows').addEventListener('click', (e) => { const tr = e.target.closest('tr'); if (tr) openRow(tr.dataset.id) })
