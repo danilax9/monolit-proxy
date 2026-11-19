@@ -89,7 +89,7 @@ export function createNodes({ db, xray, log, dayOf, server, users }) {
     const e = entry(l);
     if (!e) return 'На этом сервере выключен такой вход';
     if (!joined(byId(e))) return 'Нода ещё не подключилась';
-    if (l.proto !== 'reality' && !tls(byId(e))) return byId(e).domain ? 'Нода ещё не выпустила сертификат' : 'У ноды не задан домен';
+    if (l.proto !== 'reality' && !tls(byId(e))) return !byId(e).domain ? 'У ноды не задан домен' : (J(byId(e).info, {}).xray && !(J(byId(e).info, {}).v >= 2)) ? 'На ноде старый агент: запустите на ней команду для переустановки' : 'Нода ещё не выпустила сертификат';
     return 'Сервер, на который ведёт мост, недоступен';
   };
 
@@ -199,7 +199,7 @@ export function createNodes({ db, xray, log, dayOf, server, users }) {
     for (const [email, v] of Object.entries(b.ips || {})) { const m = /^mp-(\d+)(?:-\d+)?$/.exec(email); if (m) Object.assign(ips[m[1]] ||= {}, v?.ips || {}) }
     online.set(n.id, { at: t, ips });
     const un = (v) => v ? Buffer.from(String(v), 'base64').toString('utf8').slice(0, 400) : '';
-    db.prepare('UPDATE nodes SET seen_at = ?, info = ? WHERE id = ?').run(t, JSON.stringify({ xray: String(b.xray || '').slice(0, 20), load: String(b.load || '').slice(0, 8), active: b.active === 'active', err: un(b.err), cert: cleanHost(b.cert), cert_err: un(b.cert_err) }), n.id);
+    db.prepare('UPDATE nodes SET seen_at = ?, info = ? WHERE id = ?').run(t, JSON.stringify({ xray: String(b.xray || '').slice(0, 20), load: String(b.load || '').slice(0, 8), active: b.active === 'active', err: un(b.err), cert: cleanHost(b.cert), cert_err: un(b.cert_err), v: Number(b.v) || 1 }), n.id);
   }
   // Кто сейчас подключён через ноды: добавляется к тем, кого видит Xray этого сервера
   function onlineMap() {
@@ -249,7 +249,7 @@ export function createNodes({ db, xray, log, dayOf, server, users }) {
     return {
       main: { day: Number(db.prepare('SELECT SUM(up + down) AS s FROM traffic_daily WHERE day = ?').get(dayOf(t))?.s || 0), protos: LOCAL.filter((k) => d[k]) },
       nodes: all().map((n) => { const i = J(n.info, {}), on = online.get(n.id);
-        return { id: n.id, name: n.name, addr: n.addr, mask: n.mask, domain: n.domain, tls: tls(n), cert_err: n.domain && !tls(n) ? i.cert_err || '' : '', joined: joined(n), waiting: !!n.join_hash, seen: n.seen_at, up: joined(n) && t - n.seen_at < SEEN, xray: i.xray || '', load: i.load || '', xray_ok: i.active !== false, err: i.err || '',
+        return { id: n.id, name: n.name, addr: n.addr, mask: n.mask, domain: n.domain, tls: tls(n), cert_err: n.domain && !tls(n) ? i.cert_err || '' : '', old_agent: joined(n) && !!n.seen_at && !!i.xray && !(i.v >= 2), joined: joined(n), waiting: !!n.join_hash, seen: n.seen_at, up: joined(n) && t - n.seen_at < SEEN, xray: i.xray || '', load: i.load || '', xray_ok: i.active !== false, err: i.err || '',
           online: on && t - on.at < SEEN ? Object.keys(on.ips).length : 0, day: dayBytes(n.id) } }),
       kits: kits().map((k) => ({ id: k.id, name: k.name, is_default: k.id === def.id, users: count.filter((c) => c.kit_id === k.id || (k.id === def.id && !kits().some((x) => x.id === c.kit_id))).reduce((s, c) => s + c.n, 0),
         lines: linesOf(k.id).map((l) => ({ id: l.id, name: l.name, out: l.out, via: l.via, proto: l.proto, on: !!l.enabled, problem: whyNot(l, d) })) })),

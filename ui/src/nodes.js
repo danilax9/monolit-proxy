@@ -116,8 +116,8 @@
     $('nd-s-err').hidden = !n.err; $('nd-s-err-t').textContent = n.err
     put($('nd-s-kv'), [['Занята', usage(n.id)], ['Xray', n.xray || 'нет данных'], ['В сети', n.up ? n.online : 'нет данных'], ['За сутки', n.day ? A.bytes(n.day) : '0'], ['Нагрузка', n.load || 'нет данных']].map(([k, v]) => `<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join(''))
     if (form) { const f = $('nd-s-form'); f.name.value = n.name; f.mask.value = n.mask; f.domain.value = n.domain || ''; window.fieldError?.(f.domain, ''); window.fieldError?.(f.mask, '') }
-    const h = $('nd-s-dom-h'); h.textContent = !n.domain ? '' : n.tls ? 'Сертификат выпущен, на ноде работают Vision и Hysteria2' : n.cert_err ? 'Сертификат не выпустился: ' + n.cert_err : 'Нода выпускает сертификат, это до минуты'
-    h.classList.toggle('mp-warn', !!n.domain && !n.tls && !!n.cert_err)
+    const h = $('nd-s-dom-h'); h.textContent = !n.domain ? '' : n.tls ? 'Сертификат выпущен, на ноде работают Vision и Hysteria2' : n.old_agent ? 'На ноде старый агент, он не умеет выпускать сертификат. Запустите на ней «Команду для переустановки»' : n.cert_err ? 'Сертификат не выпустился: ' + n.cert_err : 'Нода выпускает сертификат, это до минуты'
+    h.classList.toggle('mp-warn', !!n.domain && !n.tls && (!!n.cert_err || !!n.old_agent))
   }
   const openRow = (id) => { if (!Number(id)) { document.querySelector('.side-item[data-open="mp-srv"]').click(); return } sheetId = Number(id); fillSheet(); $('nd-sheet').showModal() }
   $('nd-rows').addEventListener('click', (e) => { const tr = e.target.closest('tr'); if (tr) openRow(tr.dataset.id) })
