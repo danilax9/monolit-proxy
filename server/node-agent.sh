@@ -13,13 +13,13 @@ ERR=""
 while true; do
   SIG=$(cat "$DIR/sig" 2>/dev/null || echo -)
   # трафик копится в файле, пока основной сервер его не принял: связь пропала — ничего не теряется
-  S=$("$X" api statsquery --server=$API -pattern 'user>>>mp-' -reset 2>/dev/null | tr -d '\n')
+  S=$(timeout 10 "$X" api statsquery --server=$API -pattern 'user>>>mp-' -reset 2>/dev/null | tr -d '\n')
   case "$S" in \{*\}) [ "$S" != "{}" ] && echo "$S" >> "$DIR/spool" ;; esac
   [ -f "$DIR/spool" ] && tail -n 500 "$DIR/spool" > "$DIR/spool.tmp" && mv "$DIR/spool.tmp" "$DIR/spool"
   STATS=$(paste -sd, "$DIR/spool" 2>/dev/null)
   IPS=""
-  for n in $("$X" api statsgetallonlineusers --server=$API 2>/dev/null | grep -o 'mp-[0-9][0-9-]*' | sort -u); do
-    r=$("$X" api statsonlineiplist --server=$API -email "$n" 2>/dev/null | tr -d '\n')
+  for n in $(timeout 10 "$X" api statsgetallonlineusers --server=$API 2>/dev/null | grep -o 'mp-[0-9][0-9-]*' | sort -u); do
+    r=$(timeout 10 "$X" api statsonlineiplist --server=$API -email "$n" 2>/dev/null | tr -d '\n')
     case "$r" in \{*\}) IPS="$IPS${IPS:+,}\"$n\":$r" ;; esac
   done
   VER=$("$X" version 2>/dev/null | head -1 | awk '{print $2}')
