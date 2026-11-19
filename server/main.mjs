@@ -5,9 +5,10 @@ import { join, extname, normalize } from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 import { openDb, now, token, newUuid, getSetting, setSetting, hashPassword, checkPassword, userState, nextReset } from './db.mjs';
 import { Xray } from './xray.mjs';
-import { AUTOXRAY_URL, parseAutoXray, hashOf, renderAll, links } from './template.mjs';
+import { AUTOXRAY_URL, parseAutoXray, hashOf, renderAll } from './template.mjs';
 import { createManager, PRESETS, agent } from './manage.mjs';
 import { createWatch, tgSend, tgFindChat, resolve4 } from './watch.mjs';
+import { createNodes } from './nodes.mjs';
 
 const env = (k, d) => process.env[k] ?? d;
 const DATA = env('MP_DATA', '/data');
@@ -49,13 +50,15 @@ const log = (...a) => console.log(new Date().toISOString(), ...a);
 const TZ = (() => { try { new Intl.DateTimeFormat('en-CA', { timeZone: env('MP_TZ', 'UTC') }); return env('MP_TZ', 'UTC'); } catch { return 'UTC'; } })();
 const DAYF = new Intl.DateTimeFormat('en-CA', { timeZone: TZ, year: 'numeric', month: '2-digit', day: '2-digit' });
 const dayOf = t => DAYF.format(new Date(t * 1000));
-const kindsOn = () => { const d = xray.detect(); return getSetting(db, 'kinds', 'vision,hy2').split(',').filter(k => d[k]); };
+const kindsOn = () => nodes.kindsOn();   // входы этого сервера, которые есть в наборах подключений
 const serverCtx = () => {
   const d = xray.detect();
   return { name: getSetting(db, 'server_name'), domain: getSetting(db, 'domain'), fp: getSetting(db, 'fp', 'firefox'), xhttpPath: d.xhttp?.path || '', ports: { vision: d.vision?.port, hy2: d.hy2?.port, xhttp: 443 } };
 };
 const users = () => db.prepare('SELECT * FROM users ORDER BY id').all();
 const userById = id => db.prepare('SELECT * FROM users WHERE id = ?').get(id);
+const nodes = createNodes({ db, xray, log, dayOf, server: serverCtx, users });
+xray.linkClients = nodes.linkClients;
 
 // ---------- шаблон autoXRAY ----------
 const activeTpl = () => { const r = db.prepare("SELECT * FROM templates WHERE status = 'active' ORDER BY id DESC LIMIT 1").get(); return r ? { ...r, parsed: JSON.parse(r.body) } : null; };
@@ -137,12 +140,14 @@ async function sync({ full = false } = {}) {
       db.prepare('UPDATE users SET up = 0, down = 0, reset_at = ? WHERE id = ?').run(nextReset(u.created_at, t), u.id); log(`${u.name}: месячный трафик обнулён`);
     }
     online = await xray.online();
+    for (const [id, ips] of Object.entries(nodes.onlineMap())) Object.assign(online[id] ||= {}, ips);   // кто подключён через ноды
     checkDevices(t);
     const kinds = kindsOn(), all = users(), want = new Set(all.filter(u => userState(u, t) === 'active').map(u => u.id));
     const was = applied || new Set();
     if (full || !applied) {
       for (const u of all) if (want.has(u.id)) await xray.addUser(u, kinds).catch(() => {});   // уже есть — Xray ответит ошибкой, это нормально
       for (const u of all) if (!want.has(u.id)) await xray.removeUser(u.id, ['vision', 'hy2', 'xhttp']);
+      await nodes.ensureLinks();
     } else {
       for (const id of want) if (!was.has(id)) await xray.addUser(userById(id), kinds).catch(e => log('adu', id, e.message));
       for (const id of was) if (!want.has(id)) await xray.removeUser(id, ['vision', 'hy2', 'xhttp']);
@@ -188,7 +193,7 @@ function publicUser(u) {
   const st = userState(u);
   const ips = online[u.id] || {};
   return { id: u.id, name: u.name, note: u.note, token: u.token, limit: u.limit_bytes, expire: u.expire_at, enabled: !!u.enabled, up: u.up, down: u.down, used: u.up + u.down, state: st, last_active: u.last_active, last_sub: u.last_sub, created: u.created_at,
-    period: u.period || '', reset_at: u.reset_at, devices: u.devices, block_until: u.block_until,
+    period: u.period || '', reset_at: u.reset_at, devices: u.devices, block_until: u.block_until, kit: nodes.kitOf(u).id,
     online: Object.entries(ips).map(([ip, at]) => ({ ip, at: Number(at) })).sort((a, b) => b.at - a.at) };
 }
 const cleanDevices = v => Math.min(50, Math.max(0, Math.round(Number(v) || 0)));
@@ -230,6 +235,7 @@ function stateForAdmin() {
   return {
     update: updateState(),
     watch: watch.state(),
+    ...nodes.state(),
     users: users().map(u => ({ ...publicUser(u), url: subUrl(u) })),
     settings: { server_name: getSetting(db, 'server_name'), domain: getSetting(db, 'domain'), fp: getSetting(db, 'fp'), kinds: getSetting(db, 'kinds'), autoupdate: getSetting(db, 'autoupdate') === '1', support_url: getSetting(db, 'support_url'), update_hours: Number(getSetting(db, 'update_hours', '12')), login: getSetting(db, 'admin_login'),
       tg_token: getSetting(db, 'tg_token', ''), tg_chat: getSetting(db, 'tg_chat', '') },
@@ -259,6 +265,7 @@ async function adminApi(req, res, path) {
   }
   if (!authed(req)) return json(res, 401, { error: 'Нужно войти' });
   const m = /^\/api\/users\/(\d+)(\/[a-z-]+)?$/.exec(path);
+  if (/^\/api\/(nodes|kits|lines)(\/|$)/.test(path)) return nodes.api(req, res, path, { json, readBody, state: stateForAdmin, sync: () => queueSync({ full: true }) });
 
   if (path === '/api/logout' && req.method === 'POST') { db.prepare('DELETE FROM sessions WHERE token = ?').run(cookie(req).mp_s); return send(res, 200, '{}', { 'set-cookie': `mp_s=; Path=${ADMIN}; Max-Age=0` }); }
   if (path === '/api/state' && req.method === 'GET') return json(res, 200, stateForAdmin());
@@ -270,6 +277,7 @@ async function adminApi(req, res, path) {
     const r = db.prepare('INSERT INTO users (name, note, token, uuid, hy2, limit_bytes, expire_at, created_at, period, reset_at, devices) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
       .run(name, String(b.note || '').slice(0, 200), token(16), newUuid(), token(12), Math.max(0, Math.round(Number(b.limit) || 0)), Math.max(0, Math.round(Number(b.expire) || 0)), t,
         period, period ? nextReset(t, t) : 0, cleanDevices(b.devices));
+    if (b.kit) db.prepare('UPDATE users SET kit_id = ? WHERE id = ?').run(Number(b.kit) === nodes.defKit().id ? 0 : Number(b.kit) || 0, r.lastInsertRowid);
     await queueSync(); return json(res, 200, { user: { ...publicUser(userById(r.lastInsertRowid)), url: subUrl(userById(r.lastInsertRowid)) } });
   }
   if (m && !m[2] && req.method === 'PATCH') {
@@ -286,6 +294,7 @@ async function adminApi(req, res, path) {
     if (block_until !== u.block_until) over.delete(u.id);
     db.prepare('UPDATE users SET name = ?, note = ?, limit_bytes = ?, expire_at = ?, enabled = ?, period = ?, reset_at = ?, devices = ?, block_until = ? WHERE id = ?')
       .run(f.name, f.note, f.limit_bytes, f.expire_at, f.enabled, f.period, reset_at, f.devices, block_until, u.id);
+    if (b.kit !== undefined) db.prepare('UPDATE users SET kit_id = ? WHERE id = ?').run(Number(b.kit) === nodes.defKit().id ? 0 : Number(b.kit) || 0, u.id);
     await queueSync(); return json(res, 200, { user: { ...publicUser(userById(u.id)), url: subUrl(userById(u.id)) } });
   }
   if (m && m[2] === '/reset' && req.method === 'POST') { db.prepare('UPDATE users SET up = 0, down = 0 WHERE id = ?').run(Number(m[1])); await queueSync(); return json(res, 200, {}); }
@@ -304,7 +313,6 @@ async function adminApi(req, res, path) {
     if (b.server_name !== undefined) setSetting(db, 'server_name', String(b.server_name).trim().slice(0, 24) || 'monolit');
     if (b.domain !== undefined) setSetting(db, 'domain', String(b.domain).trim().toLowerCase());
     if (b.fp !== undefined && /^[a-z0-9]+$/.test(b.fp)) setSetting(db, 'fp', b.fp);
-    if (b.kinds !== undefined) setSetting(db, 'kinds', [].concat(b.kinds).filter(k => ['vision', 'hy2', 'xhttp'].includes(k)).join(',') || 'vision');
     if (b.autoupdate !== undefined) setSetting(db, 'autoupdate', b.autoupdate ? '1' : '0');
     if (b.support_url !== undefined) setSetting(db, 'support_url', String(b.support_url).trim().slice(0, 200));
     if (b.update_hours !== undefined) setSetting(db, 'update_hours', String(Math.min(48, Math.max(1, Math.round(Number(b.update_hours) || 12)))));
@@ -457,10 +465,10 @@ const b64 = s => Buffer.from(s, 'utf8').toString('base64');
 function subscription(req, res, tok, mode) {
   const u = db.prepare('SELECT * FROM users WHERE token = ?').get(tok);
   if (!u) return send(res, 404, 'not found');
-  const st = userState(u), ctx = { user: u, server: serverCtx() }, kinds = kindsOn(), tpl = activeTpl();
+  const st = userState(u), ctx = { user: u, server: serverCtx() }, tpl = activeTpl();
   const ua = req.headers['user-agent'] || '';
   const browser = mode === 'auto' && /mozilla/i.test(ua) && (req.headers.accept || '').includes('text/html') && !CLIENT_UA.test(ua);
-  const info = { name: u.name, server: ctx.server.name, state: st, used: u.up + u.down, limit: u.limit_bytes, expire: u.expire_at, url: subUrl(u), support: getSetting(db, 'support_url'), configs: st === 'active' ? links(ctx, kinds) : [] };
+  const info = { name: u.name, server: ctx.server.name, state: st, used: u.up + u.down, limit: u.limit_bytes, expire: u.expire_at, url: subUrl(u), support: getSetting(db, 'support_url'), configs: st === 'active' ? nodes.links(u, ctx.server) : [] };
   if (browser) {
     const page = readFileSync(join(UI, 'sub.html'), 'utf8').replace('"__SUB__"', JSON.stringify(info).replace(/</g, '\\u003c'));
     return send(res, 200, page, { 'content-type': MIME['.html'], 'x-robots-tag': 'noindex', 'referrer-policy': 'no-referrer' });
@@ -476,7 +484,7 @@ function subscription(req, res, tok, mode) {
   };
   const asLinks = mode === 'links' || (mode === 'auto' && /v2rayn\b|nekobox|throne|shadowrocket/i.test(ua) && !/v2rayng/i.test(ua));
   if (asLinks) return send(res, 200, b64(info.configs.join('\n')), { ...headers, 'content-type': 'text/plain; charset=utf-8' });
-  const body = st === 'active' && tpl ? renderAll(tpl.parsed, ctx, kinds) : [];
+  const body = st === 'active' && tpl ? nodes.render(tpl.parsed, u, ctx.server) : [];
   return send(res, 200, JSON.stringify(body, null, 2), { ...headers, 'content-type': 'application/json; charset=utf-8' });
 }
 
@@ -485,6 +493,7 @@ const http = createServer(async (req, res) => {
     const url = new URL(req.url, 'http://x'), p = decodeURIComponent(url.pathname);
     let m;
     if ((m = /^\/s\/([A-Za-z0-9_-]{10,40})(?:\/(json|links))?$/.exec(p)) && req.method === 'GET') return subscription(req, res, m[1], m[2] || 'auto');
+    if (p.startsWith('/s/_n/')) return await nodes.http(req, res, p.slice(6), { send, readRaw, ipOf, changed: () => { queueSync({ full: true }) } });
     if (p.startsWith('/s/_/')) return staticFile(res, p.slice(5));
     if (p === ADMIN) return send(res, 301, '', { location: ADMIN + '/' });
     if (p === ADMIN + '/') return staticFile(res, 'admin.html');

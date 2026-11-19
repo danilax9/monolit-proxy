@@ -24,7 +24,8 @@ const subst = (s, vars) => s.replace(/\$\{([A-Za-z_][A-Za-z0-9_]*)\}|\$([A-Za-z_
 const jstr = v => JSON.stringify(String(v)).slice(1, -1);
 
 // Один клиентский конфиг. kind: vision | hy2 | xhttp
-export function renderOne(parsed, kind, { user, server }) {
+// opts.remark — своё название; opts.outbound(ob) — поправить выход (вход на ноде вместо этого сервера)
+export function renderOne(parsed, kind, { user, server }, opts = {}) {
   const vars = {
     DOMAIN: jstr(server.domain), xray_uuid_vrv: jstr(user.uuid), xray_shortIds_vrv: jstr(user.hy2),
     fpBro: jstr(server.fp || 'firefox'), path_xhttp: jstr(server.xhttpPath || ''),
@@ -33,7 +34,8 @@ export function renderOne(parsed, kind, { user, server }) {
   // порт — тот, на котором вход реально слушает на этом сервере
   const port = server.ports?.[kind];
   if (port) { if (ob.settings?.vnext?.[0]) ob.settings.vnext[0].port = port; else if (ob.settings && 'port' in ob.settings) ob.settings.port = port; }
-  const remark = `${server.name} ${{ vision: 'Vision', hy2: 'Hysteria2', xhttp: 'XHTTP' }[kind]}`;
+  if (opts.outbound) opts.outbound(ob);
+  const remark = opts.remark || `${server.name} ${{ vision: 'Vision', hy2: 'Hysteria2', xhttp: 'XHTTP' }[kind]}`;
   const text = subst(parsed.tpl, { ...vars, PROXY_OUTBOUND: JSON.stringify(ob), REMARK: jstr(remark) });
   const left = /\$\{[A-Za-z_][A-Za-z0-9_]*\}|"\$[A-Za-z_][A-Za-z0-9_]*"/.exec(text);
   if (left) throw new Error(`в шаблоне осталась неизвестная переменная ${left[0]}`);

@@ -272,7 +272,7 @@
     const lg = S.settings.login || 'admin'; $('mp-acc-login').textContent = lg; $('mp-acc-av').textContent = lg.slice(0, 1).toUpperCase()
   }
 
-  const paint = () => { renderHead(); render(); if (openId) fillDetail(false) }
+  const paint = () => { renderHead(); render(); if (openId) fillDetail(false); document.dispatchEvent(new CustomEvent('mp-state')) }
 
   const listEl = $('mp-list')
   let t
@@ -311,6 +311,7 @@
     dForm.enabled.checked = u.enabled
     dForm.name.value = u.name
     dForm.note.value = u.note || ''
+    window.mpKits?.fill(dForm.kit, u.kit)
     dForm.limit.value = gbOf(u.limit)
     dForm.period.value = u.period || ''; dForm.period.dispatchEvent(new Event('change'))
     // значения не из списка (задано раньше числом) — добавляем пунктом, чтобы не потерялось
@@ -350,7 +351,7 @@
     if (!limitOk(dForm.limit)) return
     busy(document.querySelector('[form="mp-d-form"]'), async () => {
       try {
-        const r = await api('PATCH', 'api/users/' + u.id, { name: dForm.name.value, note: dForm.note.value, limit: parseGb(dForm.limit.value), expire: fromDateInput(dForm.expire.value), enabled: dForm.enabled.checked, period: dForm.period.value, devices: Number(dForm.devices.value) || 0 })
+        const r = await api('PATCH', 'api/users/' + u.id, { name: dForm.name.value, note: dForm.note.value, limit: parseGb(dForm.limit.value), expire: fromDateInput(dForm.expire.value), enabled: dForm.enabled.checked, period: dForm.period.value, devices: Number(dForm.devices.value) || 0, kit: Number(dForm.kit.value) || undefined })
         putUser(r.user); fillDetail(); toast({ type: 'success', title: 'Сохранено', text: ST[r.user.state][0] + ', ' + left(r.user) })
       } catch (err) { fail(err) }
     })
@@ -409,7 +410,7 @@
     if (!limitOk(aForm.limit)) return
     busy(aForm.querySelector('button[type=submit]'), async () => {
       try {
-        const r = await api('POST', 'api/users', { name, note: aForm.note.value.trim(), limit: parseGb(aForm.limit.value), period: aForm.period.value, devices: Number(aForm.devices.value) || 0, expire: Number(aForm.days.value) ? now() + Number(aForm.days.value) * 86400 : 0 })
+        const r = await api('POST', 'api/users', { name, note: aForm.note.value.trim(), limit: parseGb(aForm.limit.value), period: aForm.period.value, devices: Number(aForm.devices.value) || 0, kit: Number(aForm.kit.value) || undefined, expire: Number(aForm.days.value) ? now() + Number(aForm.days.value) * 86400 : 0 })
         putUser(r.user)
         $('mp-add').close(); aForm.reset(); aForm.days.dispatchEvent(new Event('change')); aForm.period.dispatchEvent(new Event('change')); aForm.devices.dispatchEvent(new Event('change'))
         setCopy($('mp-made-url'), $('mp-made-copy'), r.user.url)
@@ -448,13 +449,11 @@
 
   // ---------- настройки ----------
   const sForm = $('mp-set-form')
-  const KINDS = [['vision', 'Vision', 'VLESS через TCP с TLS'], ['hy2', 'Hysteria2', 'через UDP, быстрее на плохой связи'], ['xhttp', 'XHTTP', 'через HTTP, если TCP режут']]
   function fillSet() {
-    const s = S.settings, on = s.kinds.split(','), ib = S.xray.inbounds || {}
+    const s = S.settings
     sForm.server_name.value = s.server_name; sForm.update_hours.value = s.update_hours; sForm.support_url.value = s.support_url || ''; sForm.password.value = ''; sForm.login.value = s.login || ''
     sForm.tg_token.value = s.tg_token || ''; sForm.tg_chat.value = s.tg_chat || ''
     sForm.fp.value = s.fp; sForm.fp.dispatchEvent(new Event('change'))
-    $('mp-kinds').innerHTML = KINDS.map(([k, n, h]) => `<label class="choice"><input type="checkbox" class="check" value="${k}" ${on.includes(k) && ib[k] ? 'checked' : ''} ${ib[k] ? '' : 'disabled'}><span>${n}<small>${ib[k] ? h : 'на этом сервере нет такого входа Xray'}</small></span></label>`).join('')
   }
   document.querySelectorAll('[data-open="mp-set"]').forEach((b) => b.addEventListener('click', (e) => { e.preventDefault(); fillSet() }))
   document.querySelectorAll('[data-open="mp-mnt"]').forEach((b) => b.addEventListener('click', (e) => { e.preventDefault(); fillUpd() }))
@@ -530,11 +529,9 @@
     const login = sForm.login.value.trim(), relogin = pw || login !== S.settings.login
     if (!/^[\p{L}\p{N}_.@-]{3,32}$/u.test(login)) { window.fieldError?.(sForm.login, 'От 3 до 32 букв, цифр и знаков . _ - @'); return }
     window.fieldError?.(sForm.login, '')
-    const kinds = [...$('mp-kinds').querySelectorAll('input:checked')].map((i) => i.value)
-    if (!kinds.length) { toast({ type: 'error', title: 'Оставьте хотя бы один протокол' }); return }
     busy(document.querySelector('[form="mp-set-form"]'), async () => {
       try {
-        S = await api('PATCH', 'api/settings', { server_name: sForm.server_name.value, tg_token: sForm.tg_token.value, tg_chat: sForm.tg_chat.value, fp: sForm.fp.value, update_hours: sForm.update_hours.value, support_url: sForm.support_url.value, kinds, login, ...(pw ? { password: pw } : {}) })
+        S = await api('PATCH', 'api/settings', { server_name: sForm.server_name.value, tg_token: sForm.tg_token.value, tg_chat: sForm.tg_chat.value, fp: sForm.fp.value, update_hours: sForm.update_hours.value, support_url: sForm.support_url.value, login, ...(pw ? { password: pw } : {}) })
         paint(); $('mp-set').close()
         if (relogin) { toast({ type: 'success', title: pw ? 'Пароль сменён' : 'Логин сменён', text: 'Войдите заново' }); showLogin() } else toast({ type: 'success', title: 'Настройки сохранены' })
       } catch (err) { fail(err) }
@@ -553,7 +550,7 @@
 
   // Для разделов сервера (server.js, addr.js)
   window.mpAdmin = { demo: () => DEMO, api: (m, p, b) => api(m, p, b), confirm: confirmAct, setCopy, domain: () => S?.settings?.domain || location.hostname,
-    state: () => S, refresh: () => api('GET', 'api/state').then((s) => { S = s; paint() }).catch(() => {}) }
+    state: () => S, setState: (s) => { S = s; paint() }, bytes, ago, refresh: () => api('GET', 'api/state').then((s) => { S = s; paint() }).catch(() => {}) }
 
   // ---------- QR в SVG ----------
   function qrSvg(text) {

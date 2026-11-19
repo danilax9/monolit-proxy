@@ -6,7 +6,8 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 export const EMAIL = id => `mp-${id}`;
-const isOurs = c => typeof c?.email === 'string' && /^mp-\d+$/.test(c.email);
+// mp-N — люди, mpn-N — ноды (ходят сюда за людей, пришедших по мосту)
+const isOurs = c => typeof c?.email === 'string' && /^mpn?-\d+$/.test(c.email);
 
 export class Xray {
   constructor({ bin, config, api }) { Object.assign(this, { bin, config, api }); }
@@ -43,7 +44,7 @@ export class Xray {
       const tag = d[k]?.tag; if (!tag) continue;
       const ib = cfg.inbounds.find(i => i.tag === tag);
       ib.settings ||= {}; ib.settings.clients ||= [];
-      ib.settings.clients = ib.settings.clients.filter(c => !isOurs(c)).concat(users.map(u => Xray.clientsFor(u, k)));
+      ib.settings.clients = ib.settings.clients.filter(c => !isOurs(c)).concat(users.map(u => Xray.clientsFor(u, k)), k === 'vision' && this.linkClients ? this.linkClients() : []);
     }
     return cfg;
   }
@@ -82,6 +83,7 @@ export class Xray {
     try {
       // Xray требует у входа порт, даже когда добавляем только пользователя
       const inbounds = kinds.filter(k => d[k]).map(k => ({ tag: d[k].tag, port: d[k].port, listen: d[k].listen, protocol: k === 'hy2' ? 'hysteria' : 'vless', settings: { clients: [Xray.clientsFor(u, k)], ...(k === 'hy2' ? { version: 2 } : { decryption: 'none' }) } }));
+      if (!inbounds.length) return '';   // в наборах нет входов этого сервера
       const f = join(dir, 'u.json'); writeFileSync(f, JSON.stringify({ inbounds }));
       const so = await this.run(['api', 'adu', `--server=${this.api}`, f]);
       // код возврата всегда 0: смотрим текст. «уже есть» — не ошибка
@@ -90,6 +92,18 @@ export class Xray {
       return so;
     } finally { rmSync(dir, { recursive: true, force: true }); }
   }
+
+  // Один клиент на входе, не человек (нода): тем же способом, что и людей
+  async addClient(kind, client) {
+    const d = this.detect()[kind]; if (!d) return '';
+    const dir = mkdtempSync(join(tmpdir(), 'mp-'));
+    try {
+      const f = join(dir, 'u.json');
+      writeFileSync(f, JSON.stringify({ inbounds: [{ tag: d.tag, port: d.port, listen: d.listen, protocol: kind === 'hy2' ? 'hysteria' : 'vless', settings: { clients: [client], ...(kind === 'hy2' ? { version: 2 } : { decryption: 'none' }) } }] }));
+      return await this.run(['api', 'adu', `--server=${this.api}`, f]);
+    } finally { rmSync(dir, { recursive: true, force: true }); }
+  }
+  async removeClient(kind, email) { const d = this.detect()[kind]; return d ? this.run(['api', 'rmu', `--server=${this.api}`, `-tag=${d.tag}`, email]) : ''; }
 
   async removeUser(id, kinds) {
     const d = this.detect(), out = [];

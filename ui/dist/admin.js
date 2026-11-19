@@ -1,7 +1,7 @@
 // icons.js
 // Иконки Lucide 0.460.0 (ISC), только нужные: замена <i data-lucide> на svg, как lucide.createIcons()
 (() => {
-  const P = {"map-pin":"<path d=\"M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0\"/><circle cx=\"12\" cy=\"10\" r=\"3\"/>","wrench":"<path d=\"M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z\"/>","upload":"<path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\"/><polyline points=\"17 8 12 3 7 8\"/><line x1=\"12\" x2=\"12\" y1=\"3\" y2=\"15\"/>","lock-open":"<rect width=\"18\" height=\"11\" x=\"3\" y=\"11\" rx=\"2\" ry=\"2\"/><path d=\"M7 11V7a5 5 0 0 1 9.9-1\"/>","apple":"<path d=\"M12 20.94c1.5 0 2.75 1.06 4 1.06 3 0 6-8 6-12.22A4.91 4.91 0 0 0 17 5c-2.22 0-4 1.44-5 2-1-.56-2.78-2-5-2a4.9 4.9 0 0 0-5 4.78C2 14 5 22 8 22c1.25 0 2.5-1.06 4-1.06Z\"/><path d=\"M10 2c1 .5 2 2 2 5\"/>","check":"<path d=\"M20 6 9 17l-5-5\"/>","chevron-right":"<path d=\"m9 18 6-6-6-6\"/>","circle-alert":"<circle cx=\"12\" cy=\"12\" r=\"10\"/><line x1=\"12\" x2=\"12\" y1=\"8\" y2=\"12\"/><line x1=\"12\" x2=\"12.01\" y1=\"16\" y2=\"16\"/>","circle-check":"<circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"m9 12 2 2 4-4\"/>","clock":"<circle cx=\"12\" cy=\"12\" r=\"10\"/><polyline points=\"12 6 12 12 16 14\"/>","copy":"<rect width=\"14\" height=\"14\" x=\"8\" y=\"8\" rx=\"2\" ry=\"2\"/><path d=\"M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2\"/>","download":"<path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\"/><polyline points=\"7 10 12 15 17 10\"/><line x1=\"12\" x2=\"12\" y1=\"15\" y2=\"3\"/>","external-link":"<path d=\"M15 3h6v6\"/><path d=\"M10 14 21 3\"/><path d=\"M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6\"/>","file-code":"<path d=\"M10 12.5 8 15l2 2.5\"/><path d=\"m14 12.5 2 2.5-2 2.5\"/><path d=\"M14 2v4a2 2 0 0 0 2 2h4\"/><path d=\"M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z\"/>","infinity":"<path d=\"M12 12c-2-2.67-4-4-6-4a4 4 0 1 0 0 8c2 0 4-1.33 6-4Zm0 0c2 2.67 4 4 6 4a4 4 0 0 0 0-8c-2 0-4 1.33-6 4Z\"/>","key-round":"<path d=\"M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z\"/><circle cx=\"16.5\" cy=\"7.5\" r=\".5\" fill=\"currentColor\"/>","link":"<path d=\"M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71\"/><path d=\"M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71\"/>","log-out":"<path d=\"M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4\"/><polyline points=\"16 17 21 12 16 7\"/><line x1=\"21\" x2=\"9\" y1=\"12\" y2=\"12\"/>","monitor":"<rect width=\"20\" height=\"14\" x=\"2\" y=\"3\" rx=\"2\"/><line x1=\"8\" x2=\"16\" y1=\"21\" y2=\"21\"/><line x1=\"12\" x2=\"12\" y1=\"17\" y2=\"21\"/>","moon":"<path d=\"M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z\"/>","panel-left":"<rect width=\"18\" height=\"18\" x=\"3\" y=\"3\" rx=\"2\"/><path d=\"M9 3v18\"/>","plus":"<path d=\"M5 12h14\"/><path d=\"M12 5v14\"/>","qr-code":"<rect width=\"5\" height=\"5\" x=\"3\" y=\"3\" rx=\"1\"/><rect width=\"5\" height=\"5\" x=\"16\" y=\"3\" rx=\"1\"/><rect width=\"5\" height=\"5\" x=\"3\" y=\"16\" rx=\"1\"/><path d=\"M21 16h-3a2 2 0 0 0-2 2v3\"/><path d=\"M21 21v.01\"/><path d=\"M12 7v3a2 2 0 0 1-2 2H7\"/><path d=\"M3 12h.01\"/><path d=\"M12 3h.01\"/><path d=\"M12 16v.01\"/><path d=\"M16 12h1\"/><path d=\"M21 12v.01\"/><path d=\"M12 21v-1\"/>","refresh-cw":"<path d=\"M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8\"/><path d=\"M21 3v5h-5\"/><path d=\"M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16\"/><path d=\"M8 16H3v5\"/>","rotate-ccw":"<path d=\"M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8\"/><path d=\"M3 3v5h5\"/>","search":"<circle cx=\"11\" cy=\"11\" r=\"8\"/><path d=\"m21 21-4.3-4.3\"/>","settings":"<path d=\"M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z\"/><circle cx=\"12\" cy=\"12\" r=\"3\"/>","smartphone":"<rect width=\"14\" height=\"20\" x=\"5\" y=\"2\" rx=\"2\" ry=\"2\"/><path d=\"M12 18h.01\"/>","sun":"<circle cx=\"12\" cy=\"12\" r=\"4\"/><path d=\"M12 2v2\"/><path d=\"M12 20v2\"/><path d=\"m4.93 4.93 1.41 1.41\"/><path d=\"m17.66 17.66 1.41 1.41\"/><path d=\"M2 12h2\"/><path d=\"M20 12h2\"/><path d=\"m6.34 17.66-1.41 1.41\"/><path d=\"m19.07 4.93-1.41 1.41\"/>","trash-2":"<path d=\"M3 6h18\"/><path d=\"M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6\"/><path d=\"M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2\"/><line x1=\"10\" x2=\"10\" y1=\"11\" y2=\"17\"/><line x1=\"14\" x2=\"14\" y1=\"11\" y2=\"17\"/>","triangle-alert":"<path d=\"m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3\"/><path d=\"M12 9v4\"/><path d=\"M12 17h.01\"/>","undo-2":"<path d=\"M9 14 4 9l5-5\"/><path d=\"M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11\"/>","users":"<path d=\"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2\"/><circle cx=\"9\" cy=\"7\" r=\"4\"/><path d=\"M22 21v-2a4 4 0 0 0-3-3.87\"/><path d=\"M16 3.13a4 4 0 0 1 0 7.75\"/>","x":"<path d=\"M18 6 6 18\"/><path d=\"m6 6 12 12\"/>","arrow-down":"<path d=\"M12 5v14\"/><path d=\"m19 12-7 7-7-7\"/>","arrow-up":"<path d=\"m5 12 7-7 7 7\"/><path d=\"M12 19V5\"/>","cloud":"<path d=\"M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z\"/>","eye":"<path d=\"M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0\"/><circle cx=\"12\" cy=\"12\" r=\"3\"/>","globe":"<circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20\"/><path d=\"M2 12h20\"/>","history":"<path d=\"M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8\"/><path d=\"M3 3v5h5\"/><path d=\"M12 7v5l4 2\"/>","network":"<rect x=\"16\" y=\"16\" width=\"6\" height=\"6\" rx=\"1\"/><rect x=\"2\" y=\"16\" width=\"6\" height=\"6\" rx=\"1\"/><rect x=\"9\" y=\"2\" width=\"6\" height=\"6\" rx=\"1\"/><path d=\"M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3\"/><path d=\"M12 12V8\"/>","pencil":"<path d=\"M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z\"/><path d=\"m15 5 4 4\"/>","route":"<circle cx=\"6\" cy=\"19\" r=\"3\"/><path d=\"M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15\"/><circle cx=\"18\" cy=\"5\" r=\"3\"/>","scroll-text":"<path d=\"M15 12h-5\"/><path d=\"M15 8h-5\"/><path d=\"M19 17V5a2 2 0 0 0-2-2H4\"/><path d=\"M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3\"/>","send":"<path d=\"M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z\"/><path d=\"m21.854 2.147-10.94 10.939\"/>","server":"<rect width=\"20\" height=\"8\" x=\"2\" y=\"2\" rx=\"2\" ry=\"2\"/><rect width=\"20\" height=\"8\" x=\"2\" y=\"14\" rx=\"2\" ry=\"2\"/><line x1=\"6\" x2=\"6.01\" y1=\"6\" y2=\"6\"/><line x1=\"6\" x2=\"6.01\" y1=\"18\" y2=\"18\"/>","shield-check":"<path d=\"M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z\"/><path d=\"m9 12 2 2 4-4\"/>","shield":"<path d=\"M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z\"/>"};
+  const P = {"arrow-right":"<path d=\"M5 12h14\"/><path d=\"m12 5 7 7-7 7\"/>","grip-vertical":"<circle cx=\"9\" cy=\"12\" r=\"1\"/><circle cx=\"9\" cy=\"5\" r=\"1\"/><circle cx=\"9\" cy=\"19\" r=\"1\"/><circle cx=\"15\" cy=\"12\" r=\"1\"/><circle cx=\"15\" cy=\"5\" r=\"1\"/><circle cx=\"15\" cy=\"19\" r=\"1\"/>","waypoints":"<circle cx=\"12\" cy=\"4.5\" r=\"2.5\"/><path d=\"m10.2 6.3-3.9 3.9\"/><circle cx=\"4.5\" cy=\"12\" r=\"2.5\"/><path d=\"M7 12h10\"/><circle cx=\"19.5\" cy=\"12\" r=\"2.5\"/><path d=\"m13.8 17.7 3.9-3.9\"/><circle cx=\"12\" cy=\"19.5\" r=\"2.5\"/>","terminal":"<polyline points=\"4 17 10 11 4 5\"/><line x1=\"12\" x2=\"20\" y1=\"19\" y2=\"19\"/>","list-checks":"<path d=\"m3 17 2 2 4-4\"/><path d=\"m3 7 2 2 4-4\"/><path d=\"M13 6h8\"/><path d=\"M13 12h8\"/><path d=\"M13 18h8\"/>","map-pin":"<path d=\"M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0\"/><circle cx=\"12\" cy=\"10\" r=\"3\"/>","wrench":"<path d=\"M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z\"/>","upload":"<path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\"/><polyline points=\"17 8 12 3 7 8\"/><line x1=\"12\" x2=\"12\" y1=\"3\" y2=\"15\"/>","lock-open":"<rect width=\"18\" height=\"11\" x=\"3\" y=\"11\" rx=\"2\" ry=\"2\"/><path d=\"M7 11V7a5 5 0 0 1 9.9-1\"/>","apple":"<path d=\"M12 20.94c1.5 0 2.75 1.06 4 1.06 3 0 6-8 6-12.22A4.91 4.91 0 0 0 17 5c-2.22 0-4 1.44-5 2-1-.56-2.78-2-5-2a4.9 4.9 0 0 0-5 4.78C2 14 5 22 8 22c1.25 0 2.5-1.06 4-1.06Z\"/><path d=\"M10 2c1 .5 2 2 2 5\"/>","check":"<path d=\"M20 6 9 17l-5-5\"/>","chevron-right":"<path d=\"m9 18 6-6-6-6\"/>","circle-alert":"<circle cx=\"12\" cy=\"12\" r=\"10\"/><line x1=\"12\" x2=\"12\" y1=\"8\" y2=\"12\"/><line x1=\"12\" x2=\"12.01\" y1=\"16\" y2=\"16\"/>","circle-check":"<circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"m9 12 2 2 4-4\"/>","clock":"<circle cx=\"12\" cy=\"12\" r=\"10\"/><polyline points=\"12 6 12 12 16 14\"/>","copy":"<rect width=\"14\" height=\"14\" x=\"8\" y=\"8\" rx=\"2\" ry=\"2\"/><path d=\"M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2\"/>","download":"<path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\"/><polyline points=\"7 10 12 15 17 10\"/><line x1=\"12\" x2=\"12\" y1=\"15\" y2=\"3\"/>","external-link":"<path d=\"M15 3h6v6\"/><path d=\"M10 14 21 3\"/><path d=\"M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6\"/>","file-code":"<path d=\"M10 12.5 8 15l2 2.5\"/><path d=\"m14 12.5 2 2.5-2 2.5\"/><path d=\"M14 2v4a2 2 0 0 0 2 2h4\"/><path d=\"M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z\"/>","infinity":"<path d=\"M12 12c-2-2.67-4-4-6-4a4 4 0 1 0 0 8c2 0 4-1.33 6-4Zm0 0c2 2.67 4 4 6 4a4 4 0 0 0 0-8c-2 0-4 1.33-6 4Z\"/>","key-round":"<path d=\"M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z\"/><circle cx=\"16.5\" cy=\"7.5\" r=\".5\" fill=\"currentColor\"/>","link":"<path d=\"M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71\"/><path d=\"M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71\"/>","log-out":"<path d=\"M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4\"/><polyline points=\"16 17 21 12 16 7\"/><line x1=\"21\" x2=\"9\" y1=\"12\" y2=\"12\"/>","monitor":"<rect width=\"20\" height=\"14\" x=\"2\" y=\"3\" rx=\"2\"/><line x1=\"8\" x2=\"16\" y1=\"21\" y2=\"21\"/><line x1=\"12\" x2=\"12\" y1=\"17\" y2=\"21\"/>","moon":"<path d=\"M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z\"/>","panel-left":"<rect width=\"18\" height=\"18\" x=\"3\" y=\"3\" rx=\"2\"/><path d=\"M9 3v18\"/>","plus":"<path d=\"M5 12h14\"/><path d=\"M12 5v14\"/>","qr-code":"<rect width=\"5\" height=\"5\" x=\"3\" y=\"3\" rx=\"1\"/><rect width=\"5\" height=\"5\" x=\"16\" y=\"3\" rx=\"1\"/><rect width=\"5\" height=\"5\" x=\"3\" y=\"16\" rx=\"1\"/><path d=\"M21 16h-3a2 2 0 0 0-2 2v3\"/><path d=\"M21 21v.01\"/><path d=\"M12 7v3a2 2 0 0 1-2 2H7\"/><path d=\"M3 12h.01\"/><path d=\"M12 3h.01\"/><path d=\"M12 16v.01\"/><path d=\"M16 12h1\"/><path d=\"M21 12v.01\"/><path d=\"M12 21v-1\"/>","refresh-cw":"<path d=\"M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8\"/><path d=\"M21 3v5h-5\"/><path d=\"M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16\"/><path d=\"M8 16H3v5\"/>","rotate-ccw":"<path d=\"M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8\"/><path d=\"M3 3v5h5\"/>","search":"<circle cx=\"11\" cy=\"11\" r=\"8\"/><path d=\"m21 21-4.3-4.3\"/>","settings":"<path d=\"M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z\"/><circle cx=\"12\" cy=\"12\" r=\"3\"/>","smartphone":"<rect width=\"14\" height=\"20\" x=\"5\" y=\"2\" rx=\"2\" ry=\"2\"/><path d=\"M12 18h.01\"/>","sun":"<circle cx=\"12\" cy=\"12\" r=\"4\"/><path d=\"M12 2v2\"/><path d=\"M12 20v2\"/><path d=\"m4.93 4.93 1.41 1.41\"/><path d=\"m17.66 17.66 1.41 1.41\"/><path d=\"M2 12h2\"/><path d=\"M20 12h2\"/><path d=\"m6.34 17.66-1.41 1.41\"/><path d=\"m19.07 4.93-1.41 1.41\"/>","trash-2":"<path d=\"M3 6h18\"/><path d=\"M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6\"/><path d=\"M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2\"/><line x1=\"10\" x2=\"10\" y1=\"11\" y2=\"17\"/><line x1=\"14\" x2=\"14\" y1=\"11\" y2=\"17\"/>","triangle-alert":"<path d=\"m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3\"/><path d=\"M12 9v4\"/><path d=\"M12 17h.01\"/>","undo-2":"<path d=\"M9 14 4 9l5-5\"/><path d=\"M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11\"/>","users":"<path d=\"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2\"/><circle cx=\"9\" cy=\"7\" r=\"4\"/><path d=\"M22 21v-2a4 4 0 0 0-3-3.87\"/><path d=\"M16 3.13a4 4 0 0 1 0 7.75\"/>","x":"<path d=\"M18 6 6 18\"/><path d=\"m6 6 12 12\"/>","arrow-down":"<path d=\"M12 5v14\"/><path d=\"m19 12-7 7-7-7\"/>","arrow-up":"<path d=\"m5 12 7-7 7 7\"/><path d=\"M12 19V5\"/>","cloud":"<path d=\"M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z\"/>","eye":"<path d=\"M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0\"/><circle cx=\"12\" cy=\"12\" r=\"3\"/>","globe":"<circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20\"/><path d=\"M2 12h20\"/>","history":"<path d=\"M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8\"/><path d=\"M3 3v5h5\"/><path d=\"M12 7v5l4 2\"/>","network":"<rect x=\"16\" y=\"16\" width=\"6\" height=\"6\" rx=\"1\"/><rect x=\"2\" y=\"16\" width=\"6\" height=\"6\" rx=\"1\"/><rect x=\"9\" y=\"2\" width=\"6\" height=\"6\" rx=\"1\"/><path d=\"M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3\"/><path d=\"M12 12V8\"/>","pencil":"<path d=\"M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z\"/><path d=\"m15 5 4 4\"/>","route":"<circle cx=\"6\" cy=\"19\" r=\"3\"/><path d=\"M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15\"/><circle cx=\"18\" cy=\"5\" r=\"3\"/>","scroll-text":"<path d=\"M15 12h-5\"/><path d=\"M15 8h-5\"/><path d=\"M19 17V5a2 2 0 0 0-2-2H4\"/><path d=\"M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3\"/>","send":"<path d=\"M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z\"/><path d=\"m21.854 2.147-10.94 10.939\"/>","server":"<rect width=\"20\" height=\"8\" x=\"2\" y=\"2\" rx=\"2\" ry=\"2\"/><rect width=\"20\" height=\"8\" x=\"2\" y=\"14\" rx=\"2\" ry=\"2\"/><line x1=\"6\" x2=\"6.01\" y1=\"6\" y2=\"6\"/><line x1=\"6\" x2=\"6.01\" y1=\"18\" y2=\"18\"/>","shield-check":"<path d=\"M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z\"/><path d=\"m9 12 2 2 4-4\"/>","shield":"<path d=\"M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z\"/>"};
   const make = (i) => { const n = i.getAttribute('data-lucide'), p = P[n]; if (!p) return;
     const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     for (const [k, v] of Object.entries({ xmlns: 'http://www.w3.org/2000/svg', width: 24, height: 24, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': 2, 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'aria-hidden': 'true' })) s.setAttribute(k, v);
@@ -4536,7 +4536,7 @@ var qrcode = function() {
     const lg = S.settings.login || 'admin'; $('mp-acc-login').textContent = lg; $('mp-acc-av').textContent = lg.slice(0, 1).toUpperCase()
   }
 
-  const paint = () => { renderHead(); render(); if (openId) fillDetail(false) }
+  const paint = () => { renderHead(); render(); if (openId) fillDetail(false); document.dispatchEvent(new CustomEvent('mp-state')) }
 
   const listEl = $('mp-list')
   let t
@@ -4575,6 +4575,7 @@ var qrcode = function() {
     dForm.enabled.checked = u.enabled
     dForm.name.value = u.name
     dForm.note.value = u.note || ''
+    window.mpKits?.fill(dForm.kit, u.kit)
     dForm.limit.value = gbOf(u.limit)
     dForm.period.value = u.period || ''; dForm.period.dispatchEvent(new Event('change'))
     // значения не из списка (задано раньше числом) — добавляем пунктом, чтобы не потерялось
@@ -4614,7 +4615,7 @@ var qrcode = function() {
     if (!limitOk(dForm.limit)) return
     busy(document.querySelector('[form="mp-d-form"]'), async () => {
       try {
-        const r = await api('PATCH', 'api/users/' + u.id, { name: dForm.name.value, note: dForm.note.value, limit: parseGb(dForm.limit.value), expire: fromDateInput(dForm.expire.value), enabled: dForm.enabled.checked, period: dForm.period.value, devices: Number(dForm.devices.value) || 0 })
+        const r = await api('PATCH', 'api/users/' + u.id, { name: dForm.name.value, note: dForm.note.value, limit: parseGb(dForm.limit.value), expire: fromDateInput(dForm.expire.value), enabled: dForm.enabled.checked, period: dForm.period.value, devices: Number(dForm.devices.value) || 0, kit: Number(dForm.kit.value) || undefined })
         putUser(r.user); fillDetail(); toast({ type: 'success', title: 'Сохранено', text: ST[r.user.state][0] + ', ' + left(r.user) })
       } catch (err) { fail(err) }
     })
@@ -4673,7 +4674,7 @@ var qrcode = function() {
     if (!limitOk(aForm.limit)) return
     busy(aForm.querySelector('button[type=submit]'), async () => {
       try {
-        const r = await api('POST', 'api/users', { name, note: aForm.note.value.trim(), limit: parseGb(aForm.limit.value), period: aForm.period.value, devices: Number(aForm.devices.value) || 0, expire: Number(aForm.days.value) ? now() + Number(aForm.days.value) * 86400 : 0 })
+        const r = await api('POST', 'api/users', { name, note: aForm.note.value.trim(), limit: parseGb(aForm.limit.value), period: aForm.period.value, devices: Number(aForm.devices.value) || 0, kit: Number(aForm.kit.value) || undefined, expire: Number(aForm.days.value) ? now() + Number(aForm.days.value) * 86400 : 0 })
         putUser(r.user)
         $('mp-add').close(); aForm.reset(); aForm.days.dispatchEvent(new Event('change')); aForm.period.dispatchEvent(new Event('change')); aForm.devices.dispatchEvent(new Event('change'))
         setCopy($('mp-made-url'), $('mp-made-copy'), r.user.url)
@@ -4712,13 +4713,11 @@ var qrcode = function() {
 
   // ---------- настройки ----------
   const sForm = $('mp-set-form')
-  const KINDS = [['vision', 'Vision', 'VLESS через TCP с TLS'], ['hy2', 'Hysteria2', 'через UDP, быстрее на плохой связи'], ['xhttp', 'XHTTP', 'через HTTP, если TCP режут']]
   function fillSet() {
-    const s = S.settings, on = s.kinds.split(','), ib = S.xray.inbounds || {}
+    const s = S.settings
     sForm.server_name.value = s.server_name; sForm.update_hours.value = s.update_hours; sForm.support_url.value = s.support_url || ''; sForm.password.value = ''; sForm.login.value = s.login || ''
     sForm.tg_token.value = s.tg_token || ''; sForm.tg_chat.value = s.tg_chat || ''
     sForm.fp.value = s.fp; sForm.fp.dispatchEvent(new Event('change'))
-    $('mp-kinds').innerHTML = KINDS.map(([k, n, h]) => `<label class="choice"><input type="checkbox" class="check" value="${k}" ${on.includes(k) && ib[k] ? 'checked' : ''} ${ib[k] ? '' : 'disabled'}><span>${n}<small>${ib[k] ? h : 'на этом сервере нет такого входа Xray'}</small></span></label>`).join('')
   }
   document.querySelectorAll('[data-open="mp-set"]').forEach((b) => b.addEventListener('click', (e) => { e.preventDefault(); fillSet() }))
   document.querySelectorAll('[data-open="mp-mnt"]').forEach((b) => b.addEventListener('click', (e) => { e.preventDefault(); fillUpd() }))
@@ -4794,11 +4793,9 @@ var qrcode = function() {
     const login = sForm.login.value.trim(), relogin = pw || login !== S.settings.login
     if (!/^[\p{L}\p{N}_.@-]{3,32}$/u.test(login)) { window.fieldError?.(sForm.login, 'От 3 до 32 букв, цифр и знаков . _ - @'); return }
     window.fieldError?.(sForm.login, '')
-    const kinds = [...$('mp-kinds').querySelectorAll('input:checked')].map((i) => i.value)
-    if (!kinds.length) { toast({ type: 'error', title: 'Оставьте хотя бы один протокол' }); return }
     busy(document.querySelector('[form="mp-set-form"]'), async () => {
       try {
-        S = await api('PATCH', 'api/settings', { server_name: sForm.server_name.value, tg_token: sForm.tg_token.value, tg_chat: sForm.tg_chat.value, fp: sForm.fp.value, update_hours: sForm.update_hours.value, support_url: sForm.support_url.value, kinds, login, ...(pw ? { password: pw } : {}) })
+        S = await api('PATCH', 'api/settings', { server_name: sForm.server_name.value, tg_token: sForm.tg_token.value, tg_chat: sForm.tg_chat.value, fp: sForm.fp.value, update_hours: sForm.update_hours.value, support_url: sForm.support_url.value, login, ...(pw ? { password: pw } : {}) })
         paint(); $('mp-set').close()
         if (relogin) { toast({ type: 'success', title: pw ? 'Пароль сменён' : 'Логин сменён', text: 'Войдите заново' }); showLogin() } else toast({ type: 'success', title: 'Настройки сохранены' })
       } catch (err) { fail(err) }
@@ -4817,7 +4814,7 @@ var qrcode = function() {
 
   // Для разделов сервера (server.js, addr.js)
   window.mpAdmin = { demo: () => DEMO, api: (m, p, b) => api(m, p, b), confirm: confirmAct, setCopy, domain: () => S?.settings?.domain || location.hostname,
-    state: () => S, refresh: () => api('GET', 'api/state').then((s) => { S = s; paint() }).catch(() => {}) }
+    state: () => S, setState: (s) => { S = s; paint() }, bytes, ago, refresh: () => api('GET', 'api/state').then((s) => { S = s; paint() }).catch(() => {}) }
 
   // ---------- QR в SVG ----------
   function qrSvg(text) {
@@ -5542,4 +5539,312 @@ var qrcode = function() {
       }
     } finally { following = false }
   }
+})()
+
+;
+// nodes.js
+// Админка monolit proxy: страницы «Ноды» и «Подписки».
+// Нода — второй сервер, ставится командой и сама приходит за настройками. Подписка человека — набор подключений:
+// сервер, мост и протокол; порядок и названия такие, какими их покажет приложение.
+(() => {
+  const A = window.mpAdmin, $ = (id) => document.getElementById(id)
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]))
+  const toast = (o) => window.toast?.(o)
+  const fail = (e) => toast({ type: 'error', title: 'Не получилось', text: e.message })
+  const icon = (n) => `<i data-lucide="${n}"></i>`
+  const icons = () => window.lucide?.createIcons()
+  const busy = async (btn, fn) => { btn.disabled = true; btn.classList.add('is-loading'); try { return await fn() } finally { btn.disabled = false; btn.classList.remove('is-loading') } }
+  const plural = (n, a, b, c) => { const m = n % 10, h = n % 100; return m === 1 && h !== 11 ? a : m >= 2 && m <= 4 && (h < 10 || h >= 20) ? b : c }
+  const PROTO = { vision: 'Vision', xhttp: 'XHTTP', hy2: 'Hysteria2', reality: 'Reality' }
+  const S = () => A.state()
+  // разметку меняем, только когда она правда другая: обновление раз в минуту не сбивает фокус и перетаскивание
+  const put = (el, html) => { if (el._html === html) return false; el._html = html; el.innerHTML = html; icons(); return true }
+  const setSelect = (sel, html, value) => { sel.innerHTML = html; sel.value = String(value); sel.dispatchEvent(new Event('change', { bubbles: true })) }
+
+  // ---------- демо: без сервера страницы живут на своих данных ----------
+  function demoSeed(s) {
+    if (s.kits) return
+    const t = Date.now() / 1000
+    Object.assign(s, { main: { day: 41.2 * 1024 ** 3, protos: ['vision', 'hy2'] },
+      nodes: [{ id: 1, name: 'Москва', addr: '185.104.248.17', mask: 'ya.ru', joined: true, waiting: false, seen: t - 10, up: true, xray: '25.10.15', load: '0.04', xray_ok: true, err: '', online: 2, day: 7.8 * 1024 ** 3 },
+        { id: 2, name: 'Германия', addr: '91.107.202.44', mask: 'ya.ru', joined: true, waiting: false, seen: t - 7200, up: false, xray: '25.9.11', load: '', xray_ok: true, err: '', online: 0, day: 0 }],
+      kits: [{ id: 1, name: 'Обычный', is_default: true, users: 0, lines: [{ id: 1, name: 'aeza Vision', out: 0, via: 0, proto: 'vision', on: true, problem: '' }, { id: 2, name: 'aeza Hysteria2', out: 0, via: 0, proto: 'hy2', on: true, problem: '' }] },
+        { id: 2, name: 'С мостом', is_default: false, users: 0, lines: [{ id: 3, name: 'aeza через «Москва»', out: 0, via: 1, proto: 'reality', on: true, problem: '' }, { id: 4, name: 'aeza напрямую', out: 0, via: 0, proto: 'vision', on: true, problem: '' }, { id: 5, name: 'Германия', out: 2, via: 0, proto: 'reality', on: false, problem: '' }] }] })
+    s.users.forEach((u, i) => { u.kit = i < 2 ? 2 : 1 })
+    demoCount(s)
+  }
+  const demoCount = (s) => s.kits.forEach((k) => { k.users = s.users.filter((u) => u.kit === k.id).length })
+  let demoId = 100
+  async function demoCall(method, path, b = {}) {
+    await new Promise((r) => setTimeout(r, 300))
+    const s = S(), kit = (id) => s.kits.find((k) => k.id === Number(id)), nm = (id) => id ? s.nodes.find((n) => n.id === id).name : s.settings.server_name
+    const line = (l, old = {}) => { const out = Number(l.out ?? old.out) || 0, via = Number(l.via ?? old.via) || 0, e = via || out, proto = e ? 'reality' : (l.proto in PROTO && l.proto !== 'reality' ? l.proto : old.proto && old.proto !== 'reality' ? old.proto : 'vision')
+      return { ...old, out, via, proto, on: l.on ?? old.on ?? true, problem: '', name: String(l.name ?? old.name ?? '').trim() || (via ? `${nm(out)} через «${nm(via)}»` : e ? nm(out) : `${nm(0)} ${PROTO[proto]}`) } }
+    let m, extra = {}
+    if (path === 'api/nodes' && method === 'POST') {
+      const n = { id: ++demoId, name: b.name, addr: '', mask: 'ya.ru', joined: false, waiting: true, seen: 0, up: false, xray: '', load: '', xray_ok: true, err: '', online: 0, day: 0 }
+      s.nodes.push(n); extra = { node: n.id, command: `bash <(curl -fsSL https://${s.settings.domain}/s/_n/install.sh) --join 7Kq2vXb9mT4wDemo` }
+      setTimeout(() => { if (s.nodes.includes(n)) { Object.assign(n, { joined: true, waiting: false, up: true, addr: '185.104.248.' + (n.id % 200), seen: Date.now() / 1000, xray: '25.10.15', load: '0.02' }); A.setState(s) } }, 5000)
+    } else if ((m = /^api\/nodes\/(\d+)(\/token)?$/.exec(path))) {
+      const n = s.nodes.find((x) => x.id === Number(m[1]))
+      if (m[2]) extra = { command: `bash <(curl -fsSL https://${s.settings.domain}/s/_n/install.sh) --join 9Zp4nWc2kR8sDemo` }
+      else if (method === 'PATCH') Object.assign(n, { name: b.name || n.name, mask: b.mask || n.mask })
+      else { s.nodes = s.nodes.filter((x) => x !== n); s.kits.forEach((k) => { k.lines = k.lines.filter((l) => l.out !== n.id && l.via !== n.id) }) }
+    } else if (path === 'api/kits') { const k = { id: ++demoId, name: b.name, is_default: false, users: 0, lines: [] }; s.kits.push(k); extra = { kit: k.id } }
+    else if ((m = /^api\/kits\/(\d+)(\/lines|\/order|\/users)?$/.exec(path))) {
+      const k = kit(m[1])
+      if (m[2] === '/lines') k.lines.push({ id: ++demoId, ...line(b) })
+      else if (m[2] === '/order') k.lines.sort((x, y) => b.ids.indexOf(x.id) - b.ids.indexOf(y.id))
+      else if (m[2] === '/users') { const def = s.kits.find((x) => x.is_default).id; s.users.forEach((u) => { if (b.ids.includes(u.id)) u.kit = k.id; else if (u.kit === k.id && k.id !== def) u.kit = def }) }
+      else if (method === 'PATCH') { if (b.name) k.name = b.name; if (b.is_default) s.kits.forEach((x) => { x.is_default = x === k }) }
+      else { if (k.is_default) throw new Error('Этот набор получают новые люди. Сначала назначьте другой'); const def = s.kits.find((x) => x.is_default).id; s.users.forEach((u) => { if (u.kit === k.id) u.kit = def }); s.kits = s.kits.filter((x) => x !== k) }
+    } else if ((m = /^api\/lines\/(\d+)$/.exec(path))) {
+      for (const k of s.kits) { const i = k.lines.findIndex((l) => l.id === Number(m[1])); if (i < 0) continue; if (method === 'DELETE') k.lines.splice(i, 1); else k.lines[i] = line(b, k.lines[i]) }
+    }
+    demoCount(s); return { ...extra, ...s }
+  }
+  // Ответ сервера на любое изменение — всё состояние админки целиком
+  async function call(method, path, body) {
+    const r = A.demo() ? await demoCall(method, path, body) : await A.api(method, path, body)
+    if (r.kits) A.setState(r)
+    return r
+  }
+
+  // ---------- страницы ----------
+  let page = 'users'
+  const items = () => document.querySelectorAll('.side-item[data-page]')
+  const mark = () => { document.querySelectorAll('.side-item[aria-current]').forEach((x) => x.removeAttribute('aria-current')); document.querySelector(`.side-item[data-page="${page}"]`).setAttribute('aria-current', 'page') }
+  function go(p) {
+    if (p === page) return
+    const o = $('mp-page-' + page), n = $('mp-page-' + p); page = p
+    o.classList.add('out')
+    setTimeout(() => { o.hidden = true; o.classList.remove('out'); n.classList.add('out'); n.hidden = false; paint(); void n.offsetWidth; n.classList.remove('out') }, 200)
+  }
+  items().forEach((a) => a.addEventListener('click', (e) => { e.preventDefault(); go(a.dataset.page) }))
+  // пункт меню, открывший шторку, после её закрытия отдаёт отметку обратно странице
+  document.querySelectorAll('dialog').forEach((d) => d.addEventListener('close', () => setTimeout(mark, 0)))
+
+  // ---------- ноды ----------
+  const node = (id) => S().nodes.find((n) => n.id === Number(id))
+  const nodeName = (id) => id ? node(id)?.name || 'удалённая нода' : S().settings.server_name
+  function usage(id) {
+    const ls = S().kits.flatMap((k) => k.lines.filter((l) => l.on)), to = id ? [...new Set(ls.filter((l) => l.via === id).map((l) => nodeName(l.out)))] : []
+    const parts = []; if (ls.some((l) => l.out === id)) parts.push('Сервер'); if (to.length) parts.push('Мост на ' + to.join(', '))
+    return parts.join(', ') || 'Не используется'
+  }
+  const since = (t) => { const m = Math.max(1, Math.round((Date.now() / 1000 - t) / 60)), h = Math.round(m / 60), d = Math.round(h / 24); return m < 90 ? `${m} мин` : h < 36 ? `${h} ч` : `${d} ${plural(d, 'день', 'дня', 'дней')}` }
+  const stText = (n) => n.waiting && !n.joined ? 'Ждёт команду' : n.up ? (n.err ? 'Ошибка настроек' : n.xray_ok ? 'На связи' : 'Xray не запущен') : n.joined ? 'Нет связи ' + since(n.seen) : 'Не подключалась'
+  const stKind = (n) => n.up && !n.err && n.xray_ok ? 'badge-success' : n.up || (n.waiting && !n.joined) ? 'badge-warning' : 'badge-danger'
+  function paintNodes() {
+    const s = S(), peopleOn = s.users.filter((u) => u.online?.length).length
+    const rows = [{ id: 0, name: s.settings.server_name, addr: s.settings.domain, up: s.xray.ok, joined: true, err: '', xray_ok: true, online: peopleOn, day: s.main.day, main: true }, ...s.nodes]
+    put($('nd-rows'), rows.map((n) => `<tr tabindex="0" data-id="${n.id}" class="${n.up || n.waiting ? '' : 'is-down'}">
+      <th scope="row"><span class="mp-who">${esc(n.name)}</span><span class="mp-what">${esc(n.addr || 'адрес появится после команды')}</span>
+        <span class="mp-m"><span class="mp-m-note">${esc(usage(n.id))}</span><span class="mp-m-exp${n.up ? '' : ' is-expired'}">${n.main ? (n.up ? 'На связи' : 'Xray не отвечает') : esc(stText(n))}</span><span class="mp-m-use">${n.up ? n.online + ' в сети' : ''}</span></span></th>
+      <td>${esc(usage(n.id))}</td><td class="mp-nd-st"><span class="badge ${n.main ? (n.up ? 'badge-success' : 'badge-danger') : stKind(n)}"><span class="dot"></span>${n.main ? (n.up ? 'На связи' : 'Xray не отвечает') : esc(stText(n))}</span></td>
+      <td class="num">${n.up ? n.online : ''}</td><td class="num">${n.up && n.day ? A.bytes(n.day) : ''}</td></tr>`).join(''))
+    const bad = s.nodes.filter((n) => n.joined && (!n.up || n.err || !n.xray_ok)).length + (s.xray.ok ? 0 : 1)
+    $('nd-badge').className = 'badge ' + (bad ? 'badge-warning' : 'badge-success')
+    $('nd-badge').lastElementChild.textContent = bad ? `${bad} ${plural(bad, 'не в порядке', 'не в порядке', 'не в порядке')}` : 'Все на связи'
+    $('nd-sub').textContent = `${rows.length} ${plural(rows.length, 'сервер', 'сервера', 'серверов')}`
+    $('nd-count').textContent = rows.length; $('nd-dot').hidden = !bad; $('nd-count').hidden = !!bad
+    if ($('nd-sheet').open && sheetId) fillSheet(false)
+    if ($('nd-add').open && addId) checkJoined()
+  }
+
+  let sheetId = 0
+  function fillSheet(form = true) {
+    const n = node(sheetId); if (!n) { $('nd-sheet').close(); return }
+    $('nd-s-t').textContent = n.name; $('nd-s-ip').textContent = n.addr || 'ещё не подключалась'
+    $('nd-s-badge').className = 'badge ' + stKind(n); $('nd-s-badge').lastElementChild.textContent = stText(n)
+    $('nd-s-seen').textContent = n.up && n.seen ? 'отчёт ' + since(n.seen) + ' назад' : ''
+    $('nd-s-err').hidden = !n.err; $('nd-s-err-t').textContent = n.err
+    put($('nd-s-kv'), [['Занята', usage(n.id)], ['Xray', n.xray || 'нет данных'], ['В сети', n.up ? n.online : 'нет данных'], ['За сутки', n.day ? A.bytes(n.day) : '0'], ['Нагрузка', n.load || 'нет данных']].map(([k, v]) => `<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join(''))
+    if (form) { $('nd-s-form').name.value = n.name; $('nd-s-form').mask.value = n.mask }
+  }
+  const openRow = (id) => { if (!Number(id)) { document.querySelector('.side-item[data-open="mp-srv"]').click(); return } sheetId = Number(id); fillSheet(); $('nd-sheet').showModal() }
+  $('nd-rows').addEventListener('click', (e) => { const tr = e.target.closest('tr'); if (tr) openRow(tr.dataset.id) })
+  $('nd-rows').addEventListener('keydown', (e) => { if (e.key === 'Enter' && e.target.matches('tr')) openRow(e.target.dataset.id) })
+  $('nd-s-form').addEventListener('submit', (e) => {
+    e.preventDefault(); const f = e.target
+    busy(document.querySelector('[form="nd-s-form"]'), async () => {
+      try { await call('PATCH', 'api/nodes/' + sheetId, { name: f.name.value, mask: f.mask.value }); $('nd-sheet').close(); toast({ type: 'success', title: 'Нода сохранена', text: 'Настройки дойдут до неё за полминуты' }) }
+      catch (err) { /маскировк/i.test(err.message) ? window.fieldError?.(f.mask, err.message) : fail(err) }
+    })
+  })
+  $('nd-s-del').addEventListener('click', async () => {
+    const n = node(sheetId), used = S().kits.flatMap((k) => k.lines).filter((l) => l.out === n.id || l.via === n.id).length
+    if (!await A.confirm(`Убрать ноду «${n.name}»?`, used ? `Из подписок пропадёт ${used} ${plural(used, 'подключение', 'подключения', 'подключений')} через неё. Сам сервер останется как есть` : 'Сам сервер останется как есть', 'Убрать')) return
+    try { await call('DELETE', 'api/nodes/' + n.id); $('nd-sheet').close(); toast({ type: 'success', title: 'Нода убрана', text: n.name }) } catch (err) { fail(err) }
+  })
+
+  // новая нода: создаётся сразу, чтобы команда была видна без лишнего шага; закрыли, не скопировав, — убираем
+  let addId = 0, addCopied = false, addPoll = 0, addName = ''
+  function showCmd(cmd) { $('nd-add-cmd').textContent = cmd; $('nd-add-copy').dataset.copy = cmd; $('nd-add-wait').classList.remove('ready'); $('nd-add-ok').disabled = true; addCopied = false }
+  function checkJoined() {
+    const n = node(addId); if (!n) return
+    const ok = n.joined && !n.waiting
+    $('nd-add-wait').classList.toggle('ready', ok); $('nd-add-ok').disabled = !ok; $('nd-add-ip').textContent = n.addr
+  }
+  async function openAdd(reId) {
+    const f = $('nd-add-form')
+    try {
+      if (reId) { const r = await call('POST', `api/nodes/${reId}/token`); addId = reId; f.name.value = addName = node(reId).name; showCmd(r.command) }
+      else { addName = 'Нода ' + (S().nodes.length + 1); const r = await call('POST', 'api/nodes', { name: addName }); addId = r.node; f.name.value = ''; f.name.placeholder = addName; showCmd(r.command) }
+    } catch (err) { return fail(err) }
+    $('nd-add-t').textContent = reId ? 'Переустановка ноды' : 'Новая нода'
+    $('nd-add').showModal()
+    clearInterval(addPoll); addPoll = setInterval(() => { if (!A.demo()) A.refresh() }, 3000)
+  }
+  $('nd-add-btn').addEventListener('click', (e) => busy(e.currentTarget, () => openAdd(0)))
+  $('nd-s-again').addEventListener('click', () => { const id = sheetId; $('nd-sheet').close(); openAdd(id) })
+  $('nd-add-copy').addEventListener('click', () => { addCopied = true })
+  const saveAddName = async () => { const v = $('nd-add-form').name.value.trim(); if (v && v !== addName && node(addId)) { addName = v; await call('PATCH', 'api/nodes/' + addId, { name: v }).catch(fail) } }
+  $('nd-add-form').name.addEventListener('change', saveAddName)
+  $('nd-add-form').addEventListener('submit', async (e) => { e.preventDefault(); await saveAddName(); $('nd-add').close() })
+  $('nd-add').addEventListener('close', () => {
+    clearInterval(addPoll); const n = node(addId), id = addId; addId = 0
+    if (n && !n.joined && !addCopied) call('DELETE', 'api/nodes/' + id).catch(() => {})
+  })
+
+  // ---------- подписки ----------
+  let kitId = 0, tabsHtml = ''
+  const kit = () => S().kits.find((k) => k.id === kitId) || S().kits[0]
+  const chain = (l) => `<span class="mp-chain"><span class="mp-hops">${l.via ? esc(nodeName(l.via)) + icon('arrow-right') + esc(nodeName(l.out)) : esc(nodeName(l.out))}</span><span class="badge badge-mono">${PROTO[l.proto] || l.proto}</span>${l.problem ? `<span class="badge badge-warning" data-tip="${esc(l.problem)}">не работает</span>` : ''}</span>`
+  function paintSubs() {
+    const s = S(), k = kit(); kitId = k.id
+    const th = s.kits.map((x) => `${x.id}:${x.name}:${x.users}`).join('|')
+    if (th !== tabsHtml) {
+      tabsHtml = th
+      // вкладки библиотека запускает один раз на элемент: набор сменился — ставим новый элемент
+      const box = document.createElement('div'); box.className = 'tabs'; box.id = 'kit-tabs'; box.setAttribute('role', 'tablist'); box.setAttribute('aria-label', 'Наборы')
+      box.innerHTML = '<span class="line"></span>' + s.kits.map((x) => `<button class="tab" role="tab" aria-selected="${x.id === k.id}" data-kit="${x.id}">${esc(x.name)}<span class="mp-n">${x.users}</span></button>`).join('')
+      $('kit-tabs').replaceWith(box); box.addEventListener('pick', pickKit); window.initInputs?.(box.parentElement)
+    }
+    const cur = $('kit-tabs').querySelector(`[data-kit="${k.id}"]`)
+    if (cur && cur.getAttribute('aria-selected') !== 'true') $('kit-tabs').select?.(cur, false)
+    if (!dragging) put($('ln-list'), k.lines.map((l) => `<div class="alist-row mp-line${l.on ? '' : ' is-off'}" data-id="${l.id}">
+      <button type="button" class="icon-btn icon-btn-sm mp-grip" aria-label="Переместить «${esc(l.name)}»">${icon('grip-vertical')}</button>
+      <button type="button" class="mp-line-open"><b>${esc(l.name)}</b>${chain(l)}</button>
+      <input type="checkbox" role="switch" class="switch" aria-label="Показывать «${esc(l.name)}»"${l.on ? ' checked' : ''}></div>`).join('')) && window.initLayers?.($('ln-list'))
+    $('ln-list').hidden = !k.lines.length; $('ln-empty').hidden = !!k.lines.length
+    if (document.activeElement !== $('kit-name')) $('kit-name').value = k.name
+    $('kit-def').checked = k.is_default; $('kit-def').disabled = k.is_default
+    const mine = s.users.filter((u) => u.kit === k.id)
+    put($('kit-avs'), mine.slice(0, 3).map((u) => `<span class="avatar avatar-md" data-hue="${u.id % 6 + 1}">${esc(u.name.trim()[0]?.toUpperCase() || '?')}</span>`).join('') + (mine.length > 3 ? `<span class="avatar avatar-md avatar-more">+${mine.length - 3}</span>` : '') || '<span class="mp-note">Никого</span>')
+    $('kit-del-sec').hidden = k.is_default
+  }
+  function pickKit(e) {
+    const box = $('kit-box'); box.classList.add('out')
+    setTimeout(() => { kitId = Number(e.detail.dataset.kit); paintSubs(); box.classList.remove('out') }, 200)
+  }
+  $('kit-new').addEventListener('click', () => { window.fieldError?.($('kit-form').name, ''); $('kit-form').name.value = ''; $('kit-dlg').showModal() })
+  $('kit-form').addEventListener('submit', (e) => {
+    e.preventDefault(); const name = e.target.name.value.trim(); if (!name) return window.fieldError?.(e.target.name, 'Нужно название')
+    busy(e.target.querySelector('[type=submit]'), async () => { try { const r = await call('POST', 'api/kits', { name }); kitId = r.kit; $('kit-dlg').close(); paintSubs() } catch (err) { fail(err) } })
+  })
+  $('kit-name').addEventListener('change', async (e) => { const v = e.target.value.trim(); if (!v) { e.target.value = kit().name; return } try { await call('PATCH', 'api/kits/' + kitId, { name: v }) } catch (err) { fail(err) } })
+  $('kit-def').addEventListener('change', async (e) => { if (!e.target.checked) return; try { await call('PATCH', 'api/kits/' + kitId, { is_default: true }) } catch (err) { e.target.checked = false; fail(err) } })
+  $('kit-del').addEventListener('click', async () => {
+    const k = kit(), def = S().kits.find((x) => x.is_default)
+    if (!await A.confirm(`Удалить набор «${k.name}»?`, k.users ? `${k.users} ${plural(k.users, 'человек перейдёт', 'человека перейдут', 'человек перейдут')} на набор «${def.name}»` : 'Им никто не пользуется', 'Удалить')) return
+    try { kitId = def.id; await call('DELETE', 'api/kits/' + k.id); toast({ type: 'success', title: 'Набор удалён', text: k.name }) } catch (err) { fail(err) }
+  })
+  $('kit-who').addEventListener('click', () => {
+    const k = kit()
+    $('who-dlg-t').textContent = `У кого набор «${k.name}»`
+    $('who-list').innerHTML = S().users.map((u) => `<label class="choice"><input type="checkbox" class="check" value="${u.id}"${u.kit === k.id ? ' checked' : ''}${k.is_default && u.kit === k.id ? ' disabled' : ''}><span>${esc(u.name)}${u.kit !== k.id ? `<small>сейчас «${esc(S().kits.find((x) => x.id === u.kit)?.name || '')}»</small>` : ''}</span></label>`).join('') || '<p class="mp-note">Людей пока нет</p>'
+    $('who-dlg').showModal()
+  })
+  $('who-form').addEventListener('submit', (e) => {
+    e.preventDefault(); const ids = [...$('who-list').querySelectorAll('input:checked')].map((i) => Number(i.value))
+    busy(e.target.querySelector('[type=submit]'), async () => { try { await call('POST', `api/kits/${kitId}/users`, { ids }); $('who-dlg').close() } catch (err) { fail(err) } })
+  })
+
+  // подключение: правка в окне
+  let lineId = 0
+  const lForm = $('ln-form'), lineOf = (id) => kit().lines.find((l) => l.id === Number(id))
+  function fillProto(keep) {
+    const node = Number(lForm.via.value) || Number(lForm.out.value), list = node ? ['reality'] : S().main.protos
+    setSelect(lForm.proto, list.map((p) => `<option value="${p}">${PROTO[p]}</option>`).join(''), list.includes(keep) ? keep : list[0])
+  }
+  function fillVia(keep) {
+    const out = Number(lForm.out.value), list = S().nodes.filter((n) => n.id !== out)
+    setSelect(lForm.via, '<option value="0">Без моста</option>' + list.map((n) => `<option value="${n.id}">${esc(n.name)}</option>`).join(''), list.some((n) => n.id === Number(keep)) ? keep : 0)
+  }
+  let filling = false
+  function openLine(l) {
+    lineId = l ? l.id : 0; filling = true
+    $('ln-dlg-t').textContent = l ? 'Подключение' : 'Новое подключение'; $('ln-del').hidden = !l
+    lForm.name.value = l ? l.name : ''; lForm.name.placeholder = l ? '' : 'Подставится само'
+    setSelect(lForm.out, [{ id: 0, name: S().settings.server_name }, ...S().nodes].map((n) => `<option value="${n.id}">${esc(n.name)}</option>`).join(''), l ? l.out : 0)
+    fillVia(l ? l.via : 0); fillProto(l ? l.proto : 'vision'); filling = false
+    $('ln-dlg').showModal()
+  }
+  lForm.out.addEventListener('change', () => { if (filling) return; filling = true; fillVia(lForm.via.value); fillProto(lForm.proto.value); filling = false })
+  lForm.via.addEventListener('change', () => { if (filling) return; filling = true; fillProto(lForm.proto.value); filling = false })
+  $('ln-list').addEventListener('click', (e) => { const b = e.target.closest('.mp-line-open'); if (b) openLine(lineOf(b.closest('.mp-line').dataset.id)) })
+  $('ln-add').addEventListener('click', () => openLine(null))
+  lForm.addEventListener('submit', (e) => {
+    e.preventDefault(); const body = { name: lForm.name.value, out: Number(lForm.out.value), via: Number(lForm.via.value), proto: lForm.proto.value }
+    busy(lForm.querySelector('[type=submit]'), async () => {
+      try { await call(lineId ? 'PATCH' : 'POST', lineId ? 'api/lines/' + lineId : `api/kits/${kitId}/lines`, body); $('ln-dlg').close() } catch (err) { fail(err) }
+    })
+  })
+  $('ln-del').addEventListener('click', async () => { try { await call('DELETE', 'api/lines/' + lineId); $('ln-dlg').close() } catch (err) { fail(err) } })
+  $('ln-list').addEventListener('change', async (e) => {
+    if (!e.target.matches('.switch')) return
+    const row = e.target.closest('.mp-line'), on = e.target.checked; row.classList.toggle('is-off', !on)
+    try { await call('PATCH', 'api/lines/' + row.dataset.id, { on }) } catch (err) { e.target.checked = !on; row.classList.toggle('is-off', on); fail(err) }
+  })
+
+  // порядок: строка едет за указателем, соседи уступают место переходом
+  let dragging = false
+  $('ln-list').addEventListener('pointerdown', (e) => {
+    const grip = e.target.closest('.mp-grip'); if (!grip) return
+    const row = grip.closest('.mp-line'), list = row.parentElement, before = [...list.children].map((r) => r.dataset.id).join()
+    e.preventDefault(); try { grip.setPointerCapture(e.pointerId) } catch (err) {}
+    const y0 = e.clientY; let shift = 0; dragging = true
+    row.classList.add('mp-drag')
+    const dyNow = () => new DOMMatrix(getComputedStyle(row).transform).m42
+    const step = (sib, up) => {
+      const a = sib.getBoundingClientRect().top, r0 = row.getBoundingClientRect().top - dyNow()
+      list.insertBefore(row, up ? sib : sib.nextSibling)
+      shift += row.getBoundingClientRect().top - dyNow() - r0
+      sib.animate([{ transform: `translateY(${a - sib.getBoundingClientRect().top}px)` }, { transform: 'none' }], { duration: 180, easing: 'cubic-bezier(.2,.8,.2,1)' })
+    }
+    const move = (ev) => {
+      const dy = ev.clientY - y0 - shift, prev = row.previousElementSibling, next = row.nextElementSibling
+      if (prev && dy < -prev.offsetHeight / 2) step(prev, true); else if (next && dy > next.offsetHeight / 2) step(next, false)
+      row.style.transform = `translateY(${Math.round(ev.clientY - y0 - shift)}px)`
+    }
+    const up = async () => {
+      grip.removeEventListener('pointermove', move); grip.removeEventListener('pointerup', up); grip.removeEventListener('pointercancel', up)
+      const a = row.animate([{ transform: row.style.transform || 'none' }, { transform: 'none' }], { duration: 180, easing: 'cubic-bezier(.2,.8,.2,1)' })
+      row.style.transform = ''; a.onfinish = () => row.classList.remove('mp-drag')
+      const ids = [...list.children].map((r) => Number(r.dataset.id)); dragging = false
+      if (ids.join() === before) return
+      list._html = ''   // разметка уже переставлена руками: следующая отрисовка сверит с данными
+      try { await call('POST', `api/kits/${kitId}/order`, { ids }) } catch (err) { fail(err); paintSubs() }
+    }
+    grip.addEventListener('pointermove', move); grip.addEventListener('pointerup', up); grip.addEventListener('pointercancel', up)
+  })
+
+  // ---------- набор в карточке человека и в окне нового ----------
+  function fillKit(sel, value) {
+    const ks = S()?.kits || []
+    document.querySelectorAll('.mp-kit-f').forEach((f) => { f.hidden = ks.length < 2 })
+    setSelect(sel, ks.map((k) => `<option value="${k.id}">${esc(k.name)}</option>`).join(''), value ?? ks.find((k) => k.is_default)?.id ?? '')
+  }
+  window.mpKits = { fill: fillKit }
+  document.querySelectorAll('[data-open="mp-add"]').forEach((b) => b.addEventListener('click', () => fillKit($('mp-add-form').kit)))
+
+  function paint() {
+    const s = S(); if (!s) return
+    if (A.demo()) demoSeed(s)
+    if (!s.kits) return   // сервер старой версии
+    paintNodes(); if (page === 'subs' || !kitId) paintSubs()
+  }
+  document.addEventListener('mp-state', paint)
+  paint()
 })()

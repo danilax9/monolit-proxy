@@ -3673,3 +3673,72 @@ button.alist-row { width: 100%; border: 0; background: none; font: inherit; colo
 /* Окно с формой-обёрткой (.dialog-scroll > form): шапка, середина и кнопки — детьми формы, она растягивается столбцом.
    Без этого прокрутка середины .dialog-scroll не работала бы: форма росла бы по содержимому */
 .dialog-scroll > form { display: flex; flex-direction: column; flex: 1; min-height: 0 }
+
+/* Ноды и подписки */
+.mp-page { transition: opacity var(--dur-swap-in) var(--ease-out) }
+.mp-page.out { opacity: 0; transition-duration: var(--dur-swap-out) }
+:is(#mp-page-nodes, #mp-page-subs) .app-head { margin-bottom: var(--sp-8) }
+
+/* Ноды: таблица как у пользователей; на узком списке — карточки без заливки трафика */
+#nd-sheet .sheet-head > div:first-child { flex: 1; min-width: 0 }
+.mp-nd-table .mp-hop-to { color: var(--text-muted) }
+.mp-nd-table tr.is-down :is(.mp-who, .mp-what, td:not(.mp-nd-st)) { opacity: .55 }
+
+/* Окно новой ноды: команда и состояние */
+.mp-cmd pre { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere }
+.mp-wait { display: grid; font-size: var(--fs-sm); line-height: var(--lh-sm); color: var(--text-secondary) }
+.mp-wait > span { grid-area: 1 / 1; display: flex; align-items: center; gap: var(--sp-2); min-height: 24px; transition: opacity var(--dur-swap-in) var(--ease-out) }
+.mp-wait-b { opacity: 0; pointer-events: none }
+.mp-wait.ready .mp-wait-a { opacity: 0; transition-duration: var(--dur-swap-out) }
+.mp-wait.ready .mp-wait-b { opacity: 1; transition-delay: var(--dur-swap-out) }
+
+/* Подписки: вкладки наборов и кнопка нового набора одним рядом */
+.mp-kit-bar { display: flex; align-items: center; gap: var(--sp-3); margin-bottom: var(--sp-6) }
+.mp-kit-bar .tabs { flex: 1; min-width: 0 }
+.mp-kit-bar .btn { flex: none }
+/* слева подключения (берут остаток), справа узкая панель по своему содержимому */
+.mp-kit { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: var(--sp-8); align-items: start; transition: opacity var(--dur-swap-in) var(--ease-out) }
+.mp-kit.out { opacity: 0; transition-duration: var(--dur-swap-out) }
+.mp-kit[hidden] { display: none }
+.mp-kit-main { display: grid; gap: var(--sp-4); min-width: 0 }
+.mp-kit-side { display: grid; align-content: start; min-width: 0 }
+.mp-kit-who { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3) }
+@media (max-width: 1000px) { .mp-kit { grid-template-columns: minmax(0, 1fr) } }
+
+/* Цепочка: вход, стрелка, выход, протокол */
+.mp-chain { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-1) var(--sp-2); color: var(--text-secondary); font-size: var(--fs-sm); line-height: var(--lh-sm) }
+.mp-chain .mp-hops { display: inline-flex; align-items: center; gap: var(--sp-1); white-space: nowrap }
+.mp-chain .lucide { width: var(--icon-sm); height: var(--icon-sm); color: var(--text-muted) }
+
+/* Вариант 1: строка — ручка, название с цепочкой, свитч */
+.alist-row.mp-line { grid-template-columns: auto minmax(0, 1fr) auto; column-gap: var(--sp-3); align-items: center; background: var(--surface) }
+.alist-row.mp-line + .mp-line::before { left: var(--al-p); right: var(--al-p) }
+.mp-line .mp-line-open { display: grid; gap: 2px; min-width: 0; border: 0; background: none; padding: var(--sp-1) 0; font: inherit; color: inherit; text-align: left; cursor: pointer; outline: none }
+.mp-line .mp-line-open b { font-weight: var(--w-medium); white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+.mp-line .mp-line-open::after { content: ""; position: absolute; inset: 0; border-radius: inherit; outline: 2px solid transparent; outline-offset: -2px; transition: outline-color var(--dur-focus) var(--ease-out) }
+.mp-line .mp-line-open:focus-visible::after { outline-color: var(--focus) }
+.mp-line :is(.switch, .mp-grip) { position: relative; z-index: 1 }
+.mp-line .mp-line-open { transition: opacity var(--dur-hover-in) var(--ease-out) }
+.mp-line.is-off .mp-line-open { opacity: .5 }
+.mp-ln-del { margin-right: auto }
+
+/* Ручка перетаскивания: общая для двух вариантов */
+.mp-grip { cursor: grab; touch-action: none; color: var(--text-muted) }
+.mp-drag { position: relative; z-index: 2; cursor: grabbing; box-shadow: 0 8px 24px #0000004d, inset 0 0 0 1px var(--border) }
+.mp-drag .mp-grip { cursor: grabbing }
+.alist-row.mp-drag { border-radius: var(--r-md); background: var(--surface-hover) }
+.alist-row.mp-drag::before, .alist-row.mp-drag + .alist-row::before { opacity: 0 }
+
+/* Телефон */
+@media (max-width: 640px) {
+  .mp-line .mp-line-open b { white-space: normal }
+  .mp-kit-new span { display: none }
+  .mp-kit-new { aspect-ratio: 1; padding: 0; justify-content: center }
+}
+
+/* Телефон */
+@media (max-width: 640px) {
+  :is(#mp-page-nodes, #mp-page-subs) .app-head { margin-bottom: var(--sp-6) }
+  .app-head .btn-row { width: 100% }
+  .app-head .btn-row > .btn, .app-head .btn-row > .seg { flex: 1 }
+}

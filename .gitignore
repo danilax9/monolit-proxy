@@ -2,7 +2,7 @@
 DECISIONS.md
 ui/src/layout-notes.md
 ui/src/mock/
-ui/src/mock-*.html
+ui/src/mock-*
 # из дизайн-системы в репозитории только то, что нужно для сборки
 ui/ds/01-colors/
 ui/ds/03-components/

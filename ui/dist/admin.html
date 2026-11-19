@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex, nofollow">
 <title>monolit proxy</title>
 <link rel="icon" href="_/mark.svg" type="image/svg+xml">
-<link rel="stylesheet" href="_/admin.css?v=612e67fff8">
+<link rel="stylesheet" href="_/admin.css?v=4343625fca">
 <script>/* Тема: предпочтение light | dark | system.
    Подключать в <head> БЕЗ defer — тема ставится до первой отрисовки, без мигания чужой темы.
    Переключатели: любые кнопки с data-theme-v="light|dark|system" (aria-checked ставится сам).
@@ -129,7 +129,7 @@ const DS_KEY = (k) => (document.documentElement.dataset.store ? document.documen
 })();
 </script>
 <script>document.documentElement.classList.add('js')</script>
-<script src="_/admin.js?v=ce8d55094c" defer></script>
+<script src="_/admin.js?v=ac2a24cba5" defer></script>
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="mp-mark" viewBox="0 0 24 24"><rect x="7" y="2" width="10" height="20" rx="2.5" fill="currentColor"/></symbol></svg>
@@ -153,7 +153,9 @@ const DS_KEY = (k) => (document.documentElement.dataset.store ? document.documen
     <button class="icon-btn icon-btn-sm side-toggle" type="button" data-side-toggle aria-label="Свернуть меню"><i data-lucide="panel-left"></i></button>
   </div>
   <nav class="side-nav">
-    <a class="side-item" href="#" aria-current="page"><i data-lucide="users"></i><span class="side-tx">Пользователи</span><span class="side-count" id="mp-count-all">0</span></a>
+    <a class="side-item" href="#" data-page="users" aria-current="page"><i data-lucide="users"></i><span class="side-tx">Пользователи</span><span class="side-count" id="mp-count-all">0</span></a>
+    <a class="side-item" href="#" data-page="nodes"><i data-lucide="waypoints"></i><span class="side-tx">Ноды</span><span class="side-count" id="nd-count">1</span><span class="side-dot" id="nd-dot" hidden></span></a>
+    <a class="side-item" href="#" data-page="subs"><i data-lucide="list-checks"></i><span class="side-tx">Подписки</span></a>
     <a class="side-item" href="#" data-open="mp-srv"><i data-lucide="server"></i><span class="side-tx">Сервер</span></a>
     <a class="side-item" href="#" data-open="mp-addr"><i data-lucide="map-pin"></i><span class="side-tx">Адрес</span><span class="side-dot" id="mp-addr-dot" hidden></span></a>
     <a class="side-item" href="#" data-open="mp-routes"><i data-lucide="route"></i><span class="side-tx">Маршруты</span></a>
@@ -171,6 +173,7 @@ const DS_KEY = (k) => (document.documentElement.dataset.store ? document.documen
   <div class="alert alert-danger mp-alert" id="mp-block-alert" hidden><i data-lucide="circle-alert"></i><div><b id="mp-block-t">IP сервера не открывается из России</b><span id="mp-block-p">Приложения в России не подключатся. Можно сменить IP или домен</span>
     <div class="btn-row mp-alert-act"><button class="btn btn-secondary btn-sm" type="button" data-open="mp-addr"><span>Что делать</span></button></div></div></div>
   <div class="alert alert-danger mp-alert" id="mp-xray-alert" hidden><i data-lucide="circle-alert"></i><div><b>Xray не отвечает</b><span id="mp-xray-err">Изменения применятся, когда он снова заработает</span></div></div>
+<section class="mp-page" id="mp-page-users">
   <div class="app-head">
     <div>
       <div class="app-title"><h1>Пользователи</h1><span class="badge badge-success" id="mp-xray-badge"><span class="dot"></span>Xray работает</span></div>
@@ -204,12 +207,63 @@ const DS_KEY = (k) => (document.documentElement.dataset.store ? document.documen
     <div class="state state-dashed" id="mp-empty" hidden><span class="state-ic"><i data-lucide="users"></i></span><h4 id="mp-empty-t">Пока никого</h4><p id="mp-empty-p">Добавьте первого человека, и у него появится своя ссылка на подписку</p></div>
   </div>
   <div class="mp-foot"><p class="hint">Данные обновляются раз в минуту</p></div>
+</section>
+
+<!-- Ноды -->
+<section class="mp-page" id="mp-page-nodes" hidden>
+  <div class="app-head">
+    <div>
+      <div class="app-title"><h1>Ноды</h1><span class="badge badge-success" id="nd-badge"><span class="dot"></span><span>Все на связи</span></span></div>
+      <p class="app-sub" id="nd-sub"></p>
+    </div>
+    <div class="btn-row"><button class="btn btn-primary" type="button" id="nd-add-btn"><i data-lucide="plus"></i><span>Добавить ноду</span></button></div>
+  </div>
+  <div class="mp-list mp-nd-list">
+    <div class="table-wrap"><table class="table table-stack mp-table mp-nd-table">
+      <thead><tr><th>Нода</th><th>Занята</th><th>Статус</th><th class="num">В сети</th><th class="num">За сутки</th></tr></thead>
+      <tbody id="nd-rows"></tbody>
+    </table></div>
+  </div>
+</section>
+
+<!-- Подписки -->
+<section class="mp-page" id="mp-page-subs" hidden>
+  <div class="app-head">
+    <div>
+      <div class="app-title"><h1>Подписки</h1></div>
+      <p class="app-sub">Что человек увидит в приложении</p>
+    </div>
+  </div>
+  <div class="mp-kit-bar">
+    <div class="tabs" role="tablist" aria-label="Наборы" id="kit-tabs"><span class="line"></span></div>
+    <button class="btn btn-ghost btn-sm mp-kit-new" type="button" id="kit-new" aria-label="Новый набор"><i data-lucide="plus"></i><span>Набор</span></button>
+  </div>
+  <div class="mp-kit" id="kit-box">
+    <div class="mp-kit-main">
+      <div class="alist mp-lines" id="ln-list"></div>
+      <div class="state state-dashed" id="ln-empty" hidden><span class="state-ic"><i data-lucide="list-checks"></i></span><h4>В наборе пусто</h4><p>Люди с этим набором не увидят в приложении ни одного сервера</p></div>
+      <div class="btn-row"><button class="btn btn-primary" type="button" id="ln-add"><i data-lucide="plus"></i><span>Добавить подключение</span></button></div>
+    </div>
+    <aside class="mp-kit-side">
+      <div class="mp-section">
+        <span class="t-label">Набор</span>
+        <label class="field"><span class="label">Название</span><input class="input" id="kit-name" maxlength="24" autocomplete="off"></label>
+        <label class="choice"><input type="checkbox" role="switch" class="switch" id="kit-def"><span>Для новых людей</span></label>
+      </div>
+      <div class="mp-section">
+        <span class="t-label">У кого</span>
+        <div class="mp-kit-who"><span class="avatars avatars-md" id="kit-avs"></span><button class="btn btn-secondary btn-sm" type="button" id="kit-who"><span>Изменить</span></button></div>
+      </div>
+      <div class="mp-section" id="kit-del-sec"><div class="btn-row"><button class="btn btn-ghost btn-sm mp-danger" type="button" id="kit-del"><i data-lucide="trash-2"></i><span>Удалить набор</span></button></div></div>
+    </aside>
+  </div>
+</section>
 </div></main>
 </div>
 
 <!-- Добавить -->
 <dialog class="dialog dialog-md dialog-scroll" id="mp-add" aria-labelledby="mp-add-t"><form novalidate id="mp-add-form">
-  <div class="dialog-head"><div><h2 id="mp-add-t">Новый пользователь</h2><p>Одна ссылка, в ней Vision и Hysteria2</p></div>
+  <div class="dialog-head"><div><h2 id="mp-add-t">Новый пользователь</h2><p>Одна ссылка на все подключения набора</p></div>
     <button class="icon-btn icon-btn-sm" type="button" data-close aria-label="Закрыть"><i data-lucide="x"></i></button></div>
   <div class="dialog-main mp-form">
     <label class="field"><span class="label">Имя</span><input class="input" name="name" maxlength="40" placeholder="Например, Маша" autocomplete="off" required></label>
@@ -221,6 +275,7 @@ const DS_KEY = (k) => (document.documentElement.dataset.store ? document.documen
     </div>
     <label class="field"><span class="label">Устройств одновременно</span><select class="select" name="devices"><option value="" selected>Без ограничения</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="10">10</option></select>
       <span class="hint">Считаются разные IP. Если их больше, доступ закроется на 10 минут</span></label>
+    <label class="field mp-kit-f"><span class="label">Набор подключений</span><select class="select" name="kit"></select></label>
     <label class="field"><span class="label">Заметка <span class="opt">необязательно</span></span><input class="input" name="note" maxlength="200" autocomplete="off"></label>
   </div>
   <div class="dialog-foot"><button type="button" class="btn btn-ghost" data-close>Отмена</button><button class="btn btn-primary" type="submit"><span>Создать</span></button></div>
@@ -269,6 +324,7 @@ const DS_KEY = (k) => (document.documentElement.dataset.store ? document.documen
         <label class="field"><span class="label">Лимит считать</span><select class="select" name="period"><option value="">За всё время</option><option value="month">Каждый месяц</option></select></label>
       </div>
       <label class="field"><span class="label">Устройств одновременно</span><select class="select" name="devices"><option value="" selected>Без ограничения</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="10">10</option></select><span class="hint">Считаются разные IP. Если их больше, доступ закроется на 10 минут</span></label>
+      <label class="field mp-kit-f"><span class="label">Набор подключений</span><select class="select" name="kit"></select></label>
       <label class="field"><span class="label">Заметка</span><input class="input" name="note" maxlength="200" autocomplete="off"></label>
     </form>
     <div class="mp-section">
@@ -294,6 +350,72 @@ const DS_KEY = (k) => (document.documentElement.dataset.store ? document.documen
   <div class="dialog-foot"><button class="btn btn-ghost" type="button" data-close>Отмена</button><button class="btn btn-danger" type="button" id="mp-c-ok"><span>Удалить</span></button></div>
 </dialog>
 
+
+<!-- Новая нода: команда и ожидание -->
+<dialog class="dialog dialog-md dialog-scroll" id="nd-add" aria-labelledby="nd-add-t"><form novalidate id="nd-add-form">
+  <div class="dialog-head"><div><h2 id="nd-add-t">Новая нода</h2><p>Запустите команду на новом сервере</p></div>
+    <button class="icon-btn icon-btn-sm" type="button" data-close aria-label="Закрыть"><i data-lucide="x"></i></button></div>
+  <div class="dialog-main mp-form">
+    <label class="field"><span class="label">Название</span><input class="input" name="name" maxlength="24" autocomplete="off"></label>
+    <div class="code mp-cmd"><div class="code-head"><span class="code-file"><i data-lucide="terminal"></i>от root</span><button class="icon-btn icon-btn-sm" type="button" aria-label="Скопировать команду" id="nd-add-copy" data-copy=""></button></div><pre><code id="nd-add-cmd"></code></pre></div>
+    <div class="mp-wait" id="nd-add-wait"><span class="mp-wait-a"><span class="spinner"></span><span>Ждём сервер</span></span><span class="mp-wait-b"><span class="badge badge-success"><span class="dot"></span>На связи</span><span id="nd-add-ip"></span></span></div>
+  </div>
+  <div class="dialog-foot"><button type="button" class="btn btn-ghost" data-close>Закрыть</button><button class="btn btn-primary" type="submit" id="nd-add-ok" disabled><span>Готово</span></button></div>
+</form></dialog>
+
+<!-- Карточка ноды -->
+<dialog class="sheet sheet-side" id="nd-sheet" aria-labelledby="nd-s-t">
+  <div class="sheet-head"><div><h2 id="nd-s-t">Нода</h2><p class="mp-did" id="nd-s-ip"></p></div><button class="icon-btn icon-btn-sm" type="button" data-close aria-label="Закрыть"><i data-lucide="x"></i></button></div>
+  <div class="sheet-body">
+    <div class="mp-section">
+      <div class="mp-srv-line"><span class="badge" id="nd-s-badge"><span class="dot"></span><span></span></span><span class="mp-note" id="nd-s-seen"></span></div>
+      <div class="alert alert-danger" id="nd-s-err" hidden><i data-lucide="circle-alert"></i><div><b>Xray на ноде не принял настройки</b><span id="nd-s-err-t"></span></div></div>
+      <dl class="mp-kv" id="nd-s-kv"></dl>
+    </div>
+    <form class="mp-section mp-form" id="nd-s-form" novalidate>
+      <span class="t-label">Настройки</span>
+      <label class="field"><span class="label">Название</span><input class="input" name="name" maxlength="24" autocomplete="off"></label>
+      <label class="field"><span class="label">Маскировка под сайт</span><input class="input" name="mask" autocomplete="off" spellcheck="false" autocapitalize="none"></label>
+    </form>
+    <div class="mp-section">
+      <span class="t-label">Редкие действия</span>
+      <div class="alist mp-actions">
+        <button type="button" class="alist-row" id="nd-s-again"><span class="alist-ic"><i data-lucide="terminal"></i></span><span class="alist-tx"><b>Команда для переустановки</b><span>Если сервер переставили с нуля</span></span></button>
+        <button type="button" class="alist-row mp-danger" id="nd-s-del"><span class="alist-ic"><i data-lucide="trash-2"></i></span><span class="alist-tx"><b>Убрать ноду</b><span>Её подключения пропадут из подписок</span></span></button>
+      </div>
+    </div>
+  </div>
+  <div class="sheet-foot"><button class="btn btn-primary" type="submit" form="nd-s-form"><span>Сохранить</span></button></div>
+</dialog>
+
+<!-- Подключение -->
+<dialog class="dialog dialog-md dialog-scroll" id="ln-dlg" aria-labelledby="ln-dlg-t"><form novalidate id="ln-form">
+  <div class="dialog-head"><div><h2 id="ln-dlg-t">Подключение</h2></div><button class="icon-btn icon-btn-sm" type="button" data-close aria-label="Закрыть"><i data-lucide="x"></i></button></div>
+  <div class="dialog-main mp-form">
+    <label class="field"><span class="label">Название</span><input class="input" name="name" maxlength="40" autocomplete="off"></label>
+    <div class="mp-pair">
+      <label class="field"><span class="label">Сервер</span><select class="select" name="out"></select></label>
+      <label class="field"><span class="label">Мост</span><select class="select" name="via"></select></label>
+    </div>
+    <label class="field"><span class="label">Протокол</span><select class="select" name="proto"></select></label>
+  </div>
+  <div class="dialog-foot"><button type="button" class="btn btn-ghost mp-danger mp-ln-del" id="ln-del"><i data-lucide="trash-2"></i><span>Удалить</span></button><button type="button" class="btn btn-ghost" data-close>Отмена</button><button class="btn btn-primary" type="submit"><span>Сохранить</span></button></div>
+</form></dialog>
+
+<!-- Новый набор -->
+<dialog class="dialog" id="kit-dlg" aria-labelledby="kit-dlg-t"><form novalidate id="kit-form">
+  <div class="dialog-head"><div><h2 id="kit-dlg-t">Новый набор</h2></div><button class="icon-btn icon-btn-sm" type="button" data-close aria-label="Закрыть"><i data-lucide="x"></i></button></div>
+  <div class="dialog-main mp-form"><label class="field"><span class="label">Название</span><input class="input" name="name" maxlength="24" autocomplete="off" required></label></div>
+  <div class="dialog-foot"><button type="button" class="btn btn-ghost" data-close>Отмена</button><button class="btn btn-primary" type="submit"><span>Создать</span></button></div>
+</form></dialog>
+
+<!-- У кого набор -->
+<dialog class="dialog dialog-md dialog-scroll" id="who-dlg" aria-labelledby="who-dlg-t"><form novalidate id="who-form">
+  <div class="dialog-head"><div><h2 id="who-dlg-t">У кого набор</h2></div><button class="icon-btn icon-btn-sm" type="button" data-close aria-label="Закрыть"><i data-lucide="x"></i></button></div>
+  <div class="dialog-main"><div class="mp-checks" id="who-list"></div></div>
+  <div class="dialog-foot"><button type="button" class="btn btn-ghost" data-close>Отмена</button><button class="btn btn-primary" type="submit"><span>Сохранить</span></button></div>
+</form></dialog>
+
 <!-- Шаблон autoXRAY -->
 <dialog class="sheet sheet-side" id="mp-tpl" aria-labelledby="mp-tpl-t">
   <div class="sheet-head"><h2 id="mp-tpl-t">Шаблон autoXRAY</h2><button class="icon-btn icon-btn-sm" type="button" data-close aria-label="Закрыть"><i data-lucide="x"></i></button></div>
@@ -318,8 +440,6 @@ const DS_KEY = (k) => (document.documentElement.dataset.store ? document.documen
     <div class="mp-section">
       <span class="t-label">Сервер</span>
       <label class="field"><span class="label">Название в приложениях</span><input class="input" name="server_name" maxlength="24" autocomplete="off"><span class="hint">Так подписка будет подписана в Happ и INCY</span></label>
-      <div class="field"><span class="label">Протоколы в подписке</span>
-        <div class="mp-checks" id="mp-kinds"></div></div>
       <label class="field"><span class="label">Отпечаток браузера</span>
         <select class="select" name="fp"><option value="firefox">Firefox, как в autoXRAY</option><option value="chrome">Chrome</option><option value="safari">Safari</option><option value="ios">iOS</option><option value="android">Android</option><option value="edge">Edge</option></select></label>
       <label class="field"><span class="label">Обновлять подписку в приложениях, часов</span><input class="input" name="update_hours" inputmode="numeric" autocomplete="off"></label>
